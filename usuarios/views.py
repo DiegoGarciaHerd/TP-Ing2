@@ -12,6 +12,7 @@ def registro(request):
         form = RegistroForm()
     return render(request, 'usuarios/registro.html', {'form': form})
 
+"""
 @login_required
 def editar_perfil(request):
     if request.method == 'POST':
@@ -22,3 +23,4 @@ def editar_perfil(request):
     else:
         form = EditarPerfilForm(instance=request.user)
     return render(request, 'usuarios/editar_perfil.html', {'form': form})
+"""
