@@ -1,9 +1,38 @@
- .auto-imagen img {
-    width: 300px; 
-    margin-right: 10px; 
-    max-height: 160px;
+  .navbar-custom {
+    background-color: #edebe3;
+     border-bottom: 6px solid #0e4532; 
+  }
+
+  .navbar-custom .nav-link,
+  .navbar-custom .navbar-brand {
+    color: #333;
+    font-weight: 600;
+  }
+
+  .navbar-custom .nav-link:hover {
+    color: #b1938c; /* Color al pasar el mouse */
+  } 
+ 
+.auto-imagen {
+  max-width: 200px;
+  height: auto;
+  margin: 10px;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.lista.autos {
+  text-align: center;
+  padding: 20px;
+}
+
+.lista.autos h3 {
+  font-weight: 700;
+  margin-bottom: 20px;
 }
 
 .fondo {
-    background-color: green;
+    background-color:#0e4532;
 }
+
+
