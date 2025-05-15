@@ -7,7 +7,7 @@ def registro(request):
         form = RegistroForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('login')
+            return redirect('home')
     else:
         form = RegistroForm()
     return render(request, 'usuarios/registro.html', {'form': form})
