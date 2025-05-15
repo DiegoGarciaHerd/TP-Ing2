@@ -6,24 +6,26 @@ class RegistroForm(UserCreationForm):
     email = forms.EmailField(required=True)
     telefono = forms.CharField(max_length=20, required=False)
     direccion = forms.CharField(widget=forms.Textarea, required=False)
-    
+
     class Meta:
         model = Usuario
         fields = [
-            'username',
             'email',
             'first_name',
             'last_name',
             'telefono',
             'direccion',
             'password1',
-            'password2'
+            'password2',
         ]
         labels = {
-            'username': 'Nombre de usuario',
             'email': 'Correo electrónico',
             'first_name': 'Nombre',
             'last_name': 'Apellido',
+            'telefono': 'Teléfono',
+            'direccion': 'Dirección',
+            'password1': 'Contraseña',
+            'password2': 'Confirmar Contraseña',
         }
 
     def save(self, commit=True):
