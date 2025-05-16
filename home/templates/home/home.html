@@ -4,16 +4,34 @@
 {% block title %}Inicio{% endblock %}
 
 {% block content %}
-    <div>
+    <div >
         <h2>¡Realiza tu reserva online!</h2>
         <div>
-            <fieldset>
-                Fecha de Retiro: <input type="date"><br>
-                Fecha de Entrega: <input type="date"><br>
-                Sucursal: <input type="text"><br>
-                Retiro: <input type="text"><br>
+            <fieldset class="menu reservas">
+                Fecha de Retiro: <input type="date" id="fechaRetiro"><br><br>
+                Fecha de Entrega: <input type="date" id="fechaEntrega"><br><br>
+                Sucursal: <input type="text"><br><br>
+                Retiro: <input type="text"><br><br>
                 <input type="submit" value="Realizar Reserva">
             </fieldset>
+
+            <script>
+                const hoy = new Date().toISOString().split('T')[0];
+
+                const fechaRetiro = document.getElementById('fechaRetiro');
+                const fechaEntrega = document.getElementById('fechaEntrega');
+                fechaRetiro.min = hoy;
+                fechaEntrega.min = hoy;
+                fechaRetiro.addEventListener('change', function () {
+                    const fechaSeleccionada = fechaRetiro.value;
+
+                    fechaEntrega.min = fechaSeleccionada;
+
+                    if (fechaEntrega.value && fechaEntrega.value < fechaSeleccionada) {
+                        fechaEntrega.value = "";
+                    }
+                });
+            </script>
             <br><br><br><br><br>
             <hr>
         </div>
