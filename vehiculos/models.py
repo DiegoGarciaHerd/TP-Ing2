@@ -26,4 +26,4 @@ class Vehiculo(models.Model):
     imagen = models.ImageField(upload_to='vehiculos/', null=True, blank=True)
     
     def __str__(self):
-        return f"{self.marca} {self.modelo} ({self.patente})
+        return f"{self.marca} {self.modelo} ({self.patente})"

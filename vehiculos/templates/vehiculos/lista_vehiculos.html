@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Lista de Vehículos</title>
+</head>
+<body>
+    <h1>Vehículos</h1>
+    <ul>
+        {% for vehiculo in vehiculos %}
+            <li>{{ vehiculo }}</li>
+        {% empty %}
+            <li>No hay vehículos cargados.</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
