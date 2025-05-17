@@ -5,14 +5,14 @@ from django.utils.translation import gettext_lazy as _
 class Usuario(AbstractUser):
     username = None  # Eliminamos el campo username original
     email = models.EmailField(_('email address'), unique=True)
+    edad = models.PositiveIntegerField(null=True)
+    DNI = models.CharField(max_length=10, unique=True, null=True)
 
     ROLES = (
         ('ADMIN', 'Administrador'),
         ('CLIENTE', 'Cliente'),
     )
     rol = models.CharField(max_length=10, choices=ROLES, default='CLIENTE')
-    telefono = models.CharField(max_length=20, blank=True)
-    direccion = models.TextField(blank=True)
 
     USERNAME_FIELD = 'email'  # Usamos email para login
     REQUIRED_FIELDS = ['first_name', 'last_name']  # Campos obligatorios al crear superusuario
