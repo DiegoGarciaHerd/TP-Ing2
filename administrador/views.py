@@ -45,7 +45,10 @@ def login_admin_step2(request):
             user = Usuario.objects.get(email=username)
             login(request, user)
             TEMP_CODES.pop(username, None)
-            return HttpResponse("Bienvenido al panel de administración")
+            return redirect('admin_menu')
         else:
             messages.error(request, "Código inválido.")
     return render(request, 'administrador/login_step2.html')
+
+def admin_menu(request):
+    return render(request, 'administrador/menu_admin.html')
