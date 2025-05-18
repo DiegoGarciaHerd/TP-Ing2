@@ -19,4 +19,3 @@ if not Usuario.objects.filter(email='admin@autorental.com').exists():
     print("Admin creado")
 else:
     print("Admin ya existe")
-
