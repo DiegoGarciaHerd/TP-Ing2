@@ -1,0 +1,10 @@
+{% extends 'home/base.html' %}
+{% block content %}
+  <h2>Login Administrador - Paso 2</h2>
+  <p>Se envió un código a tu correo. Ingresalo a continuación:</p>
+  <form method="post">
+    {% csrf_token %}
+    <label>Código:</label><input type="text" name="codigo"><br>
+    <button type="submit">Verificar</button>
+  </form>
+{% endblock %}

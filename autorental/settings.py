@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'home',
     'vehiculos',
     'empleados',
+    'administrador',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -136,3 +137,6 @@ AUTH_USER_MODEL = 'usuarios.Usuario'
 LOGIN_REDIRECT_URL = '/' 
 LOGIN_URL = '/login/'
 LOGOUT_REDIRECT_URL = '/'
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = 'Mi Aplicación <webmaster@localhost>'
