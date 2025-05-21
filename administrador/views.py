@@ -7,12 +7,14 @@ from django.core.cache import cache
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
 from usuarios.models import Usuario
+from django.contrib.auth import logout
 
 
 @never_cache
 @csrf_protect
 def login_admin_step1(request):
-   
+    if request.user.is_authenticated:
+        logout(request) 
 
     if request.method == 'POST':
         email = request.POST.get('email')
