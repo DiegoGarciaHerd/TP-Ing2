@@ -17,6 +17,8 @@ def registro(request):
     return render(request, 'usuarios/registro.html', {'form': form})
 
 def login_view(request):
+    if request.user.is_authenticated and request.user.is_admin:
+        logout(request)
     if request.method == 'POST':
         form = AuthenticationForm(request, data=request.POST)
         if form.is_valid():
