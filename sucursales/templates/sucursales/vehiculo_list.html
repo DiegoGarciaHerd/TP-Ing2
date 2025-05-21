@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Vehículos Disponibles {% if sucursal %}en {{ sucursal.nombre }}{% endif %}</h1>
+
+    {% if sucursal %}
+        <p><a href="{% url 'sucursales:lista_sucursales' %}">Volver a todas las sucursales</a></p>
+    {% endif %}
+
+    {% if vehiculos %}
+        <div class="vehiculo-grid">
+            {% for vehiculo in vehiculos %}
+                <div class="vehiculo-card">
+                    <h2>{{ vehiculo.marca }} {{ vehiculo.modelo }}</h2>
+                    <p>Año: {{ vehiculo.año }}</p>
+                    <p>Patente: {{ vehiculo.patente }}</p>
+                    <p>Tipo: {{ vehiculo.get_tipo_display }}</p>
+                    <p>Precio por día: ${{ vehiculo.precio_por_dia|floatformat:2 }}</p>
+                    <p>Ubicado en: {{ vehiculo.sucursal_actual.nombre }}</p>
+                    <a href="{% url 'sucursales:vehiculo_detail' vehiculo.id %}" class="btn">Ver Detalles y Reservar</a>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No hay vehículos disponibles {% if sucursal %}en esta sucursal{% endif %} en este momento.</p>
+    {% endif %}
+
+    <style>
+        .vehiculo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .vehiculo-card {
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .vehiculo-card h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        .vehiculo-card p {
+            margin-bottom: 5px;
+        }
+        .btn {
+            display: inline-block;
+            background-color: #007bff;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            text-decoration: none;
+            margin-top: 10px;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+{% endblock content %}

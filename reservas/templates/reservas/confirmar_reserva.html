@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Confirmar Cancelación de Reserva</h1>
+
+    <p>¿Estás seguro que deseas cancelar la reserva #{{ reserva.id }} para el vehículo {{ reserva.vehiculo.marca }} {{ reserva.vehiculo.modelo }} (Patente: {{ reserva.vehiculo.patente }})?</p>
+    <p>Fechas: {{ reserva.fecha_recogida|date:"d/m/Y" }} a {{ reserva.fecha_devolucion|date:"d/m/Y" }}</p>
+
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Sí, Cancelar Reserva</button>
+        <a href="{% url 'reservas:mis_reservas' %}" class="btn btn-secondary">No, Volver</a>
+    </form>
+{% endblock content %}

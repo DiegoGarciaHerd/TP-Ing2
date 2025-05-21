@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Detalle del Vehículo: {{ vehiculo.marca }} {{ vehiculo.modelo }}</h1>
+
+    <p><strong>Año:</strong> {{ vehiculo.año }}</p>
+    <p><strong>Patente:</strong> {{ vehiculo.patente }}</p>
+    <p><strong>Tipo:</strong> {{ vehiculo.get_tipo_display }}</p>
+    <p><strong>Precio por día:</strong> ${{ vehiculo.precio_por_dia|floatformat:2 }}</p>
+    <p><strong>Ubicación:</strong> {{ vehiculo.sucursal_actual.nombre }} ({{ vehiculo.sucursal_actual.direccion }})</p>
+    <p><strong>Estado:</strong> {% if vehiculo.disponible %}Disponible{% else %}No Disponible{% endif %}</p>
+
+    {% if vehiculo.disponible %}
+        <a href="{% url 'reservas:crear_reserva' vehiculo.id %}" class="btn btn-primary">Reservar Este Vehículo</a>
+    {% else %}
+        <p class="text-danger">Este vehículo no está disponible para reserva en este momento.</p>
+    {% endif %}
+
+    <p><a href="{% url 'sucursales:vehiculos_por_sucursal' vehiculo.sucursal_actual.id %}">Volver a los vehículos de {{ vehiculo.sucursal_actual.nombre }}</a></p>
+    <p><a href="{% url 'sucursales:lista_sucursales' %}">Ver todas las sucursales</a></p>
+{% endblock content %}

@@ -35,6 +35,8 @@ INSTALLED_APPS = [
     'home',
     'vehiculos',
     'empleados',
+    'sucursales',
+    'reservas',
     'administrador',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -59,7 +61,7 @@ ROOT_URLCONF = 'autorental.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'home' / 'templates'/ 'home'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

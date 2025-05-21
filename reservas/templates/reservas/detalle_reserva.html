@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Detalle de la Reserva #{{ reserva.id }}</h1>
+
+    <p><strong>Cliente:</strong> {{ reserva.cliente.get_full_name }} ({{ reserva.cliente.email }})</p>
+    <p><strong>Vehículo:</strong> {{ reserva.vehiculo.marca }} {{ reserva.vehiculo.modelo }} (Patente: {{ reserva.vehiculo.patente }})</p>
+    <p><strong>Sucursal de Recogida:</strong> {{ reserva.vehiculo.sucursal_actual.nombre }}</p>
+    <p><strong>Fechas:</strong> {{ reserva.fecha_recogida|date:"d/m/Y" }} a {{ reserva.fecha_devolucion|date:"d/m/Y" }}</p>
+    <p><strong>Costo Total:</strong> ${{ reserva.costo_total|floatformat:2 }}</p>
+    <p><strong>Estado:</strong> <strong>{{ reserva.get_estado_display }}</strong></p>
+    <p><strong>Fecha de Creación:</strong> {{ reserva.fecha_creacion|date:"d/m/Y H:i" }}</p>
+
+    {% if reserva.estado in 'PENDIENTE' or 'CONFIRMADA' and reserva.fecha_recogida >= today %}
+        <a href="{% url 'reservas:cancelar_reserva' reserva.id %}" class="btn btn-warning">Cancelar Reserva</a>
+    {% endif %}
+
+    <p><a href="{% url 'reservas:mis_reservas' %}">Volver a Mis Reservas</a></p>
+{% endblock content %}

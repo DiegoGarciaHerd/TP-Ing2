@@ -1,0 +1,29 @@
+{% extends 'base.html' %} {# Esto le dice a Django que use el template base.html como esqueleto #}
+
+{% block title %}Nuestras Sucursales{% endblock %} {# Define el título de la página para este template #}
+
+{% block content %} {# Aquí es donde se insertará el contenido específico de esta página #}
+    <h1>Nuestras Sucursales</h1>
+
+    {% if sucursales %} {# Verifica si la variable 'sucursales' (pasada desde la vista) tiene elementos #}
+        <ul style="list-style-type: none; padding: 0;"> {# Elimina los puntos de la lista y el padding predeterminado #}
+            {% for sucursal in sucursales %} {# Itera sobre cada objeto Sucursal en la lista 'sucursales' #}
+                <li style="border: 1px solid #ddd; margin-bottom: 10px; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                    <h2>
+                        {# Enlace al listado de vehículos de esta sucursal #}
+                        <a href="{% url 'sucursales:vehiculos_por_sucursal' sucursal.id %}" style="text-decoration: none; color: #007bff;">
+                            {{ sucursal.nombre }}
+                        </a>
+                    </h2>
+                    <p style="color: #555;">{{ sucursal.direccion }}</p>
+                    <p style="color: #555;">Teléfono: {{ sucursal.telefono }}</p>
+                    <a href="{% url 'sucursales:vehiculos_por_sucursal' sucursal.id %}" class="btn btn-primary">Ver Vehículos en esta Sucursal</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        {# Este mensaje se mostrará si no hay sucursales disponibles (por ejemplo, si no has añadido ninguna en el admin) #}
+        <p>No hay sucursales disponibles en este momento.</p>
+        <p>Por favor, añade algunas sucursales desde el <a href="{% url 'admin:index' %}">panel de administración</a>.</p>
+    {% endif %}
+{% endblock content %}

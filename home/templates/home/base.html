@@ -31,6 +31,7 @@
         <li class="nav-item">
           <a class="nav-link fs-4" href="#">Autos</a>
         </li>
+        <li><a href="{% url 'sucursales:lista_sucursales' %}">Ver Sucursales y Vehículos</a></li>
         {% if user.is_authenticated %}
           <li class="nav-item">
             <a class="nav-link fs-4" href="{% url 'logout' %}">Cerrar sesión</a>

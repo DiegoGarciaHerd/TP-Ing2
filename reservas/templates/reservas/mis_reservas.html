@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Mis Reservas</h1>
+
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    {% if reservas %}
+        <ul>
+            {% for reserva in reservas %}
+                <li>
+                    <h2>Reserva #{{ reserva.id }}</h2>
+                    <p>Vehículo: {{ reserva.vehiculo.marca }} {{ reserva.vehiculo.modelo }} ({{ reserva.vehiculo.patente }})</p>
+                    <p>Sucursal de Recogida: {{ reserva.vehiculo.sucursal_actual.nombre }}</p>
+                    <p>Fechas: {{ reserva.fecha_recogida|date:"d/m/Y" }} a {{ reserva.fecha_devolucion|date:"d/m/Y" }}</p>
+                    <p>Costo Total: <strong>${{ reserva.costo_total|floatformat:2 }}</strong></p>
+                    <p>Estado: <strong>{{ reserva.get_estado_display }}</strong></p>
+                    <p>Fecha de Creación: {{ reserva.fecha_creacion|date:"d/m/Y H:i" }}</p>
+
+                    <a href="{% url 'reservas:detalle_reserva' reserva.id %}" class="btn btn-info">Ver Detalle</a>
+                    {% if reserva.estado in 'PENDIENTE' or 'CONFIRMADA' and reserva.fecha_recogida >= today %}
+                        <a href="{% url 'reservas:cancelar_reserva' reserva.id %}" class="btn btn-warning">Cancelar Reserva</a>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No tienes reservas realizadas.</p>
+        <p><a href="{% url 'reservas:lista_sucursales' %}">Explorar vehículos para reservar</a></p>
+    {% endif %}
+{% endblock content %}
