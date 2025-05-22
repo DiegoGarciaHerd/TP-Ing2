@@ -1,0 +1,59 @@
+{% extends 'home/base.html' %}
+{% block content %}
+<!DOCTYPE html>
+<html>
+  <body>
+    <h1>Carga de Vehículos</h1>
+    <h3>Ingrese los datos del vehículo a ingresar</h3>
+
+    <div>
+      <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <ul>
+          <li>
+            <label>Patente:</label>
+            <input type="text" id="patente" name="patente_auto"/>
+          </li>
+          <li>
+            <label>Marca:</label>
+            <input type="text" id="marca" name="marca_auto"/>
+          </li>
+          <li>
+            <label>Modelo:</label>
+            <input type="text" id="modelo" name="modelo_auto"/>
+          </li>
+          <li>
+            <label>Categoría:</label>
+            <input type="text" id="categoria" name="categoria_auto"/>
+          </li>
+          <li>
+            <label>Capacidad de Personas:</label>
+            <input type="text" id="capacidad" name="capacidad_personas"/>
+          </li>
+          <li>
+            <label>Kilometraje:</label>
+            <input type="text" id="km" name="kilometraje_auto"/>
+          </li>
+          <li>
+            <label>Precio por Día:</label>
+            <input type="text" id="precio" name="precio_dia"/>
+          </li>
+          <li>
+            <label>Política de Reembolso:</label>
+            <select id="politica_reembolso" name="politica_reembolso">
+              <option value="ninguno" selected>0%</option>
+              <option value="parcial">20%</option>
+              <option value="completo">100%</option>
+            </select>
+          </li>
+          <li>
+            <label>Foto del Vehículo:</label>
+            <input type="file" id="foto" name="foto_vehiculo" accept="image/*" />
+          </li><br><br>
+          <button type="submit">Agregar el Vehículo</button>
+        </ul>
+      </form>
+    </div>
+  </body>
+</html>
+{% endblock %}
