@@ -14,8 +14,8 @@
 <nav class="navbar navbar-expand-lg navbar-custom">
   <div class="container-fluid">
     {% load static %}
-    <a class="navbar-brand" href="{% url 'home' %}" style="margin-left: 70px;">
-        <img src="{% static 'home/img/logo.png' %}" alt="Autorental" height="100">
+    <a class="navbar-brand" href="{% url 'home' %}" style="margin-left: 10px;">
+        <img src="{% static 'home/img/AutoRental_Logo.png' %}" alt="Autorental" height="60">
     </a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
             data-bs-target="#navbarNav" aria-controls="navbarNav"
@@ -26,37 +26,39 @@
       <ul class="navbar-nav ms-auto">
         
         <li class="nav-item">
-          <a class="nav-link fs-4" href= >Contacto</a>
+          <a class="nav-link fs-5" href= >Contacto</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link fs-4" href="#">Autos</a>
+          <a class="nav-link fs-5" href="#">Autos</a>
         </li>
-        <li><a href="{% url 'sucursales:lista_sucursales' %}">Ver Sucursales y Vehículos</a></li>
+        <li class="nav-item">
+          <a class="nav-link fs-5" href="{% url 'sucursales:lista_sucursales' %}">Ver Sucursales y Vehículos</a>
+        </li>
         {% if user.is_authenticated %}
           {% if user.is_superuser %}
         <!-- Menú de administrador -->
           <li class="nav-item">
-            <a class="nav-link fs-4" href="{% url 'admin_menu' %}">Panel Admin</a>
+            <a class="nav-link fs-5" href="{% url 'admin_menu' %}">Panel Admin</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link fs-4" href="{% url 'logout' %}">Cerrar sesión</a>
+            <a class="nav-link fs-5" href="{% url 'logout' %}">Cerrar sesión</a>
           </li>
         {% else %}
         <!-- Menú de cliente -->
         <li class="nav-item">
-          <a class="nav-link fs-4" href="#">Mis reservas</a>
+          <a class="nav-link fs-5" href="#">Mis reservas</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link fs-4" href="{% url 'logout' %}">Cerrar sesión</a>
+          <a class="nav-link fs-5" href="{% url 'logout' %}">Cerrar sesión</a>
         </li>
     {% endif %}
 {% else %}
     <!-- Menú para visitantes -->
     <li class="nav-item">
-      <a class="nav-link fs-4" href="{% url 'login' %}">Iniciar sesión</a>
+      <a class="nav-link fs-5" href="{% url 'login' %}">Iniciar sesión</a>
     </li>
     <li class="nav-item">
-      <a class="nav-link fs-4" href="{% url 'registro' %}">Registrarse</a>
+      <a class="nav-link fs-5" href="{% url 'registro' %}">Registrarse</a>
     </li>
 {% endif %}
       

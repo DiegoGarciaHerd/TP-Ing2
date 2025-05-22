@@ -1,6 +1,8 @@
 from django.shortcuts import render
+from sucursales.models import Sucursal
 
 # Create your views here.
 
 def home(request):
-    return render(request, 'home/home.html')
+    sucursales = Sucursal.objects.all()
+    return render(request, 'home/home.html', {'sucursales': sucursales})
