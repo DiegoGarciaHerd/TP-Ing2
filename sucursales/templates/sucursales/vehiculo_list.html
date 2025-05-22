@@ -14,7 +14,13 @@
                     <h2>{{ vehiculo.marca }} {{ vehiculo.modelo }}</h2>
                     <p>Año: {{ vehiculo.año }}</p>
                     <p>Patente: {{ vehiculo.patente }}</p>
-                    <p>Tipo: {{ vehiculo.get_tipo_display }}</p>
+                    <p>Estado:
+                        {% if vehiculo.disponible %}
+                            Disponible
+                        {% else %}
+                            No Disponible
+                        {% endif %}
+                    </p>
                     <p>Precio por día: ${{ vehiculo.precio_por_dia|floatformat:2 }}</p>
                     <p>Ubicado en: {{ vehiculo.sucursal_actual.nombre }}</p>
                     <a href="{% url 'sucursales:vehiculo_detail' vehiculo.id %}" class="btn">Ver Detalles y Reservar</a>

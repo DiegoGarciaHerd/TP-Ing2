@@ -1,6 +1,6 @@
 from django.db import models
-from django.conf import settings # Para importar el modelo de usuario personalizado
-from sucursales.models import Vehiculo # Importar el modelo Vehiculo
+from django.conf import settings 
+from vehiculos.models import Vehiculo
 import datetime
 
 class Reserva(models.Model):
@@ -29,12 +29,16 @@ class Reserva(models.Model):
             from django.core.exceptions import ValidationError
             raise ValidationError({'fecha_devolucion': "La fecha de devolución no puede ser anterior a la fecha de recogida."})
 
-    def save(self, *args, **kwargs):
 
-        if not self.costo_total and self.fecha_recogida and self.fecha_devolucion and self.vehiculo:
-            delta = self.fecha_devolucion - self.fecha_recogida
-            self.costo_total = delta.days * self.vehiculo.precio_por_dia
+    def save(self, *args, **kwargs):
+        if self.fecha_recogida and self.fecha_devolucion and self.vehiculo.precio_por_dia: # <--- Usa .precio_por_dia
+            dias = (self.fecha_devolucion - self.fecha_recogida).days
+            if dias > 0:
+                self.costo_total = self.vehiculo.precio_por_dia * dias
+            else:
+                self.costo_total = self.vehiculo.precio_por_dia
         super().save(*args, **kwargs)
+
 
     def __str__(self):
         return f"Reserva {self.id} de {self.cliente.get_full_name() or self.cliente.email} para {self.vehiculo}"

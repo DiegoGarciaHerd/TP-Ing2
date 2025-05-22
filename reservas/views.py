@@ -6,7 +6,8 @@ from django.contrib import messages
 import datetime
 
 from .models import Reserva
-from sucursales.models import Vehiculo, Sucursal 
+from sucursales.models import Sucursal 
+from vehiculos.models import Vehiculo
 from .forms import ReservaForm
 
 
@@ -14,7 +15,7 @@ from .forms import ReservaForm
 
 class VehiculoListView(ListView):
     model = Vehiculo
-    template_name = 'reservas/vehiculo_list.html' 
+    template_name = 'sucursales/vehiculo_list.html' 
     context_object_name = 'vehiculos'
 
     def get_queryset(self):
@@ -33,7 +34,7 @@ class VehiculoListView(ListView):
 
 class VehiculoDetailView(DetailView):
     model = Vehiculo
-    template_name = 'reservas/vehiculo_detail.html' 
+    template_name = 'sucursales/vehiculo_detail.html' 
     context_object_name = 'vehiculo'
 
 

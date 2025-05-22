@@ -10,7 +10,6 @@
 </head>
 <body>
 
-<!-- NAVBAR -->
 <nav class="navbar navbar-expand-lg navbar-custom">
   <div class="container-fluid">
     {% load static %}
@@ -36,7 +35,6 @@
         </li>
         {% if user.is_authenticated %}
           {% if user.is_superuser %}
-        <!-- Menú de administrador -->
           <li class="nav-item">
             <a class="nav-link fs-5" href="{% url 'admin_menu' %}">Panel Admin</a>
           </li>
@@ -44,7 +42,6 @@
             <a class="nav-link fs-5" href="{% url 'logout' %}">Cerrar sesión</a>
           </li>
         {% else %}
-        <!-- Menú de cliente -->
         <li class="nav-item">
           <a class="nav-link fs-5" href="#">Mis reservas</a>
         </li>
@@ -53,7 +50,6 @@
         </li>
     {% endif %}
 {% else %}
-    <!-- Menú para visitantes -->
     <li class="nav-item">
       <a class="nav-link fs-5" href="{% url 'login' %}">Iniciar sesión</a>
     </li>
@@ -67,7 +63,6 @@
   </div>
 </nav>
 
-<!-- MENSAJES -->
 {% if messages %}
 <div class="container mt-3">
   {% for message in messages %}
@@ -79,7 +74,6 @@
 </div>
 {% endif %}
 
-<!-- CONTENIDO DE CADA PAGINA -->
 <div class="container mt-4">
   {% block content %}{% endblock %}
 </div>

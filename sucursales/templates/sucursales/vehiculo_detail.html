@@ -1,11 +1,9 @@
 {% extends 'base.html' %}
-
+{% block title %}Detalle del Vehículo: {{ vehiculo.marca }} {{ vehiculo.modelo }}{% endblock %}
 {% block content %}
-    <h1>Detalle del Vehículo: {{ vehiculo.marca }} {{ vehiculo.modelo }}</h1>
+    <h1>{{ vehiculo.marca }} {{ vehiculo.modelo }} (Patente: {{ vehiculo.patente }})</h1>
 
     <p><strong>Año:</strong> {{ vehiculo.año }}</p>
-    <p><strong>Patente:</strong> {{ vehiculo.patente }}</p>
-    <p><strong>Tipo:</strong> {{ vehiculo.get_tipo_display }}</p>
     <p><strong>Precio por día:</strong> ${{ vehiculo.precio_por_dia|floatformat:2 }}</p>
     <p><strong>Ubicación:</strong> {{ vehiculo.sucursal_actual.nombre }} ({{ vehiculo.sucursal_actual.direccion }})</p>
     <p><strong>Estado:</strong> {% if vehiculo.disponible %}Disponible{% else %}No Disponible{% endif %}</p>

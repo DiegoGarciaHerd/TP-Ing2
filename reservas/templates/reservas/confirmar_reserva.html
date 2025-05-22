@@ -4,7 +4,7 @@
     <h1>Confirmar Cancelación de Reserva</h1>
 
     <p>¿Estás seguro que deseas cancelar la reserva #{{ reserva.id }} para el vehículo {{ reserva.vehiculo.marca }} {{ reserva.vehiculo.modelo }} (Patente: {{ reserva.vehiculo.patente }})?</p>
-    <p>Fechas: {{ reserva.fecha_recogida|date:"d/m/Y" }} a {{ reserva.fecha_devolucion|date:"d/m/Y" }}</p>
+    <p>Fechas: {{ reserva.fecha_recogida|date:"d/m/Y" }} a {{ reserva.fecha_devolucion|date:"d/m/Y" }}</p><p>Precio por día: <strong>${{ vehiculo.precio_por_dia|floatformat:2 }}</strong></p>
 
     <form method="post">
         {% csrf_token %}

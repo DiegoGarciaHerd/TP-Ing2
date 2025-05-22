@@ -1,15 +1,14 @@
 from django.shortcuts import render, get_object_or_404
 from django.views.generic import ListView, DetailView
-from .models import Sucursal, Vehiculo 
+from .models import Sucursal
+from vehiculos.models import Vehiculo
 
 class SucursalListView(ListView):
     model = Sucursal
     template_name = 'sucursales/sucursal_list.html'
     context_object_name = 'sucursales'
+    queryset = Sucursal.objects.all().prefetch_related('vehiculos_en_sucursal')
 
-    def get_queryset(self):
-
-        return Sucursal.objects.filter(vehiculos__disponible=True).distinct()
 
 
 class VehiculoListView(ListView):
