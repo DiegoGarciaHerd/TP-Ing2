@@ -1,0 +1,30 @@
+{% extends 'home/base.html' %}
+{% block content %}
+<!DOCTYPE html>
+<html>
+<body>
+    <h1>Ingrese aquí todos los datos del nuevo empleado</h1>
+    <form method="POST">
+        <ul>
+            <li>
+            <label for="patente">Nombre: </label>
+            <input type="text" id="patente"/>
+            </li>
+            <li>
+            <label for="marca">Apellido: </label>
+            <input type="text" id="marca"/>
+            </li>
+            <li>
+            <label for="modelo">Sucursal: </label>
+            <input type="text" id="mdoelo"/>
+            </li>
+            <li>
+            <label for="categoria">Correo: </label>
+            <input type="text" id="categoria"/>
+            </li>
+        </ul>
+        <button type="submit">Ingresar datos</button>
+    </form>
+</body>
+</html>
+{% endblock %}
