@@ -76,3 +76,9 @@ def admin_required(view_func):
 @admin_required
 def admin_menu(request):
     return render(request, 'administrador/menu_admin.html')
+
+def cargar_autos(request):
+    return render(request, 'administrador/cargar_autos.html')
+
+def cargar_empleados(request):
+    return render(request, 'administrador/cargar_empleados.html')
