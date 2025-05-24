@@ -41,3 +41,15 @@ def logout_view(request):
     logout(request)
     messages.success(request, 'Has cerrado sesión correctamente.')
     return redirect('home')
+
+@login_required
+def editar_perfil(request):
+    if request.method == 'POST':
+        form = EditarPerfilForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Tu perfil ha sido actualizado correctamente.')
+            return redirect('editar_perfil')
+    else:
+        form = EditarPerfilForm(instance=request.user)
+    return render(request, 'usuarios/editar_perfil.html', {'form': form})

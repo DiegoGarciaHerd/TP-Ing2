@@ -1,0 +1,58 @@
+{% extends 'home/base.html' %}
+{% load form_filters %}
+
+{% block title %}Editar Perfil - Autorental{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-lg">
+            <div class="card-header text-white" style="background-color: #0e4532;">
+                <h2 class="mb-0">Editar Perfil</h2>
+            </div>
+            <div class="card-body">
+                <form method="post" id="profileForm">
+                    {% csrf_token %}
+                    {% for field in form %}
+                        <div class="form-group mb-3">
+                            {{ field.label_tag }}
+                            {{ field.errors }}
+                            {{ field|add_class:"form-control" }}
+                            {% if field.help_text %}
+                                <small class="form-text text-muted">{{ field.help_text }}</small>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-lg text-white flex-grow-1" style="background-color: #0e4532;">Confirmar Cambios</button>
+                        <button type="button" class="btn btn-lg btn-secondary flex-grow-1" onclick="resetForm()">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Guardar los valores originales del formulario
+    const originalValues = {};
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('profileForm');
+        const inputs = form.querySelectorAll('input');
+        inputs.forEach(input => {
+            originalValues[input.name] = input.value;
+        });
+    });
+
+    // Función para resetear el formulario a los valores originales
+    function resetForm() {
+        const form = document.getElementById('profileForm');
+        const inputs = form.querySelectorAll('input');
+        inputs.forEach(input => {
+            if (originalValues.hasOwnProperty(input.name)) {
+                input.value = originalValues[input.name];
+            }
+        });
+    }
+</script>
+{% endblock %} 
