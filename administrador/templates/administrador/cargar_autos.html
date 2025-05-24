@@ -10,31 +10,31 @@
       <ul>
         <li>
           <label for="patente">Patente: </label>
-          <input type="text" id="patente" required/>
+          <input type="text" id="patente" name="patente" required/>
         </li>
         <li>
           <label for="marca">Marca: </label>
-          <input type="text" id="marca" required/>
+          <input type="text" id="marca" name="marca" required/>
         </li>
         <li>
           <label for="modelo">Modelo: </label>
-          <input type="text" id="modelo" required/>
+          <input type="text" id="modelo" name="modelo" required/>
         </li>
         <li>
           <label for="categoria">Categoría: </label>
-          <input type="text" id="categoria" required/>
+          <input type="text" id="categoria" name="categoria" required/>
         </li>
         <li>
           <label for="capacidad">Capacidad de Personas: </label>
-          <input type="number" id="capacidad" required/>
+          <input type="number" id="capacidad" name="capacidad" required/>
         </li>
         <li>
           <label for="kilometraje">Kilometraje: </label>
-          <input type="number" id="kilometraje" required/>
+          <input type="number" id="kilometraje" name="kilometraje" required/>
         </li>
         <li>
           <label for="precio">Precio Por Día: </label>
-          <input type="number" id="precio" required/>
+          <input type="number" id="precio" name="precio" required/>
         </li>
         <li>
           <label for="reembolso">Política de Reembolso: </label>
@@ -47,6 +47,7 @@
         <li>
           <label for="foto">Foto del Vehículo: </label>
           <input type="file" id="foto" accept="image/*" required/>
+          <input type="hidden" id="foto_base64" name="foto_base64">
         </li>
       </ul>
       <button type="submit">Ingresar datos</button>
