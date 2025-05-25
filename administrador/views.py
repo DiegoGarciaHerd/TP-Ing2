@@ -15,6 +15,7 @@ from django.template.loader import render_to_string
 from django.utils import timezone
 from datetime import timedelta
 from django.http import HttpResponse
+from vehiculos.models import Vehiculo
 
 
 def generate_2fa_code():
@@ -136,14 +137,32 @@ def admin_menu(request):
 
 def cargar_autos(request):
     if request.method == 'POST':
-        #Proceso aquí los autos
-        messages.success(request, "Autos cargados exitosamente")
+        marca = request.POST.get('marca')
+        modelo = request.POST.get('modelo')
+        año = request.POST.get('año')
+        patente = request.POST.get('patente')
+        precio_por_dia = request.POST.get('precio')
+
+        try:
+            Vehiculo.objects.create(
+                marca=marca,
+                modelo=modelo,
+                año=int(año),
+                patente=patente,
+                precio_por_dia=precio_por_dia,
+                disponible=True,
+                sucursal_actual_id=1
+            )
+            messages.success(request, "Autos cargados exitosamente")
+        except Exception as e:
+            messages.error(request, f"Error al cargar el auto: {e}")
+            return render(request, 'administrador/cargar_autos.html')
         return redirect('admin_menu')
     return render(request, 'administrador/cargar_autos.html')
 
 def cargar_empleados(request):
     if request.method == 'POST':
-        # Proceso aquí los empleados
+        
         messages.success(request, "Empleados cargados exitosamente")
         return redirect('admin_menu')
     return render(request, 'administrador/cargar_empleados.html')
