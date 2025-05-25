@@ -5,6 +5,7 @@
 <body>
     <h1>Ingrese aquí todos los datos del nuevo empleado</h1>
     <form method="POST">
+        {% csrf_token %}
         <ul>
             <li>
             <label for="patente">Nombre: </label>

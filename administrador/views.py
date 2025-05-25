@@ -14,6 +14,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.utils import timezone
 from datetime import timedelta
+from django.http import HttpResponse
 
 
 def generate_2fa_code():
@@ -134,11 +135,15 @@ def admin_menu(request):
     return render(request, 'administrador/menu_admin.html')
 
 def cargar_autos(request):
-    
+    if request.method == 'POST':
+        #Proceso aquí los autos
+        messages.success(request, "Autos cargados exitosamente")
+        return redirect('admin_menu')
     return render(request, 'administrador/cargar_autos.html')
 
 def cargar_empleados(request):
+    if request.method == 'POST':
+        # Proceso aquí los empleados
+        messages.success(request, "Empleados cargados exitosamente")
+        return redirect('admin_menu')
     return render(request, 'administrador/cargar_empleados.html')
-from django.core.mail import send_mail
-from django.http import HttpResponse
-
