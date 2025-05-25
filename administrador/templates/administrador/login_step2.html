@@ -1,10 +1,34 @@
-{% extends 'home/base.html' %}
+{% extends 'base.html' %}
+
 {% block content %}
-  <h2>Login Administrador - Paso 2</h2>
-  <p>Se envió un código a tu correo. Ingresalo a continuación:</p>
-  <form method="post">
-    {% csrf_token %}
-    <label>Código:</label><input type="text" name="codigo"><br>
-    <button type="submit">Verificar</button>
-  </form>
+<div class="container">
+    <h2>Verificación en Dos Pasos</h2>
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    {% endif %}
+    
+    <form method="POST">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="code">Código de 6 dígitos</label>
+            <input type="text" 
+                   id="code" 
+                   name="code" 
+                   class="form-control"
+                   maxlength="6"
+                   pattern="\d{6}"
+                   title="Ingrese exactamente 6 dígitos numéricos"
+                   required
+                   placeholder="123456">
+            <small class="form-text text-muted">
+                Revisa tu correo electrónico para obtener el código
+            </small>
+        </div>
+        <button type="submit" class="btn btn-primary">Verificar</button>
+    </form>
+</div>
 {% endblock %}

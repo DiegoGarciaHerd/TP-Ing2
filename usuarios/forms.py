@@ -54,6 +54,11 @@ class RegistroForm(UserCreationForm):
 
 class EditarPerfilForm(UserChangeForm):
     password = None  # Elimina el campo de contraseña del formulario
+    edad = forms.IntegerField(
+        required=True,
+        min_value=18,
+        help_text='Debe ser mayor de 18 años.'
+    )
     
     class Meta:
         model = Usuario
@@ -71,6 +76,12 @@ class EditarPerfilForm(UserChangeForm):
             'edad': 'Edad',
             'DNI': 'DNI',
         }
+
+    def clean_edad(self):
+        edad = self.cleaned_data.get('edad')
+        if edad < 18:
+            raise ValidationError('Debe ser mayor de 18 años.')
+        return edad
 
 class CambiarRolForm(forms.ModelForm):
     class Meta:
