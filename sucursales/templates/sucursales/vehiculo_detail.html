@@ -1,19 +1,48 @@
-{% extends 'base.html' %}
+{% extends 'home/base.html' %}
+
 {% block title %}Detalle del Vehículo: {{ vehiculo.marca }} {{ vehiculo.modelo }}{% endblock %}
+
 {% block content %}
-    <h1>{{ vehiculo.marca }} {{ vehiculo.modelo }} (Patente: {{ vehiculo.patente }})</h1>
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-lg">
+            <div class="card-header text-white" style="background-color: #0e4532;">
+                <h2 class="mb-0">{{ vehiculo.marca }} {{ vehiculo.modelo }} (Patente: {{ vehiculo.patente }})</h2>
+            </div>
+            <div class="card-body">
+                <p><strong>Año:</strong> {{ vehiculo.año }}</p>
+                <p><strong>Precio por día:</strong> ${{ vehiculo.precio_por_dia|floatformat:2 }}</p>
+                <p><strong>Ubicación:</strong> {{ vehiculo.sucursal_actual.nombre }} ({{ vehiculo.sucursal_actual.direccion }})</p>
+                <p><strong>Estado:</strong>
+                    {% if vehiculo.disponible %}
+                        <span class="text-success">Disponible</span>
+                    {% else %}
+                        <span class="text-danger">No Disponible</span>
+                    {% endif %}
+                </p>
 
-    <p><strong>Año:</strong> {{ vehiculo.año }}</p>
-    <p><strong>Precio por día:</strong> ${{ vehiculo.precio_por_dia|floatformat:2 }}</p>
-    <p><strong>Ubicación:</strong> {{ vehiculo.sucursal_actual.nombre }} ({{ vehiculo.sucursal_actual.direccion }})</p>
-    <p><strong>Estado:</strong> {% if vehiculo.disponible %}Disponible{% else %}No Disponible{% endif %}</p>
+                {% if vehiculo.disponible %}
+                    <a href="{% url 'reservas:crear_reserva' vehiculo.id %}" class="btn text-white mt-3" style="background-color: #0e4532;">
+                        Reservar Este Vehículo
+                    </a>
+                {% else %}
+                    <p class="text-danger mt-3">Este vehículo no está disponible para reserva en este momento.</p>
+                {% endif %}
 
-    {% if vehiculo.disponible %}
-        <a href="{% url 'reservas:crear_reserva' vehiculo.id %}" class="btn btn-primary">Reservar Este Vehículo</a>
-    {% else %}
-        <p class="text-danger">Este vehículo no está disponible para reserva en este momento.</p>
-    {% endif %}
+                <hr>
 
-    <p><a href="{% url 'sucursales:vehiculos_por_sucursal' vehiculo.sucursal_actual.id %}">Volver a los vehículos de {{ vehiculo.sucursal_actual.nombre }}</a></p>
-    <p><a href="{% url 'sucursales:lista_sucursales' %}">Ver todas las sucursales</a></p>
-{% endblock content %}
+                <p>
+                    <a href="{% url 'sucursales:vehiculos_por_sucursal' vehiculo.sucursal_actual.id %}" class="text-decoration-none">
+                        ← Volver a los vehículos de {{ vehiculo.sucursal_actual.nombre }}
+                    </a>
+                </p>
+                <p>
+                    <a href="{% url 'sucursales:lista_sucursales' %}" class="text-decoration-none">
+                        ← Ver todas las sucursales
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

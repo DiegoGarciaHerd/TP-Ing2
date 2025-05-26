@@ -1,29 +1,38 @@
-{% extends 'base.html' %} {# Esto le dice a Django que use el template base.html como esqueleto #}
+{% extends 'home/base.html' %}
 
-{% block title %}Nuestras Sucursales{% endblock %} {# Define el título de la página para este template #}
+{% block title %}Nuestras Sucursales - Autorental{% endblock %}
 
-{% block content %} {# Aquí es donde se insertará el contenido específico de esta página #}
-    <h1>Nuestras Sucursales</h1>
-
-    {% if sucursales %} {# Verifica si la variable 'sucursales' (pasada desde la vista) tiene elementos #}
-        <ul style="list-style-type: none; padding: 0;"> {# Elimina los puntos de la lista y el padding predeterminado #}
-            {% for sucursal in sucursales %} {# Itera sobre cada objeto Sucursal en la lista 'sucursales' #}
-                <li style="border: 1px solid #ddd; margin-bottom: 10px; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                    <h2>
-                        {# Enlace al listado de vehículos de esta sucursal #}
-                        <a href="{% url 'sucursales:vehiculos_por_sucursal' sucursal.id %}" style="text-decoration: none; color: #007bff;">
-                            {{ sucursal.nombre }}
-                        </a>
-                    </h2>
-                    <p style="color: #555;">{{ sucursal.direccion }}</p>
-                    <p style="color: #555;">Teléfono: {{ sucursal.telefono }}</p>
-                    <a href="{% url 'sucursales:vehiculos_por_sucursal' sucursal.id %}" class="btn btn-primary">Ver Vehículos en esta Sucursal</a>
-                </li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        {# Este mensaje se mostrará si no hay sucursales disponibles (por ejemplo, si no has añadido ninguna en el admin) #}
-        <p>No hay sucursales disponibles en este momento.</p>
-        <p>Por favor, añade algunas sucursales desde el <a href="{% url 'admin:index' %}">panel de administración</a>.</p>
-    {% endif %}
-{% endblock content %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card shadow-lg">
+            <div class="card-header text-white" style="background-color: #0e4532;">
+                <h2 class="mb-0">Nuestras Sucursales</h2>
+            </div>
+            <div class="card-body">
+                {% if sucursales %}
+                    <ul class="list-unstyled">
+                        {% for sucursal in sucursales %}
+                            <li class="mb-4 p-3 border rounded shadow-sm">
+                                <h4>
+                                    <a href="{% url 'sucursales:vehiculos_por_sucursal' sucursal.id %}" class="text-decoration-none text-primary">
+                                        {{ sucursal.nombre }}
+                                    </a>
+                                </h4>
+                                <p class="text-muted mb-1">{{ sucursal.direccion }}</p>
+                                <p class="text-muted">Teléfono: {{ sucursal.telefono }}</p>
+                                <a href="{% url 'sucursales:vehiculos_por_sucursal' sucursal.id %}" class="btn btn-sm text-white" style="background-color: #0e4532;">
+                                    Ver Vehículos en esta Sucursal
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p>No hay sucursales disponibles en este momento.</p>
+                    <p>Por favor, añade algunas desde el <a href="{% url 'admin:index' %}">panel de administración</a>.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
