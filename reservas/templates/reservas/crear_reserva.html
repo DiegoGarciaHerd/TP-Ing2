@@ -1,15 +1,42 @@
-{% extends 'base.html' %}
+{% extends 'home/base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block title %}Reservar {{ vehiculo.marca }} {{ vehiculo.modelo }}{% endblock %}
 
 {% block content %}
-    <h1>Reservar {{ vehiculo.marca }} {{ vehiculo.modelo }} (Patente: {{ vehiculo.patente }})</h1>
-
-    <p>Precio por día: <strong>${{ vehiculo.precio_por_dia|floatformat:2 }}</strong></p>
-
-    <form method="post">
-        {% csrf_token %} {# Token de seguridad requerido por Django #}
-        {{ form.as_p }} {# Renderiza los campos del formulario como párrafos #}
-        <button type="submit" class="btn btn-primary">Confirmar Reserva</button>
-    </form>
-
-    <p><a href="{% url 'sucursales:vehiculo_detail' vehiculo.id %}">Volver al detalle del vehículo</a></p>
-{% endblock content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg">
+                <div class="card-header text-white" style="background-color: #0e4532;">
+                    <h2 class="mb-0">Reservar {{ vehiculo.marca }} {{ vehiculo.modelo }}</h2>
+                </div>
+                <div class="card-body">
+                    <p class="lead">Patente: {{ vehiculo.patente }}</p>
+                    <p class="lead">Precio por día: <strong>${{ vehiculo.precio_por_dia|floatformat:2 }}</strong></p>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        {% for field in form %}
+                            <div class="form-group mb-3">
+                                {{ field.label_tag }}
+                                {{ field.errors }}
+                                {{ field|add_class:"form-control" }}
+                                {% if field.help_text %}
+                                    <small class="form-text text-muted">{{ field.help_text }}</small>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-lg text-white" style="background-color: #0e4532;">
+                                Confirmar Reserva
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

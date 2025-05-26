@@ -76,13 +76,21 @@ def crear_reserva(request, vehiculo_id):
 @login_required
 def mis_reservas(request):
     reservas = Reserva.objects.filter(cliente=request.user).order_by('-fecha_creacion')
-    return render(request, 'reservas/mis_reservas.html', {'reservas': reservas})
+    context = {
+        'reservas': reservas,
+        'today': datetime.date.today()
+    }
+    return render(request, 'reservas/mis_reservas.html', context)
 
 
 @login_required
 def detalle_reserva(request, reserva_id):
     reserva = get_object_or_404(Reserva, pk=reserva_id, cliente=request.user)
-    return render(request, 'reservas/detalle_reserva.html', {'reserva': reserva})
+    context = {
+        'reserva': reserva,
+        'today': datetime.date.today()
+    }
+    return render(request, 'reservas/detalle_reserva.html', context)
 
 
 @login_required
@@ -93,10 +101,12 @@ def cancelar_reserva(request, reserva_id):
         if request.method == 'POST':
             reserva.estado = 'CANCELADA'
             reserva.save()
-
-            messages.success(request, 'Reserva cancelada exitosamente.')
             return redirect('reservas:mis_reservas')
-        return render(request, 'reservas/confirmar_cancelacion.html', {'reserva': reserva})
+        context = {
+            'reserva': reserva,
+            'today': datetime.date.today()
+        }
+        return render(request, 'reservas/confirmar_cancelacion.html', context)
     else:
         messages.error(request, 'No se puede cancelar esta reserva.')
         return redirect('reservas:mis_reservas')
