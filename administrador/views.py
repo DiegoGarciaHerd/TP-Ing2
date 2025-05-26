@@ -16,7 +16,7 @@ from django.utils import timezone
 from datetime import timedelta
 from django.http import HttpResponse
 from vehiculos.models import Vehiculo
-from empleados.models import Sucursal
+from empleados.models import Empleado
 
 
 def generate_2fa_code():
@@ -136,6 +136,9 @@ def admin_required(view_func):
 def admin_menu(request):
     return render(request, 'administrador/menu_admin.html')
 
+#---------------------------------AUTOS---------------------------------
+#-----------------------------------------------------------------------
+
 def cargar_autos(request):
     if request.method == 'POST':
         marca = request.POST.get('marca')
@@ -161,6 +164,25 @@ def cargar_autos(request):
         return redirect('admin_menu')
     return render(request, 'administrador/cargar_autos.html')
 
+def borrar_autos(request):
+    if request.method == 'POST':
+        patente = request.POST.get('patente')
+        
+        try:
+            vehiculo = Vehiculo.objects.get(patente=patente)
+            vehiculo.delete()
+            messages.success(request, "Auto borrado exitosamente")
+        except Vehiculo.DoesNotExist:
+            messages.error(request, "El auto a borrar no existe")
+        except Exception as e:
+            messages.error(request, f"Error al borrar el auto: {e}")
+            return render(request, 'administrador/borrar_autos.html')
+        return redirect('admin_menu')   
+    return render(request, 'administrador/borrar_autos.html')
+
+#---------------------------------EMPLEADOS-----------------------------
+#-----------------------------------------------------------------------
+
 def cargar_empleados(request):
     if request.method == 'POST':
         nombre = request.POST.get('nombre')
@@ -168,7 +190,7 @@ def cargar_empleados(request):
         telefono = request.POST.get('telefono')
         
         try:
-            Sucursal.objects.create(
+            Empleado.objects.create(
                 nombre=nombre,
                 direccion=direccion,
                 telefono=telefono
