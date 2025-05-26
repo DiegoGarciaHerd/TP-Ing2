@@ -10,6 +10,22 @@
                 <label for="patente">Patente: </label>
                 <input type="text" id="patente" name="patente" required/>
             </li>
+            <li>
+                <label for="precio">Precio Por Día: </label>
+                <input type="text" id="precio" name="precio"/>
+            </li>
+            <li>
+                <label for="reembolso">Política de Reembolso: </label>
+                <select id="politica_reembolso" name="politica_reembolso">
+                    <option value="0%" selected>0%</option>
+                    <option value="20%">20%</option>
+                    <option value="100%">100%</option>
+                </select>
+            </li>
+            <li>
+                <input type="file" id="foto" accept="image/*"/>
+                <input type="hidden" id="foto_base64" name="foto_base64">
+            </li>
         </ul>
         <button type="submit">Guardar cambios del vehículo</button>
 </html>

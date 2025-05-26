@@ -185,6 +185,32 @@ def borrar_autos(request):
     return render(request, 'administrador/borrar_autos.html')
 
 def modificar_autos(request):
+    if request.method == 'POST':
+        patente = request.POST.get('patente')
+
+        try:
+            vehiculo = Vehiculo.objects.get(patente=patente)
+
+            precio = request.POST.get('precio')
+            if precio:
+                vehiculo.precio_por_dia = precio
+            
+            reembolso = request.POST.get('politica_reembolso')
+            if reembolso:
+                vehiculo.reembolso = reembolso
+
+            vehiculo.save()
+            messages.success(request, "Autos modificados exitosamente")
+            return redirect('admin_menu')  # Redirigir a la página de menú si se envía el formulario
+
+        except Vehiculo.DoesNotExist:
+            messages.error(request, "El auto a modificar no existe")
+            return render(request, 'administrador/modificar_autos.html')
+        
+        except Exception as e:
+            messages.error(request, f"Error al modificar el auto: {e}")
+            return render(request, 'administrador/modificar_autos.html')
+
     return render(request, 'administrador/modificar_autos.html')
 
 #---------------------------------EMPLEADOS-----------------------------
