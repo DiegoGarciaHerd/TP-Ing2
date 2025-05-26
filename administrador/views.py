@@ -184,6 +184,9 @@ def borrar_autos(request):
         return redirect('admin_menu')   
     return render(request, 'administrador/borrar_autos.html')
 
+def modificar_autos(request):
+    return render(request, 'administrador/modificar_autos.html')
+
 #---------------------------------EMPLEADOS-----------------------------
 #-----------------------------------------------------------------------
 
