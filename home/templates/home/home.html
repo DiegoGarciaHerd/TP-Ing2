@@ -75,40 +75,47 @@
                 }
             </style>
             <fieldset class="menu-reservas">
-                <div class="form-group" style="justify-content: flex-start;">
-                    <input type="checkbox" id="misma_sucursal" name="misma_sucursal" checked style="margin-right: 10px;">
-                    <label for="misma_sucursal">Misma sucursal de retiro y devolución</label>
-                </div>
-                <div class="form-group">
-                    <label>Sucursal de retiro</label>
-                    <select id="sucursal_retiro" name="sucursal_retiro" class="form-select">
-                        <option value="">Seleccione una sucursal</option>
-                        {% for sucursal in sucursales %}
-                            <option value="{{ sucursal.id }}">{{ sucursal.nombre }} - {{ sucursal.direccion }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                
-                <div class="form-group" id="sucursal_devolucion_group" style="display: none;">
-                    <label>Sucursal de devolución</label>
-                    <select id="sucursal_devolucion" name="sucursal_devolucion" class="form-select">
-                        <option value="">Seleccione una sucursal</option>
-                        {% for sucursal in sucursales %}
-                            <option value="{{ sucursal.id }}">{{ sucursal.nombre }} - {{ sucursal.direccion }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Fecha de Retiro</label>
-                    <input type="date" id="fechaRetiro" required>
-                </div>
-                <div class="form-group">
-                    <label>Fecha de Entrega</label>
-                    <input type="date" id="fechaEntrega" required>
-                </div>
-                <div class="form-group">
-                    <input type="submit" value="Continuar" class="btn btn-primary">
-                </div>
+                <form method="POST" action="{% url 'home:buscar_vehiculos' %}">
+                    {% csrf_token %}
+                    <div class="form-group" style="justify-content: flex-start;">
+                        <input type="checkbox" id="misma_sucursal" name="misma_sucursal" checked style="margin-right: 10px;">
+                        <label for="misma_sucursal">Misma sucursal de retiro y devolución</label>
+                    </div>
+                    <div class="form-group">
+                        <label>Sucursal de retiro</label>
+                        <select id="sucursal_retiro" name="sucursal_retiro" class="form-select" required>
+                            <option value="">Seleccione una sucursal</option>
+                            {% for sucursal in sucursales %}
+                                <option value="{{ sucursal.id }}" {% if sucursal.id|stringformat:"i" == sucursal_seleccionada %}selected{% endif %}>
+                                    {{ sucursal.nombre }} - {{ sucursal.direccion }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group" id="sucursal_devolucion_group" style="display: none;">
+                        <label>Sucursal de devolución</label>
+                        <select id="sucursal_devolucion" name="sucursal_devolucion" class="form-select">
+                            <option value="">Seleccione una sucursal</option>
+                            {% for sucursal in sucursales %}
+                                <option value="{{ sucursal.id }}" {% if sucursal.id|stringformat:"i" == sucursal_seleccionada %}selected{% endif %}>
+                                    {{ sucursal.nombre }} - {{ sucursal.direccion }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Fecha de Retiro</label>
+                        <input type="date" id="fechaRetiro" name="fecha_retiro" value="{{ fecha_retiro|date:'Y-m-d' }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Fecha de Entrega</label>
+                        <input type="date" id="fechaEntrega" name="fecha_entrega" value="{{ fecha_entrega|date:'Y-m-d' }}" required>
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary">Buscar Vehículos Disponibles</button>
+                    </div>
+                </form>
             </fieldset>
 
             <script>
@@ -156,17 +163,31 @@
     </div>
 
     <div class="lista autos fondo">
-        <h3>Aca van los autitos</h3>
-        <div>
-            <img src="https://www.lanacion.com.ar/resizer/v2/la-inteligencia-artificial-permite-responder-como-LYMN7QJ2I5DCZJNBEDYBWMFQ4Q.png?auth=ff8e437f74ae11675af7a411c15a2b4fb828801c568dcc0888de8fa79b4042c3&width=880&height=586&quality=70&smart=true" alt="Fiat Duna" class="auto-imagen">
-
-            <img src="https://tn.com.ar/resizer/v2/desde-su-llegada-a-argentina-en-1958-el-fiat-600-ha-pasado-por-diversas-transformaciones-adaptandose-a-las-necesidades-del-mercado-y-los-gustos-de-los-conductores-foto-wikipedia-RVBZ27PSSBGZLH4RRDHER7PO2A.jpg?auth=0f6cc52aff583ddc2cb366366d0c6bae674681b89b5993c4d9fa4f377825142d&width=1440" alt="Fitito" class="auto-imagen">
-
-            <img src="https://tn.com.ar/resizer/v2/un-ford-falcon-argentino-en-alemania-foto-foto-motorioustv-DDG63OO4WNGMHKD3ISKAKKTK7U.jpg?auth=e6443dba46f1d0fa08ff6992dc83ebba0afe9310090e2a36341c2d5f337f54f2&width=1440" alt="Falcon" class="auto-imagen">
-
-            <img src="https://autotest.com.ar/wp-content/uploads/2024/11/Peugeot-504-1994-perfil.jpg" alt="Peugeot 504" class="auto-imagen">
-
-            <img src="https://www.lavoz.com.ar/resizer/v2/H5RRRRFMBJBUPOYFGS65VUFT4E.gif?auth=0c2877157ca17f3f7a2796036961589d0a72bb0090f688d413cdf49b6a4863fd&quality=75&smart=true&width=980&height=551" alt="Camaro Z11" class="auto-imagen">
-        </div>
+        {% if vehiculos_disponibles %}
+            <h3>Vehículos Disponibles</h3>
+            <div class="row">
+                {% for vehiculo in vehiculos_disponibles %}
+                    <div class="col-md-4 mb-4">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ vehiculo.marca }} {{ vehiculo.modelo }}</h5>
+                                <p class="card-text">
+                                    <strong>Año:</strong> {{ vehiculo.año }}<br>
+                                    <strong>Patente:</strong> {{ vehiculo.patente }}<br>
+                                    <strong>Precio por día:</strong> ${{ vehiculo.precio_por_dia|floatformat:2 }}<br>
+                                    <strong>Ubicación:</strong> {{ vehiculo.sucursal_actual.nombre }}
+                                </p>
+                                <a href="{% url 'reservas:crear_reserva' vehiculo.id %}?fecha_retiro={{ fecha_retiro }}&fecha_entrega={{ fecha_entrega }}" 
+                                   class="btn btn-primary">Reservar este vehículo</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            {% if request.method == 'POST' %}
+                <h3>No hay vehículos disponibles para los criterios seleccionados</h3>
+            {% endif %}
+        {% endif %}
     </div>
 {% endblock %}
