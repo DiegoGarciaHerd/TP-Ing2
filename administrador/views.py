@@ -147,6 +147,10 @@ def cargar_autos(request):
         patente = request.POST.get('patente')
         precio_por_dia = request.POST.get('precio')
 
+        if Vehiculo.objects.filter(patente=patente).exists():
+            messages.error(request, "Ya existe un vehículo con esa patente.")
+            return render(request, 'administrador/cargar_autos.html')
+
         try:
             Vehiculo.objects.create(
                 marca=marca,
