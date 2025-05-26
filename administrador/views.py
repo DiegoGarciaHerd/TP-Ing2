@@ -16,6 +16,7 @@ from django.utils import timezone
 from datetime import timedelta
 from django.http import HttpResponse
 from vehiculos.models import Vehiculo
+from empleados.models import Sucursal
 
 
 def generate_2fa_code():
@@ -162,7 +163,19 @@ def cargar_autos(request):
 
 def cargar_empleados(request):
     if request.method == 'POST':
+        nombre = request.POST.get('nombre')
+        direccion = request.POST.get('direccion')
+        telefono = request.POST.get('telefono')
         
-        messages.success(request, "Empleados cargados exitosamente")
+        try:
+            Sucursal.objects.create(
+                nombre=nombre,
+                direccion=direccion,
+                telefono=telefono
+            )
+            messages.success(request, "Empleados cargados exitosamente")
+        except Exception as e:
+            messages.error(request, f"Error al cargar el empleado: {e}")
+            return render(request, 'administrador/cargar_empleados.html')
         return redirect('admin_menu')
     return render(request, 'administrador/cargar_empleados.html')

@@ -8,20 +8,20 @@
         {% csrf_token %}
         <ul>
             <li>
-            <label for="patente">Nombre: </label>
-            <input type="text" id="patente" required/>
+            <label for="nombre">Nombre: </label>
+            <input type="text" id="nombre" name="nombre" required/>
             </li>
             <li>
-            <label for="marca">Apellido: </label>
-            <input type="text" id="marca" required/>
+            <label for="sucursal">Sucursal: </label>
+            <input type="text" id="sucursal" nombre="sucursal" required/>
             </li>
             <li>
-            <label for="modelo">Sucursal: </label>
-            <input type="text" id="mdoelo" required/>
+            <label for="direccion">Direccion: </label>
+            <input type="text" id="direccion" nombre="direccion" required/>
             </li>
             <li>
-            <label for="categoria">Correo: </label>
-            <input type="text" id="categoria" required/>
+            <label for="telefono">Telefono: </label>
+            <input type="text" id="telefono" nombre="telefono" required/>
             </li>
         </ul>
         <button type="submit">Ingresar datos</button>
