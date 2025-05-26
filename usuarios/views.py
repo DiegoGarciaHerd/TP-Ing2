@@ -17,7 +17,7 @@ def registro(request):
         if form.is_valid():
             form.save()
             messages.success(request, '¡Te has registrado correctamente! Ya puedes acceder a tu cuenta.')
-            return redirect('home')
+            return redirect('home:home')
     else:
         form = RegistroForm()
     return render(request, 'usuarios/registro.html', {'form': form})
@@ -35,7 +35,7 @@ def login_view(request):
             if user is not None:
                 login(request, user)
                 messages.success(request, f'¡Bienvenido/a {user.get_full_name() or user.email}! Has iniciado sesión correctamente.')
-                return redirect('home')
+                return redirect('home:home')
         else:
             print(f"Formulario inválido - Errores: {form.errors}")  # Mensaje de depuración
             messages.error(request, 'El correo electrónico y/o contraseña ingresados no se corresponden con ninguna cuenta existente.')
