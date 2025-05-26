@@ -11,6 +11,13 @@
                 <h2 class="mb-0">Iniciar Sesión</h2>
             </div>
             <div class="card-body">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
                 <form method="post">
                     {% csrf_token %}
                     {% for field in form %}
@@ -28,7 +35,7 @@
                     </div>
                 </form>
                 <div class="mt-3 text-center">
-                    <p>¿No tienes una cuenta? <a href="{% url 'registro' %}">Regístrate</a></p>
+                    <p><a href="{% url 'recuperar_password' %}">¿Olvidaste tu contraseña?</a></p>
                 </div>
             </div>
         </div>

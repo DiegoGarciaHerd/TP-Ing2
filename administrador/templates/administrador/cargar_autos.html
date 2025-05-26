@@ -1,0 +1,76 @@
+{% extends 'home/base.html' %}
+{% block content %}
+<!DOCTYPE html>
+<html>
+
+<body>
+    <h1>Ingrese los datos del nuevo vehículo</h1>
+    <form method ="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+      <ul>
+        <li>
+          <label for="patente">Patente: </label>
+          <input type="text" id="patente" name="patente" required/>
+        </li>
+        <li>
+          <label for="marca">Marca: </label>
+          <input type="text" id="marca" name="marca" required/>
+        </li>
+        <li>
+          <label for="modelo">Modelo: </label>
+          <input type="text" id="modelo" name="modelo" required/>
+        </li>
+        <li>
+          <label for="año">Año: </label>
+          <input type="text" id="año" name="año" required/>
+        </li>
+        <li>
+          <label for="categoria">Categoría: </label>
+          <input type="text" id="categoria" name="categoria" required/>
+        </li>
+        <li>
+          <label for="capacidad">Capacidad de Personas: </label>
+          <input type="number" id="capacidad" name="capacidad" required/>
+        </li>
+        <li>
+          <label for="kilometraje">Kilometraje: </label>
+          <input type="number" id="kilometraje" name="kilometraje" required/>
+        </li>
+        <li>
+          <label for="precio">Precio Por Día: </label>
+          <input type="number" id="precio" name="precio" required/>
+        </li>
+        <li>
+          <label for="reembolso">Política de Reembolso: </label>
+          <select id="politica_reembolso" name="politica_reembolso">
+            <option value="0%" selected>0%</option>
+            <option value="20%">20%</option>
+            <option value="100%">100%</option>
+          </select>
+        </li>
+        <li>
+          <label for="foto">Foto del Vehículo: </label>
+          <input type="file" id="foto" accept="image/*" required/>
+          <input type="hidden" id="foto_base64" name="foto_base64">
+        </li>
+      </ul>
+      <button type="submit">Ingresar datos</button>
+    </form>
+
+    <script>
+      const fileInput = document.getElementById('foto');
+      fileInput.addEventListener('change', function () {
+        const file = this.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function () {
+            const base64String = reader.result.split(',')[1];
+            console.log(base64String); // Acá podés mandarlo a un input oculto o al servidor
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    </script>
+</body>
+</html>
+{% endblock %}

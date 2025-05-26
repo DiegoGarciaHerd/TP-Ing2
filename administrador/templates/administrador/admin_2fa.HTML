@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        .code-container {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .verification-code {
+            font-size: 28px;
+            letter-spacing: 5px;
+            color: #2c3e50;
+            font-weight: bold;
+        }
+        .note {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Verificación de Dos Pasos</h2>
+    <p>Hola {{ user.first_name }},</p>
+    <p>Para completar el acceso al panel administrativo, ingresa este código:</p>
+    
+    <div class="code-container">
+        <div class="verification-code">{{ code }}</div>
+    </div>
+    
+    <p class="note">Este código es válido por {{ expiry_minutes }} minutos.</p>
+    <p>Si no solicitaste este acceso, por favor ignora este mensaje.</p>
+</body>
+</html>
