@@ -46,7 +46,7 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     messages.success(request, 'Has cerrado sesión correctamente.')
-    return redirect('home')
+    return redirect('home:home')
 
 @login_required
 def editar_perfil(request):

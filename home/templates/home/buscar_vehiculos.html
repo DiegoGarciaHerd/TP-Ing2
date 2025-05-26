@@ -4,72 +4,90 @@
 {% block title %}Buscar Vehículos{% endblock %}
 
 {% block content %}
+<style>
+    .sucursal-devolucion-hidden {
+        display: none;
+    }
+    .sucursal-devolucion-visible {
+        display: block;
+    }
+</style>
+
 <div class="container">
-    <h2 class="mb-4">Buscar Vehículos Disponibles</h2>
-    
+    <div class="row justify-content-center mb-5">
+        <div class="col-md-8">
+            <div class="card shadow-lg">
+                <div class="card-header text-white" style="background-color: #0e4532;">
+                    <h2 class="mb-0 text-center">Buscar Vehículos Disponibles</h2>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{% url 'home:buscar_vehiculos' %}">
+                        {% csrf_token %}
+                        <div class="form-group mb-3" style="display: flex; align-items: center;">
+                            <input type="checkbox" id="misma_sucursal" name="misma_sucursal" 
+                                   {% if misma_sucursal %}checked{% endif %} style="margin-right: 10px;">
+                            <label for="misma_sucursal" class="mb-0">Misma sucursal de retiro y devolución</label>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label for="sucursal_retiro" class="form-label">Sucursal de retiro</label>
+                            <select id="sucursal_retiro" name="sucursal_retiro" class="form-select" required>
+                                <option value="">Seleccione una sucursal</option>
+                                {% for sucursal in sucursales %}
+                                    <option value="{{ sucursal.id }}" 
+                                            {% if sucursal.id|stringformat:"i" == sucursal_seleccionada %}selected{% endif %}>
+                                        {{ sucursal.nombre }} - {{ sucursal.direccion }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="form-group mb-3 {% if misma_sucursal %}sucursal-devolucion-hidden{% else %}sucursal-devolucion-visible{% endif %}" id="sucursal_devolucion_group">
+                            <label for="sucursal_devolucion" class="form-label">Sucursal de devolución</label>
+                            <select id="sucursal_devolucion" name="sucursal_devolucion" class="form-select">
+                                <option value="">Seleccione una sucursal</option>
+                                {% for sucursal in sucursales %}
+                                    <option value="{{ sucursal.id }}" 
+                                            {% if sucursal.id|stringformat:"i" == sucursal_devolucion_seleccionada %}selected{% endif %}>
+                                        {{ sucursal.nombre }} - {{ sucursal.direccion }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="fechaRetiro" class="form-label">Fecha de Retiro</label>
+                                    <input type="date" id="fechaRetiro" name="fecha_retiro" class="form-control" 
+                                           value="{{ fecha_retiro|date:'Y-m-d' }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="fechaEntrega" class="form-label">Fecha de Entrega</label>
+                                    <input type="date" id="fechaEntrega" name="fecha_entrega" class="form-control" 
+                                           value="{{ fecha_entrega|date:'Y-m-d' }}" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-lg text-white" style="background-color: #0e4532;">
+                                Buscar Vehículos
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     {% if error %}
     <div class="alert alert-danger" role="alert">
         {{ error }}
     </div>
     {% endif %}
-
-    <div class="card shadow-lg mb-4">
-        <div class="card-body">
-            <form method="POST" action="{% url 'home:buscar_vehiculos' %}">
-                {% csrf_token %}
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <div class="form-check mb-3">
-                            <input type="checkbox" class="form-check-input" id="misma_sucursal" name="misma_sucursal" checked>
-                            <label class="form-check-label" for="misma_sucursal">Misma sucursal de retiro y devolución</label>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="sucursal_retiro" class="form-label">Sucursal de retiro</label>
-                            <select id="sucursal_retiro" name="sucursal_retiro" class="form-select" required>
-                                <option value="">Seleccione una sucursal</option>
-                                {% for sucursal in sucursales %}
-                                    <option value="{{ sucursal.id }}" {% if sucursal.id|stringformat:"i" == sucursal_seleccionada %}selected{% endif %}>
-                                        {{ sucursal.nombre }} - {{ sucursal.direccion }}
-                                    </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-
-                        <div class="mb-3" id="sucursal_devolucion_group" style="display: none;">
-                            <label for="sucursal_devolucion" class="form-label">Sucursal de devolución</label>
-                            <select id="sucursal_devolucion" name="sucursal_devolucion" class="form-select">
-                                <option value="">Seleccione una sucursal</option>
-                                {% for sucursal in sucursales %}
-                                    <option value="{{ sucursal.id }}" {% if sucursal.id|stringformat:"i" == sucursal_seleccionada %}selected{% endif %}>
-                                        {{ sucursal.nombre }} - {{ sucursal.direccion }}
-                                    </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label for="fechaRetiro" class="form-label">Fecha de Retiro</label>
-                            <input type="date" class="form-control" id="fechaRetiro" name="fecha_retiro" 
-                                   value="{{ fecha_retiro|date:'Y-m-d' }}" required>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="fechaEntrega" class="form-label">Fecha de Entrega</label>
-                            <input type="date" class="form-control" id="fechaEntrega" name="fecha_entrega" 
-                                   value="{{ fecha_entrega|date:'Y-m-d' }}" required>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="text-center mt-3">
-                    <button type="submit" class="btn btn-primary btn-lg">Buscar Vehículos Disponibles</button>
-                </div>
-            </form>
-        </div>
-    </div>
 
     {% if vehiculos_disponibles %}
         <h3 class="mb-4">Vehículos Disponibles</h3>
@@ -85,7 +103,7 @@
                                 <strong>Precio por día:</strong> ${{ vehiculo.precio_por_dia|floatformat:2 }}<br>
                                 <strong>Ubicación:</strong> {{ vehiculo.sucursal_actual.nombre }}
                             </p>
-                            <a href="{% url 'reservas:crear_reserva' vehiculo.id %}?fecha_retiro={{ fecha_retiro }}&fecha_entrega={{ fecha_entrega }}" 
+                            <a href="{% url 'reservas:crear_reserva' vehiculo.id %}?fecha_retiro={{ fecha_retiro|date:'Y-m-d' }}&fecha_entrega={{ fecha_entrega|date:'Y-m-d' }}" 
                                class="btn btn-primary w-100">Reservar este vehículo</a>
                         </div>
                     </div>
@@ -124,10 +142,12 @@
     // Manejo de sucursal de devolución
     mismaSucursal.addEventListener('change', function() {
         if (this.checked) {
-            sucursalDevolucionGroup.style.display = 'none';
+            sucursalDevolucionGroup.classList.remove('sucursal-devolucion-visible');
+            sucursalDevolucionGroup.classList.add('sucursal-devolucion-hidden');
             sucursalDevolucion.value = sucursalRetiro.value;
         } else {
-            sucursalDevolucionGroup.style.display = 'block';
+            sucursalDevolucionGroup.classList.remove('sucursal-devolucion-hidden');
+            sucursalDevolucionGroup.classList.add('sucursal-devolucion-visible');
         }
     });
 
