@@ -9,6 +9,8 @@ class Vehiculo(models.Model):
     precio_por_dia = models.DecimalField(max_digits=10, decimal_places=2)
     sucursal_actual = models.ForeignKey(Sucursal, on_delete=models.CASCADE, related_name='vehiculos_en_sucursal')
     disponible = models.BooleanField(default=True)
+    foto_base64 = models.TextField(blank=True, null=True)
+
     def __str__(self):
         return f"{self.marca} {self.modelo} ({self.patente})"
 
