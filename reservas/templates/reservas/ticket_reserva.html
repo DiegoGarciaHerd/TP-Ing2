@@ -1,0 +1,83 @@
+{% extends 'home/base.html' %}
+{% load static %}
+{% load reserva_filters %}
+
+{% block title %}Ticket de Reserva{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg">
+                <div class="card-header text-white" style="background-color: #0e4532;">
+                    <h2 class="mb-0 text-center">Ticket de Reserva</h2>
+                </div>
+                <div class="card-body">
+                    <div class="ticket-content" style="border: 2px dashed #0e4532; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                        <div class="text-center mb-4">
+                            <h3 style="color: #0e4532;">¡Reserva Generada!</h3>
+                            <p class="text-muted">Pendiente de Confirmación</p>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <h5 style="color: #0e4532;">Detalles del Vehículo</h5>
+                                <p><strong>Marca y Modelo:</strong> {{ reserva.vehiculo.marca }} {{ reserva.vehiculo.modelo }}</p>
+                                <p><strong>Patente:</strong> {{ reserva.vehiculo.patente }}</p>
+                                <p><strong>Precio por día:</strong> ${{ reserva.vehiculo.precio_por_dia|floatformat:2 }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 style="color: #0e4532;">Detalles de la Reserva</h5>
+                                <p><strong>Fecha y Hora de reserva:</strong> {% now "d/m/Y H:i" %}</p>
+                                <p><strong>Duración:</strong> {{ reserva.fecha_devolucion|dias_duracion:reserva.fecha_recogida }} día{% if reserva.fecha_devolucion|dias_duracion:reserva.fecha_recogida != 1 %}s{% endif %}</p>
+                            </div>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <h5 style="color: #0e4532;">Retiro del Vehículo</h5>
+                                <p><strong>Sucursal:</strong> {{ reserva.vehiculo.sucursal_actual.nombre }}</p>
+                                <p><strong>Dirección:</strong> {{ reserva.vehiculo.sucursal_actual.direccion }}</p>
+                                <p><strong>Fecha:</strong> {{ reserva.fecha_recogida|date:"d/m/Y" }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 style="color: #0e4532;">Devolución del Vehículo</h5>
+                                <p><strong>Sucursal:</strong> {{ reserva.vehiculo.sucursal_actual.nombre }}</p>
+                                <p><strong>Dirección:</strong> {{ reserva.vehiculo.sucursal_actual.direccion }}</p>
+                                <p><strong>Fecha:</strong> {{ reserva.fecha_devolucion|date:"d/m/Y" }}</p>
+                            </div>
+                        </div>
+
+                        <div class="text-center mb-4">
+                            <h4 style="color: #0e4532;">Costo Total</h4>
+                            <h3 class="text-success">${{ reserva.costo_total|floatformat:2 }}</h3>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <form method="post" action="{% url 'reservas:confirmar_reserva' vehiculo.id %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-lg btn-success w-100 mb-2">
+                                Aceptar la Reserva
+                            </button>
+                        </form>
+                        <a href="{% url 'home:home' %}" class="btn btn-lg btn-danger w-100">
+                            Cancelar la Reserva
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .ticket-content {
+        background-color: #f8f9fa;
+    }
+    .badge {
+        font-size: 0.9em;
+        padding: 0.5em 1em;
+    }
+</style>
+{% endblock %} 

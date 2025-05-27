@@ -177,7 +177,7 @@
                                     <strong>Precio por día:</strong> ${{ vehiculo.precio_por_dia|floatformat:2 }}<br>
                                     <strong>Ubicación:</strong> {{ vehiculo.sucursal_actual.nombre }}
                                 </p>
-                                <a href="{% url 'reservas:crear_reserva' vehiculo.id %}?fecha_retiro={{ fecha_retiro }}&fecha_entrega={{ fecha_entrega }}" 
+                                <a href="{% url 'reservas:crear_reserva' vehiculo.id %}?fecha_retiro={{ fecha_retiro|date:'Y-m-d' }}&fecha_entrega={{ fecha_entrega|date:'Y-m-d' }}" 
                                    class="btn btn-primary">Reservar este vehículo</a>
                             </div>
                         </div>

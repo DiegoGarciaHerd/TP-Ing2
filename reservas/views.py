@@ -50,26 +50,61 @@ def crear_reserva(request, vehiculo_id):
     if request.method == 'POST':
         form = ReservaForm(request.POST)
         if form.is_valid():
-            reserva = form.save(commit=False) 
-            reserva.cliente = request.user 
-            reserva.vehiculo = vehiculo
+            # Verificar disponibilidad sin guardar la reserva
+            fecha_recogida = form.cleaned_data['fecha_recogida']
+            fecha_devolucion = form.cleaned_data['fecha_devolucion']
 
             reservas_existentes = Reserva.objects.filter(
                 vehiculo=vehiculo,
-                fecha_recogida__lt=reserva.fecha_devolucion, 
-                fecha_devolucion__gt=reserva.fecha_recogida, 
+                fecha_recogida__lt=fecha_devolucion, 
+                fecha_devolucion__gt=fecha_recogida, 
                 estado__in=['PENDIENTE', 'CONFIRMADA'] 
-            ).exclude(pk=reserva.pk) 
+            )
 
             if reservas_existentes.exists():
                 messages.error(request, 'El vehículo ya está reservado para el período seleccionado. Por favor, elige otras fechas.')
                 return render(request, 'reservas/crear_reserva.html', {'form': form, 'vehiculo': vehiculo})
 
-            reserva.save() 
-            messages.success(request, '¡Reserva creada con éxito!')
-            return redirect('reservas:mis_reservas') 
+            # Calcular el costo total
+            dias = (fecha_devolucion - fecha_recogida).days
+            if dias > 0:
+                costo_total = dias * vehiculo.precio_por_dia
+            else:
+                costo_total = vehiculo.precio_por_dia  # Cobrar por un día si las fechas son iguales
+            
+            # Crear la reserva pero no guardarla aún
+            reserva = Reserva(
+                cliente=request.user,
+                vehiculo=vehiculo,
+                fecha_recogida=fecha_recogida,
+                fecha_devolucion=fecha_devolucion,
+                costo_total=costo_total,
+                estado='PENDIENTE'
+            )
+            
+            # Guardar temporalmente en la sesión
+            request.session['reserva_temporal'] = {
+                'vehiculo_id': vehiculo.id,
+                'fecha_recogida': fecha_recogida.isoformat(),
+                'fecha_devolucion': fecha_devolucion.isoformat(),
+                'costo_total': float(costo_total)
+            }
+            
+            # Redirigir al ticket virtual
+            return redirect('reservas:ticket_reserva', vehiculo_id=vehiculo.id)
     else:
-        form = ReservaForm()
+        # Inicializar el formulario con las fechas de la URL si están presentes
+        initial_data = {}
+        fecha_retiro = request.GET.get('fecha_retiro')
+        fecha_entrega = request.GET.get('fecha_entrega')
+        
+        if fecha_retiro:
+            initial_data['fecha_recogida'] = fecha_retiro
+        if fecha_entrega:
+            initial_data['fecha_devolucion'] = fecha_entrega
+            
+        form = ReservaForm(initial=initial_data)
+        
     return render(request, 'reservas/crear_reserva.html', {'form': form, 'vehiculo': vehiculo})
 
 
@@ -110,3 +145,69 @@ def cancelar_reserva(request, reserva_id):
     else:
         messages.error(request, 'No se puede cancelar esta reserva.')
         return redirect('reservas:mis_reservas')
+
+@login_required
+def ticket_reserva(request, vehiculo_id):
+    vehiculo = get_object_or_404(Vehiculo, pk=vehiculo_id)
+    reserva_temporal = request.session.get('reserva_temporal')
+    
+    if not reserva_temporal or reserva_temporal['vehiculo_id'] != vehiculo.id:
+        messages.error(request, 'No hay datos de reserva disponibles.')
+        return redirect('home:home')
+    
+    # Crear un objeto Reserva temporal para mostrar en el template
+    reserva = Reserva(
+        cliente=request.user,
+        vehiculo=vehiculo,
+        fecha_recogida=datetime.datetime.fromisoformat(reserva_temporal['fecha_recogida']).date(),
+        fecha_devolucion=datetime.datetime.fromisoformat(reserva_temporal['fecha_devolucion']).date(),
+        costo_total=reserva_temporal['costo_total'],
+        estado='PENDIENTE'
+    )
+    
+    return render(request, 'reservas/ticket_reserva.html', {'reserva': reserva, 'vehiculo': vehiculo})
+
+@login_required
+def confirmar_reserva(request, vehiculo_id):
+    vehiculo = get_object_or_404(Vehiculo, pk=vehiculo_id)
+    reserva_temporal = request.session.get('reserva_temporal')
+    
+    if not reserva_temporal or reserva_temporal['vehiculo_id'] != vehiculo.id:
+        messages.error(request, 'No hay datos de reserva disponibles.')
+        return redirect('home:home')
+    
+    if request.method == 'POST':
+        # Verificar disponibilidad una vez más antes de guardar
+        fecha_recogida = datetime.datetime.fromisoformat(reserva_temporal['fecha_recogida']).date()
+        fecha_devolucion = datetime.datetime.fromisoformat(reserva_temporal['fecha_devolucion']).date()
+        
+        reservas_existentes = Reserva.objects.filter(
+            vehiculo=vehiculo,
+            fecha_recogida__lt=fecha_devolucion, 
+            fecha_devolucion__gt=fecha_recogida, 
+            estado__in=['PENDIENTE', 'CONFIRMADA'] 
+        )
+        
+        if reservas_existentes.exists():
+            messages.error(request, 'El vehículo ya no está disponible para las fechas seleccionadas.')
+            return redirect('home:home')
+        
+        # Crear y guardar la reserva
+        reserva = Reserva(
+            cliente=request.user,
+            vehiculo=vehiculo,
+            fecha_recogida=fecha_recogida,
+            fecha_devolucion=fecha_devolucion,
+            costo_total=reserva_temporal['costo_total'],
+            estado='CONFIRMADA'
+        )
+        reserva.save()
+        
+        # Limpiar la sesión
+        del request.session['reserva_temporal']
+        
+        messages.success(request, '¡Reserva confirmada con éxito!')
+        return redirect('reservas:mis_reservas')
+    else:
+        messages.error(request, 'No se pudo confirmar la reserva.')
+        return redirect('home:home')
