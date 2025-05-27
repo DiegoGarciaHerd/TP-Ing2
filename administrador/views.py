@@ -146,6 +146,7 @@ def cargar_autos(request):
         año = request.POST.get('año')
         patente = request.POST.get('patente')
         precio_por_dia = request.POST.get('precio')
+        foto = request.POST.get('foto_base64')
 
         if Vehiculo.objects.filter(patente=patente).exists():
             messages.error(request, "Ya existe un vehículo con esa patente.")
@@ -159,7 +160,8 @@ def cargar_autos(request):
                 patente=patente,
                 precio_por_dia=precio_por_dia,
                 disponible=True,
-                sucursal_actual_id=1
+                sucursal_actual_id=1,
+                foto_base64=foto
             )
             messages.success(request, "Autos cargados exitosamente")
         except Exception as e:

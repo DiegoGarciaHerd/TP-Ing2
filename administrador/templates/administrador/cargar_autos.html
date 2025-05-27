@@ -59,13 +59,15 @@
 
     <script>
       const fileInput = document.getElementById('foto');
+      const base64Input = document.getElementById('foto_base64');
+
       fileInput.addEventListener('change', function () {
         const file = this.files[0];
         if (file) {
           const reader = new FileReader();
           reader.onload = function () {
             const base64String = reader.result.split(',')[1];
-            console.log(base64String); // Acá podés mandarlo a un input oculto o al servidor
+            base64Input.value = base64String; // Guardar en input oculto
           };
           reader.readAsDataURL(file);
         }
