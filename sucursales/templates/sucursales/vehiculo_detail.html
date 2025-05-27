@@ -10,16 +10,52 @@
                 <h2 class="mb-0">{{ vehiculo.marca }} {{ vehiculo.modelo }} (Patente: {{ vehiculo.patente }})</h2>
             </div>
             <div class="card-body">
-                <p><strong>Año:</strong> {{ vehiculo.año }}</p>
-                <p><strong>Precio por día:</strong> ${{ vehiculo.precio_por_dia|floatformat:2 }}</p>
-                <p><strong>Ubicación:</strong> {{ vehiculo.sucursal_actual.nombre }} ({{ vehiculo.sucursal_actual.direccion }})</p>
-                <p><strong>Estado:</strong>
-                    {% if vehiculo.disponible %}
-                        <span class="text-success">Disponible</span>
-                    {% else %}
-                        <span class="text-danger">No Disponible</span>
-                    {% endif %}
-                </p>
+                {% if vehiculo.foto_base64 %}
+                    <div class="text-center mb-4">
+                        <img src="data:image/jpeg;base64,{{ vehiculo.foto_base64 }}" 
+                             alt="{{ vehiculo.marca }} {{ vehiculo.modelo }}" 
+                             class="img-fluid rounded" 
+                             style="max-height: 400px; object-fit: contain;">
+                    </div>
+                {% else %}
+                    <div class="alert alert-info text-center mb-4">
+                        No hay foto disponible para este vehículo
+                    </div>
+                {% endif %}
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Año:</strong> {{ vehiculo.año }}</p>
+                        <p><strong>Precio por día:</strong> ${{ vehiculo.precio_por_dia|floatformat:2 }}</p>
+                        <p><strong>Ubicación:</strong> {{ vehiculo.sucursal_actual.nombre }} ({{ vehiculo.sucursal_actual.direccion }})</p>
+                        <p><strong>Estado:</strong>
+                            {% if vehiculo.disponible %}
+                                <span class="text-success">Disponible</span>
+                            {% else %}
+                                <span class="text-danger">No Disponible</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h5 class="card-title">Política de Reembolso</h5>
+                                <p class="card-text">
+                                    {% if vehiculo.politica_de_reembolso == '0' %}
+                                        <span class="text-danger">No se realizan reembolsos</span>
+                                    {% elif vehiculo.politica_de_reembolso == '20' %}
+                                        <span class="text-warning">Reembolso del 20% hasta 24 horas antes</span>
+                                    {% else %}
+                                        <span class="text-success">Reembolso del 100% hasta 48 horas antes</span>
+                                    {% endif %}
+                                </p>
+                                <small class="text-muted">
+                                    * La política de reembolso puede cambiar en el futuro.
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
                 {% if vehiculo.disponible %}
                     <a href="{% url 'reservas:crear_reserva' vehiculo.id %}" class="btn text-white mt-3" style="background-color: #0e4532;">
