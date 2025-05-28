@@ -221,6 +221,10 @@ def modificar_autos(request):
 
     return render(request, 'administrador/modificar_autos.html')
 
+def ver_autos(request):
+    vehiculos = Vehiculo.objects.all()
+    return render(request, 'administrador/ver_autos.html', {'vehiculos': vehiculos})
+
 #---------------------------------EMPLEADOS-----------------------------
 #-----------------------------------------------------------------------
 
