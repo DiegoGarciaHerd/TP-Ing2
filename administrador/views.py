@@ -147,6 +147,7 @@ def cargar_autos(request):
         patente = request.POST.get('patente')
         precio_por_dia = request.POST.get('precio')
         foto = request.POST.get('foto_base64')
+        politica = request.POST.get('politica_reembolso')
 
         if Vehiculo.objects.filter(patente=patente).exists():
             messages.error(request, "Ya existe un vehículo con esa patente.")
@@ -161,7 +162,8 @@ def cargar_autos(request):
                 precio_por_dia=precio_por_dia,
                 disponible=True,
                 sucursal_actual_id=1,
-                foto_base64=foto
+                foto_base64=foto,
+                politica_de_reembolso=politica
             )
             messages.success(request, "Autos cargados exitosamente")
         except Exception as e:
@@ -200,6 +202,10 @@ def modificar_autos(request):
             reembolso = request.POST.get('politica_reembolso')
             if reembolso:
                 vehiculo.reembolso = reembolso
+
+            politica = request.POST.get('politica_de_reembolso')
+            if politica and politica != "Sin elegir":
+                vehiculo.politica_de_reembolso = politica
 
             vehiculo.save()
             messages.success(request, "Autos modificados exitosamente")
