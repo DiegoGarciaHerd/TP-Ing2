@@ -190,6 +190,10 @@ def modificar_autos(request):
     # Obtener todos los vehículos para el selector
     vehiculos = Vehiculo.objects.all().order_by('patente')
     
+    # Formatear el precio_por_dia para cada vehículo
+    for vehiculo in vehiculos:
+        vehiculo.precio_por_dia = f"{float(vehiculo.precio_por_dia):.2f}"
+    
     if request.method == 'POST':
         patente = request.POST.get('patente')
         
