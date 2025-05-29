@@ -10,6 +10,9 @@ import string
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.conf import settings
+from django.contrib.auth import get_user_model
+
+Usuario = get_user_model()
 
 def registro(request):
     if request.method == 'POST':
@@ -23,24 +26,35 @@ def registro(request):
     return render(request, 'usuarios/registro.html', {'form': form})
 
 def login_view(request):
-    if request.user.is_authenticated and request.user.is_admin:
-        logout(request)
+    # Si el usuario ya está autenticado, redirigir al home
+    if request.user.is_authenticated:
+        return redirect('home:home')
+    
     if request.method == 'POST':
         form = AuthenticationForm(request, data=request.POST)
         if form.is_valid():
             username = form.cleaned_data.get('username')
             password = form.cleaned_data.get('password')
-            user = authenticate(username=username, password=password)
-            print(f"Intento de autenticación - Usuario: {username}, Autenticado: {user is not None}")  # Mensaje de depuración
+            user = authenticate(request, username=username, password=password)
+            
             if user is not None:
+                # Verificar si el usuario es admin o superuser
+                if user.is_admin or user.is_superuser:
+                    messages.error(request, 'Los administradores deben usar el panel de administración.')
+                    return redirect('login')
+                
+                # Si no es admin, permitir el login
                 login(request, user)
-                messages.success(request, f'¡Bienvenido/a {user.get_full_name() or user.email}! Has iniciado sesión correctamente.')
+                messages.success(request, f'¡Bienvenido/a {user.get_full_name() or user.email}!')
                 return redirect('home:home')
-        else:
-            print(f"Formulario inválido - Errores: {form.errors}")  # Mensaje de depuración
-            messages.error(request, 'El correo electrónico y/o contraseña ingresados no se corresponden con ninguna cuenta existente.')
+            
+        # Mensaje genérico para credenciales incorrectas
+        messages.error(request, 'Correo electrónico o contraseña incorrectos.')
+        return redirect('login')
+
     else:
         form = AuthenticationForm()
+    
     return render(request, 'usuarios/login.html', {'form': form})
 
 def logout_view(request):

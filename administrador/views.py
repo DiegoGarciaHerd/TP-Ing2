@@ -189,37 +189,48 @@ def borrar_autos(request):
     return render(request, 'administrador/borrar_autos.html')
 
 def modificar_autos(request):
+    # Obtener todos los vehículos para el selector
+    vehiculos = Vehiculo.objects.all().order_by('patente')
+    
+    # Formatear el precio_por_dia para cada vehículo
+    for vehiculo in vehiculos:
+        vehiculo.precio_por_dia = f"{float(vehiculo.precio_por_dia):.2f}"
+    
     if request.method == 'POST':
         patente = request.POST.get('patente')
-
+        
         try:
             vehiculo = Vehiculo.objects.get(patente=patente)
-
+            
+            # Actualizar solo los campos que se enviaron
             precio = request.POST.get('precio')
             if precio:
                 vehiculo.precio_por_dia = precio
             
-            reembolso = request.POST.get('politica_reembolso')
-            if reembolso:
-                vehiculo.reembolso = reembolso
+            politica_reembolso = request.POST.get('politica_reembolso')
+            if politica_reembolso:
+                vehiculo.politica_de_reembolso = politica_reembolso
+            
+            foto_base64 = request.POST.get('foto_base64')
+            if foto_base64:
+                vehiculo.foto_base64 = foto_base64
 
             politica = request.POST.get('politica_de_reembolso')
             if politica and politica != "Sin elegir":
                 vehiculo.politica_de_reembolso = politica
 
             vehiculo.save()
-            messages.success(request, "Autos modificados exitosamente")
-            return redirect('admin_menu')  # Redirigir a la página de menú si se envía el formulario
+            messages.success(request, "Vehículo modificado exitosamente")
+            return redirect('admin_menu')
 
         except Vehiculo.DoesNotExist:
-            messages.error(request, "El auto a modificar no existe")
-            return render(request, 'administrador/modificar_autos.html')
-        
+            messages.error(request, "El vehículo seleccionado no existe")
         except Exception as e:
-            messages.error(request, f"Error al modificar el auto: {e}")
-            return render(request, 'administrador/modificar_autos.html')
-
-    return render(request, 'administrador/modificar_autos.html')
+            messages.error(request, f"Error al modificar el vehículo: {str(e)}")
+    
+    return render(request, 'administrador/modificar_autos.html', {
+        'vehiculos': vehiculos
+    })
 
 def ver_autos(request):
     vehiculos = Vehiculo.objects.all()

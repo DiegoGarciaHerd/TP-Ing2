@@ -16,6 +16,17 @@
                 {% for vehiculo in vehiculos %}
                     <div class="col-md-6 col-lg-4 mb-4">
                         <div class="card shadow-sm h-100">
+                            {% if vehiculo.foto_base64 %}
+                                <img src="data:image/jpeg;base64,{{ vehiculo.foto_base64 }}" 
+                                     alt="{{ vehiculo.marca }} {{ vehiculo.modelo }}" 
+                                     class="card-img-top" 
+                                     style="height: 200px; object-fit: cover;">
+                            {% else %}
+                                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" 
+                                     style="height: 200px;">
+                                    <span class="text-muted">Sin imagen disponible</span>
+                                </div>
+                            {% endif %}
                             <div class="card-body">
                                 <h4 class="card-title">{{ vehiculo.marca }} {{ vehiculo.modelo }}</h4>
                                 <p><strong>Año:</strong> {{ vehiculo.año }}</p>

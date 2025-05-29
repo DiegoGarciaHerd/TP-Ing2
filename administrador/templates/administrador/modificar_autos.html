@@ -1,5 +1,6 @@
 {% extends 'home/base.html' %}
 {% block content %}
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html>
     <h1>Ingrese los datos que desee modificar del vehículo</h1>
@@ -30,4 +31,158 @@
         </ul>
         <button type="submit">Guardar cambios del vehículo</button>
 </html>
+=======
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg">
+                <div class="card-header text-white" style="background-color: #0e4532;">
+                    <h2 class="mb-0">Modificar Vehículo</h2>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="POST" id="modificarVehiculoForm">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="patente" class="form-label">Seleccione la patente del vehículo:</label>
+                            <select class="form-select" id="patente" name="patente" required>
+                                <option value="">Seleccione una patente...</option>
+                                {% for vehiculo in vehiculos %}
+                                    <option value="{{ vehiculo.patente }}" 
+                                            data-precio="{{ vehiculo.precio_por_dia }}"
+                                            data-reembolso="{{ vehiculo.politica_de_reembolso }}"
+                                            data-foto="{{ vehiculo.foto_base64|default:'' }}">
+                                        {{ vehiculo.patente }} - {{ vehiculo.marca }} {{ vehiculo.modelo }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div id="camposVehiculo" style="display: none;">
+                            <div class="mb-3">
+                                <label for="precio" class="form-label">Precio Por Día:</label>
+                                <input type="number" class="form-control" id="precio" name="precio" step="0.01" min="0"/>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="politica_reembolso" class="form-label">Política de Reembolso:</label>
+                                <select class="form-select" id="politica_reembolso" name="politica_reembolso">
+                                    <option value="0">0% - No se realizan reembolsos</option>
+                                    <option value="20">20% - Reembolso hasta 24 horas antes</option>
+                                    <option value="100">100% - Reembolso hasta 48 horas antes</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="foto" class="form-label">Foto del Vehículo:</label>
+                                <input type="file" class="form-control" id="foto" accept="image/*"/>
+                                <input type="hidden" id="foto_base64" name="foto_base64">
+                                <div id="previewContainer" class="mt-2" style="display: none;">
+                                    <img id="previewImage" class="img-fluid rounded" style="max-height: 200px;"/>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-between mt-4">
+                                <button type="button" class="btn btn-secondary" id="btnCancelar">Cancelar</button>
+                                <button type="submit" class="btn text-white" style="background-color: #0e4532;">Guardar cambios</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const patenteSelect = document.getElementById('patente');
+    const camposVehiculo = document.getElementById('camposVehiculo');
+    const precioInput = document.getElementById('precio');
+    const reembolsoSelect = document.getElementById('politica_reembolso');
+    const fotoInput = document.getElementById('foto');
+    const fotoBase64Input = document.getElementById('foto_base64');
+    const previewContainer = document.getElementById('previewContainer');
+    const previewImage = document.getElementById('previewImage');
+    const btnCancelar = document.getElementById('btnCancelar');
+    
+    // Valores originales para restaurar al cancelar
+    let valoresOriginales = {};
+
+    // Función para cargar los datos del vehículo seleccionado
+    patenteSelect.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        if (selectedOption.value) {
+            camposVehiculo.style.display = 'block';
+            
+            // Guardar valores originales
+            valoresOriginales = {
+                precio: selectedOption.dataset.precio,
+                reembolso: selectedOption.dataset.reembolso,
+                foto: selectedOption.dataset.foto
+            };
+
+            // Cargar valores en los campos
+            precioInput.value = valoresOriginales.precio;
+            reembolsoSelect.value = valoresOriginales.reembolso;
+            
+            // Mostrar foto actual si existe
+            if (valoresOriginales.foto) {
+                previewImage.src = `data:image/jpeg;base64,${valoresOriginales.foto}`;
+                previewContainer.style.display = 'block';
+                fotoBase64Input.value = valoresOriginales.foto;
+            } else {
+                previewContainer.style.display = 'none';
+                fotoBase64Input.value = '';
+            }
+        } else {
+            camposVehiculo.style.display = 'none';
+        }
+    });
+
+    // Manejar la carga de nueva foto
+    fotoInput.addEventListener('change', function() {
+        const file = this.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64String = e.target.result.split(',')[1];
+                fotoBase64Input.value = base64String;
+                previewImage.src = e.target.result;
+                previewContainer.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Botón cancelar
+    btnCancelar.addEventListener('click', function() {
+        if (patenteSelect.value) {
+            // Restaurar valores originales
+            precioInput.value = valoresOriginales.precio;
+            reembolsoSelect.value = valoresOriginales.reembolso;
+            
+            if (valoresOriginales.foto) {
+                previewImage.src = `data:image/jpeg;base64,${valoresOriginales.foto}`;
+                previewContainer.style.display = 'block';
+                fotoBase64Input.value = valoresOriginales.foto;
+            } else {
+                previewContainer.style.display = 'none';
+                fotoBase64Input.value = '';
+            }
+            
+            // Limpiar input de archivo
+            fotoInput.value = '';
+        }
+    });
+});
+</script>
+>>>>>>> 844bc01e9011a64b0ba03ecb8ec759b28760dba9
 {% endblock %}
