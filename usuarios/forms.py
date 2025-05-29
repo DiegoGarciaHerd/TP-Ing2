@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from .models import Usuario
 from django.core.exceptions import ValidationError
+from django.contrib.auth.forms import AuthenticationForm
 
 class RegistroForm(UserCreationForm):
     email = forms.EmailField(required=True)
@@ -51,6 +52,13 @@ class RegistroForm(UserCreationForm):
         if commit:
             user.save()
         return user
+    
+class CustomLoginForm(AuthenticationForm):
+    def confirm_login_allowed(self, user):
+        print("Intento de login con rol:", user.rol)
+        if user.is_admin:
+            print("Bloqueado: admin")
+            raise ValidationError("Correo electrónico o contraseña incorrectos.")
 
 class EditarPerfilForm(UserChangeForm):
     password = None  # Elimina el campo de contraseña del formulario

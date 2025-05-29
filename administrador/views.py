@@ -16,7 +16,7 @@ from django.utils import timezone
 from datetime import timedelta
 from django.http import HttpResponse
 from vehiculos.models import Vehiculo
-from empleados.models import Empleado
+from reservas.models import Reserva
 
 
 def generate_2fa_code():
@@ -178,8 +178,22 @@ def borrar_autos(request):
         
         try:
             vehiculo = Vehiculo.objects.get(patente=patente)
-            vehiculo.delete()
-            messages.success(request, "Auto borrado exitosamente")
+
+            reservado = Reserva.objects.filter(vehiculo=vehiculo,
+                                               estado__in=['PENDIENTE', 'CONFIRMADA'])
+            
+            if reservado.exists():
+                if vehiculo.disponible:
+                    vehiculo.disponible = False
+                    vehiculo.save()
+                    messages.warning(request, "Se ha eliminado el vehículo del catálogo. Vuelva a selecciona 'Eliminar Vehículo' una vez que no posea reservas para eliminarlo" \
+                    "definitivamente del sistema")
+                else:
+                    messages.warning(request, "El vehiculo se retiró del catálogo. Espere a que sus reservas finalicen")
+            else:
+                vehiculo.delete()
+                messages.success(request, "Auto borrado exitosamente")
+        
         except Vehiculo.DoesNotExist:
             messages.error(request, "El auto a borrar no existe")
         except Exception as e:
@@ -240,20 +254,4 @@ def ver_autos(request):
 #-----------------------------------------------------------------------
 
 def cargar_empleados(request):
-    if request.method == 'POST':
-        nombre = request.POST.get('nombre')
-        direccion = request.POST.get('direccion')
-        telefono = request.POST.get('telefono')
-        
-        try:
-            Empleado.objects.create(
-                nombre=nombre,
-                direccion=direccion,
-                telefono=telefono
-            )
-            messages.success(request, "Empleados cargados exitosamente")
-        except Exception as e:
-            messages.error(request, f"Error al cargar el empleado: {e}")
-            return render(request, 'administrador/cargar_empleados.html')
-        return redirect('admin_menu')
     return render(request, 'administrador/cargar_empleados.html')

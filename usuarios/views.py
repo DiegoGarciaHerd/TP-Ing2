@@ -2,8 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.forms import AuthenticationForm
-from .forms import RegistroForm, EditarPerfilForm
+from .forms import RegistroForm, EditarPerfilForm, CustomLoginForm
 from .models import Usuario
 import random
 import string
@@ -11,6 +10,8 @@ from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
+from django.contrib.auth.views import LoginView
 
 Usuario = get_user_model()
 
@@ -25,41 +26,31 @@ def registro(request):
         form = RegistroForm()
     return render(request, 'usuarios/registro.html', {'form': form})
 
-def login_view(request):
-    # Si el usuario ya está autenticado, redirigir al home
-    if request.user.is_authenticated:
-        return redirect('home:home')
-    
-    if request.method == 'POST':
-        form = AuthenticationForm(request, data=request.POST)
-        if form.is_valid():
-            username = form.cleaned_data.get('username')
-            password = form.cleaned_data.get('password')
-            user = authenticate(request, username=username, password=password)
-            
-            if user is not None:
-                # Verificar si el usuario es admin o superuser
-                if user.is_admin or user.is_superuser:
-                    messages.error(request, 'Los administradores deben usar el panel de administración.')
-                    return redirect('login')
-                
-                # Si no es admin, permitir el login
-                login(request, user)
-                messages.success(request, f'¡Bienvenido/a {user.get_full_name() or user.email}!')
-                return redirect('home:home')
-            
-        # Mensaje genérico para credenciales incorrectas
-        messages.error(request, 'Correo electrónico o contraseña incorrectos.')
-        return redirect('login')
 
-    else:
-        form = AuthenticationForm()
-    
-    return render(request, 'usuarios/login.html', {'form': form})
+class UsuarioLoginView(LoginView):
+    form_class = CustomLoginForm
+    template_name = 'usuarios/login.html'
+
+    def form_valid(self, form):
+        """Este método se llama si el formulario es válido. Redireccionamos manualmente."""
+        user = form.get_user()
+        if user.is_admin:
+            form.add_error(None, ValidationError(
+                "Los administradores deben usar el panel de administración.",
+                code='admin_login_not_allowed'
+            ))
+            return self.form_invalid(form)
+
+        messages.success(self.request, f'¡Bienvenido/a {user.get_full_name() or user.email}!')
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return '/'  # Redirige a la página principal
 
 def logout_view(request):
-    logout(request)
-    messages.success(request, 'Has cerrado sesión correctamente.')
+    if request.user.is_authenticated:
+        logout(request)
+        messages.success(request, 'Has cerrado sesión correctamente.')
     return redirect('home:home')
 
 @login_required
