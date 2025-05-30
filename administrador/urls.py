@@ -1,14 +1,17 @@
 from django.urls import path
-from .views import (
+from .views.auth import (
     login_admin_step1,
     login_admin_step2,
     admin_logout,
-    admin_menu,
+    admin_menu
+)
+from .views.vehiculos import (
     cargar_autos,
     borrar_autos,
     modificar_autos,
-    cargar_empleados
+    ver_autos
 )
+from .views.empleados import cargar_empleados
 
 urlpatterns = [
     path('login/', login_admin_step1, name='admin_login_step1'),
@@ -18,5 +21,6 @@ urlpatterns = [
     path('borrar-autos/', borrar_autos, name="borrar_autos"),
     path('carga-empleados/', cargar_empleados, name="cargar_empleados"),
     path('modificar-autos/', modificar_autos, name="modificar_autos"),
+    path('ver-autos/', ver_autos, name="ver_autos"),
     path('logout/', admin_logout, name='admin_logout'),
 ]

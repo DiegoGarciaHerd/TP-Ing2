@@ -8,7 +8,8 @@ from .auth import (
 from .vehiculos import (
     cargar_autos,
     borrar_autos,
-    modificar_autos
+    modificar_autos,
+    ver_autos
 )
 
 from .empleados import (
