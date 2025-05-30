@@ -7,7 +7,7 @@ from .views import (
     cargar_autos,
     borrar_autos,
     modificar_autos,
-    cargar_empleados
+    cargar_empleados,
 )
 
 urlpatterns = [
@@ -18,5 +18,5 @@ urlpatterns = [
     path('borrar-autos/', borrar_autos, name="borrar_autos"),
     path('carga-empleados/', cargar_empleados, name="cargar_empleados"),
     path('modificar-autos/', modificar_autos, name="modificar_autos"),
-    path('logout/', admin_logout, name='admin_logout'),
+    path('logout/', admin_logout, name='admin_logout')
 ]
