@@ -36,6 +36,14 @@
                                             <span class="badge {% if reserva.estado == 'PENDIENTE' %}bg-warning{% elif reserva.estado == 'CONFIRMADA' %}bg-success{% elif reserva.estado == 'CANCELADA' %}bg-danger{% else %}bg-secondary{% endif %}">
                                                 {{ reserva.get_estado_display }}
                                             </span><br>
+                                            <strong>Estado de Pago:</strong> 
+                                            <span class="badge {% if reserva.estado_pago == 'PAGADO' %}bg-success{% elif reserva.estado_pago == 'PENDIENTE' %}bg-warning{% elif reserva.estado_pago == 'FALLIDO' %}bg-danger{% else %}bg-secondary{% endif %}">
+                                                {{ reserva.get_estado_pago_display }}
+                                            </span>
+                                            {% if reserva.esta_pagado and reserva.ultimos_4_digitos_tarjeta %}
+                                                <br><small class="text-muted">Tarjeta terminada en ****{{ reserva.ultimos_4_digitos_tarjeta }}</small>
+                                            {% endif %}
+                                            <br>
                                             <strong>Fecha de Creación:</strong> {{ reserva.fecha_creacion|date:"d/m/Y H:i" }}
                                         </p>
                                         <div class="d-flex gap-2">
