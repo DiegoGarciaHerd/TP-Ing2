@@ -19,8 +19,9 @@ def registro(request):
     if request.method == 'POST':
         form = RegistroForm(request.POST)
         if form.is_valid():
-            form.save()
-            messages.success(request, '¡Te has registrado correctamente! Ya puedes acceder a tu cuenta.')
+            user = form.save()
+            login(request, user)  # Iniciar sesión automáticamente después del registro
+            messages.success(request, '¡Te has registrado correctamente! Bienvenido/a a AutoRental.')
             return redirect('home:home')
     else:
         form = RegistroForm()
@@ -32,7 +33,7 @@ class UsuarioLoginView(LoginView):
     template_name = 'usuarios/login.html'
 
     def form_valid(self, form):
-        """Este método se llama si el formulario es válido. Redireccionamos manualmente."""
+        """Este método se llama si el formulario es válido."""
         user = form.get_user()
         if user.is_admin:
             form.add_error(None, ValidationError(
@@ -41,6 +42,7 @@ class UsuarioLoginView(LoginView):
             ))
             return self.form_invalid(form)
 
+        login(self.request, user)  # Asegurarse de que el usuario esté logueado
         messages.success(self.request, f'¡Bienvenido/a {user.get_full_name() or user.email}!')
         return super().form_valid(form)
 
@@ -49,8 +51,8 @@ class UsuarioLoginView(LoginView):
 
 def logout_view(request):
     if request.user.is_authenticated:
-        logout(request)
         messages.success(request, 'Has cerrado sesión correctamente.')
+        logout(request)
     return redirect('home:home')
 
 @login_required
