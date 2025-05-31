@@ -12,56 +12,6 @@
 <body>
 
 <nav class="navbar navbar-expand-lg navbar-custom">
-<<<<<<< HEAD
-  <div class="container-fluid">
-    {% load static %}
-    <a class="navbar-brand" href="{% url 'home:home' %}" style="margin-left: 10px;">
-        <img src="{% static 'home/img/AutoRental_Logo.png' %}" alt="Autorental" height="60">
-    </a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-            data-bs-target="#navbarNav" aria-controls="navbarNav"
-            aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav ms-auto">
-        
-        <li class="nav-item">
-          <a class="nav-link fs-5" href= "">Contacto</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link fs-5" href="{% url 'sucursales:lista_sucursales' %}">Ver Sucursales y Vehículos</a>
-        </li>
-        {% if user.is_authenticated %}
-          {% if user.is_superuser %}
-          <li class="nav-item">
-            <a class="nav-link fs-5" href="{% url 'admin_menu' %}">Panel Admin</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link fs-5" href="{% url 'logout' %}">Cerrar sesión</a>
-          </li>
-        {% else %}
-        <li class="nav-item">
-          <a class="nav-link fs-5" href="{% url 'reservas:mis_reservas' %}">Mis reservas</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link fs-5" href=>Mi Perfil</a> <!--Por ahora no se debe poder editar el perfil-->
-        </li>
-        <li class="nav-item">
-          <a class="nav-link fs-5" href="{% url 'logout' %}">Cerrar sesión</a>
-        </li>
-    {% endif %}
-{% else %}
-    <li class="nav-item">
-      <a class="nav-link fs-5" href="{% url 'login' %}">Iniciar sesión</a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link fs-5" href="{% url 'registro' %}">Registrarse</a>
-    </li>
-{% endif %}
-      
-      </ul>
-=======
     <div class="container-fluid position-relative">
         {% load static %}
         <a class="navbar-brand" href="{% url 'home:home' %}">
@@ -112,7 +62,6 @@
                 {% endif %}
             </ul>
         </div>
->>>>>>> 88620abac22891fd6cf3d169602dd80d5a9aa2c8
     </div>
 </nav>
 
