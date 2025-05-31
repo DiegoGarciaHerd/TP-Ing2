@@ -1,0 +1,117 @@
+{% extends 'home/base.html' %}
+{% load static %}
+{% load reserva_filters %}
+
+{% block title %}Reserva Confirmada{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg">
+                <div class="card-header text-white" style="background-color: #28a745;">
+                    <h2 class="mb-0 text-center">
+                        <i class="fas fa-check-circle me-2"></i>¡Reserva Confirmada!
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-success text-center">
+                        <h4><i class="fas fa-thumbs-up me-2"></i>¡Felicitaciones!</h4>
+                        <p class="mb-0">Su reserva ha sido confirmada exitosamente y el pago ha sido procesado.</p>
+                    </div>
+
+                    <div class="success-content" style="border: 2px solid #28a745; padding: 20px; border-radius: 10px; margin-bottom: 20px; background-color: #f8fff8;">
+                        <div class="text-center mb-4">
+                            <h3 style="color: #28a745;">Reserva #{{ reserva.id }}</h3>
+                            <p class="text-muted">Guarde esta información para sus registros</p>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <h5 style="color: #28a745;">Detalles del Vehículo</h5>
+                                <p><strong>Marca y Modelo:</strong> {{ reserva.vehiculo.marca }} {{ reserva.vehiculo.modelo }}</p>
+                                <p><strong>Patente:</strong> {{ reserva.vehiculo.patente }}</p>
+                                <p><strong>Precio por día:</strong> ${{ reserva.vehiculo.precio_por_dia|floatformat:2 }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 style="color: #28a745;">Detalles de la Reserva</h5>
+                                <p><strong>Duración:</strong> {{ reserva.fecha_devolucion|dias_duracion:reserva.fecha_recogida }} día{% if reserva.fecha_devolucion|dias_duracion:reserva.fecha_recogida != 1 %}s{% endif %}</p>
+                                <p><strong>Estado:</strong> <span class="badge bg-success">{{ reserva.get_estado_display }}</span></p>
+                                <p><strong>Fecha de Creación:</strong> {{ reserva.fecha_creacion|date:"d/m/Y H:i" }}</p>
+                            </div>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <h5 style="color: #28a745;">Retiro del Vehículo</h5>
+                                <p><strong>Sucursal:</strong> {{ reserva.vehiculo.sucursal_actual.nombre }}</p>
+                                <p><strong>Dirección:</strong> {{ reserva.vehiculo.sucursal_actual.direccion }}</p>
+                                <p><strong>Fecha:</strong> {{ reserva.fecha_recogida|date:"d/m/Y" }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 style="color: #28a745;">Devolución del Vehículo</h5>
+                                <p><strong>Sucursal:</strong> {{ reserva.vehiculo.sucursal_actual.nombre }}</p>
+                                <p><strong>Dirección:</strong> {{ reserva.vehiculo.sucursal_actual.direccion }}</p>
+                                <p><strong>Fecha:</strong> {{ reserva.fecha_devolucion|date:"d/m/Y" }}</p>
+                            </div>
+                        </div>
+
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <h5 style="color: #28a745;">Información de Pago</h5>
+                                <p><strong>Estado:</strong> <span class="badge bg-success">{{ reserva.get_estado_pago_display }}</span></p>
+                                <p><strong>Referencia:</strong> {{ reserva.referencia_pago }}</p>
+                                <p><strong>Tarjeta:</strong> ****{{ reserva.ultimos_4_digitos_tarjeta }}</p>
+                                <p><strong>Fecha de Pago:</strong> {{ reserva.fecha_pago|date:"d/m/Y H:i" }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h5 style="color: #28a745;">Costo Total</h5>
+                                <h3 class="text-success">${{ reserva.costo_total|floatformat:2 }}</h3>
+                                <p class="text-muted">Pagado exitosamente</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-info-circle me-2"></i>Información Importante:</h6>
+                        <ul class="mb-0">
+                            <li>Presente un documento de identidad válido al retirar el vehículo</li>
+                            <li>El vehículo debe ser devuelto en la fecha y sucursal indicadas</li>
+                            <li>Puede ver y gestionar sus reservas en la sección "Mis Reservas"</li>
+                            <li>Para cancelaciones, consulte nuestros términos y condiciones</li>
+                        </ul>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'reservas:mis_reservas' %}" class="btn btn-lg btn-primary w-100 mb-2">
+                            <i class="fas fa-list me-2"></i>Ver Mis Reservas
+                        </a>
+                        <a href="{% url 'home:home' %}" class="btn btn-lg btn-outline-secondary w-100">
+                            <i class="fas fa-home me-2"></i>Volver al Inicio
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .success-content {
+        background-color: #f8fff8;
+    }
+    
+    @media print {
+        .btn, .alert-info {
+            display: none;
+        }
+    }
+</style>
+
+<script>
+// Opcional: Auto-scroll al top cuando se carga la página
+window.addEventListener('load', function() {
+    window.scrollTo(0, 0);
+});
+</script>
+{% endblock %} 
