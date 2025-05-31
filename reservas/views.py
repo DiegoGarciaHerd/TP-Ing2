@@ -3,12 +3,14 @@ from django.contrib.auth.decorators import login_required
 from django.views.generic import ListView, DetailView
 from django.urls import reverse_lazy
 from django.contrib import messages
+from django.utils import timezone
 import datetime
 
 from .models import Reserva
 from sucursales.models import Sucursal 
 from vehiculos.models import Vehiculo
-from .forms import ReservaForm
+from .forms import ReservaForm, PagoForm
+from .utils import procesar_pago_tarjeta
 
 
 
@@ -168,13 +170,79 @@ def ticket_reserva(request, vehiculo_id):
     return render(request, 'reservas/ticket_reserva.html', {'reserva': reserva, 'vehiculo': vehiculo})
 
 @login_required
-def confirmar_reserva(request, vehiculo_id):
+def procesar_pago(request, vehiculo_id):
     vehiculo = get_object_or_404(Vehiculo, pk=vehiculo_id)
     reserva_temporal = request.session.get('reserva_temporal')
     
     if not reserva_temporal or reserva_temporal['vehiculo_id'] != vehiculo.id:
         messages.error(request, 'No hay datos de reserva disponibles.')
         return redirect('home:home')
+    
+    # Crear objeto reserva temporal para mostrar contexto
+    reserva = Reserva(
+        cliente=request.user,
+        vehiculo=vehiculo,
+        fecha_recogida=datetime.datetime.fromisoformat(reserva_temporal['fecha_recogida']).date(),
+        fecha_devolucion=datetime.datetime.fromisoformat(reserva_temporal['fecha_devolucion']).date(),
+        costo_total=reserva_temporal['costo_total'],
+        estado='PENDIENTE'
+    )
+    
+    if request.method == 'POST':
+        form = PagoForm(request.POST)
+        if form.is_valid():
+            # Procesar el pago
+            resultado_pago = procesar_pago_tarjeta(
+                numero_tarjeta=form.cleaned_data['numero_tarjeta'],
+                nombre_titular=form.cleaned_data['nombre_titular'],
+                mes_vencimiento=form.cleaned_data['mes_vencimiento'],
+                ano_vencimiento=form.cleaned_data['ano_vencimiento'],
+                cvv=form.cleaned_data['cvv'],
+                monto=reserva_temporal['costo_total']
+            )
+            
+            if resultado_pago['exito']:
+                # Guardar información del pago en la sesión
+                request.session['pago_procesado'] = {
+                    'referencia_pago': resultado_pago['referencia_pago'],
+                    'ultimos_4_digitos': resultado_pago['ultimos_4_digitos'],
+                    'fecha_pago': resultado_pago['fecha_procesamiento'].isoformat(),
+                    'monto': float(resultado_pago['monto_procesado'])
+                }
+                
+                messages.success(request, '¡Pago procesado exitosamente!')
+                return redirect('reservas:confirmar_reserva', vehiculo_id=vehiculo.id)
+            else:
+                messages.error(request, f'Error en el pago: {resultado_pago["mensaje"]}')
+                # Mantener los datos del formulario en caso de error
+                return render(request, 'reservas/procesar_pago.html', {
+                    'form': form, 
+                    'reserva': reserva, 
+                    'vehiculo': vehiculo,
+                    'error_pago': resultado_pago
+                })
+    else:
+        form = PagoForm()
+    
+    return render(request, 'reservas/procesar_pago.html', {
+        'form': form, 
+        'reserva': reserva, 
+        'vehiculo': vehiculo
+    })
+
+@login_required
+def confirmar_reserva(request, vehiculo_id):
+    vehiculo = get_object_or_404(Vehiculo, pk=vehiculo_id)
+    reserva_temporal = request.session.get('reserva_temporal')
+    pago_procesado = request.session.get('pago_procesado')
+    
+    if not reserva_temporal or reserva_temporal['vehiculo_id'] != vehiculo.id:
+        messages.error(request, 'No hay datos de reserva disponibles.')
+        return redirect('home:home')
+    
+    if not pago_procesado:
+        messages.error(request, 'Debe completar el pago antes de confirmar la reserva.')
+        return redirect('reservas:procesar_pago', vehiculo_id=vehiculo.id)
     
     if request.method == 'POST':
         # Verificar disponibilidad una vez más antes de guardar
@@ -192,22 +260,44 @@ def confirmar_reserva(request, vehiculo_id):
             messages.error(request, 'El vehículo ya no está disponible para las fechas seleccionadas.')
             return redirect('home:home')
         
-        # Crear y guardar la reserva
+        # Crear y guardar la reserva con información de pago
         reserva = Reserva(
             cliente=request.user,
             vehiculo=vehiculo,
             fecha_recogida=fecha_recogida,
             fecha_devolucion=fecha_devolucion,
             costo_total=reserva_temporal['costo_total'],
-            estado='CONFIRMADA'
+            estado='CONFIRMADA',
+            # Información de pago
+            estado_pago='PAGADO',
+            fecha_pago=datetime.datetime.fromisoformat(pago_procesado['fecha_pago']),
+            referencia_pago=pago_procesado['referencia_pago'],
+            ultimos_4_digitos_tarjeta=pago_procesado['ultimos_4_digitos']
         )
         reserva.save()
         
         # Limpiar la sesión
         del request.session['reserva_temporal']
+        del request.session['pago_procesado']
         
-        messages.success(request, '¡Reserva confirmada con éxito!')
-        return redirect('reservas:mis_reservas')
+        # Mostrar página de confirmación exitosa
+        return render(request, 'reservas/reserva_confirmada.html', {
+            'reserva': reserva,
+            'vehiculo': vehiculo
+        })
     else:
-        messages.error(request, 'No se pudo confirmar la reserva.')
-        return redirect('home:home')
+        # Mostrar página de confirmación antes de procesar
+        reserva = Reserva(
+            cliente=request.user,
+            vehiculo=vehiculo,
+            fecha_recogida=datetime.datetime.fromisoformat(reserva_temporal['fecha_recogida']).date(),
+            fecha_devolucion=datetime.datetime.fromisoformat(reserva_temporal['fecha_devolucion']).date(),
+            costo_total=reserva_temporal['costo_total'],
+            estado='PENDIENTE'
+        )
+        
+        return render(request, 'reservas/confirmar_reserva_final.html', {
+            'reserva': reserva,
+            'vehiculo': vehiculo,
+            'pago_procesado': pago_procesado
+        })
