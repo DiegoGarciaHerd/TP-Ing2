@@ -1,0 +1,50 @@
+/* Footer Styles */
+.footer {
+    background-color: #0e4532;
+    color: #ffffff;
+    padding: 40px 0;
+    margin-top: auto;
+    font-family: 'DM Sans', sans-serif !important;
+}
+
+.footer-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 2rem;
+}
+
+.footer-section {
+    flex: 1;
+    min-width: 250px;
+}
+
+.footer-section h5 {
+    color: #edebe3;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.footer-section p, .footer-section a {
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+    display: block;
+}
+
+.footer-section a:hover {
+    color: #edebe3;
+    text-decoration: underline;
+}
+
+.footer-bottom {
+    text-align: center;
+    padding-top: 20px;
+    margin-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+} 

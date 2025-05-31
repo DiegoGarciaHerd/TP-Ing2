@@ -4,190 +4,330 @@
 {% block title %}Inicio{% endblock %}
 
 {% block content %}
-    <div>
-        <h2>¡Realiza tu reserva online!</h2>
+<style>
+    body, html {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        overflow-x: hidden;
+    }
+
+    .hero-section {
+        background-image: url("{% static 'home/img/Carretera2.jpg' %}");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        min-height: calc(100vh - 84px);
+        width: 100vw;
+        margin: 0;
+        padding: 0;
+        position: relative;
+        left: 50%;
+        right: 50%;
+        margin-left: -50vw;
+        margin-right: -50vw;
+        margin-top: -24px;
+    }
+
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.3);
+        z-index: 1;
+    }
+
+    .hero-section .container {
+        position: relative;
+        z-index: 2;
+        max-width: 100%;
+        padding: 4rem 2rem 2rem 2rem;
+    }
+
+    .sucursales-section {
+        background: linear-gradient(135deg, #edebe3 0%, #edebe3 100%);
+        padding: 4rem 0;
+        min-height: 50vh;
+        width: 100vw;
+        margin: 0;
+        position: relative;
+        left: 50%;
+        right: 50%;
+        margin-left: -50vw;
+        margin-right: -50vw;
+        border-top: 10px solid #0e4532;
+    }
+
+    .content-container {
+        background-color: rgba(255, 255, 255, 0.95);
+        padding: 2rem;
+        border-radius: 15px;
+        box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        margin: 2rem auto;
+        max-width: 800px;
+    }
+
+    .welcome-text {
+        text-align: center;
+        margin-bottom: 2rem;
+        color: white;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        font-family: 'DM Sans', sans-serif;
+    }
+
+    .welcome-text h1 {
+        font-size: 3.5rem;
+        margin-bottom: 1rem;
+        font-weight: 600;
+    }
+
+    .welcome-text p {
+        font-size: 1.4rem;
+        opacity: 0.9;
+    }
+
+    .sucursales-list {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 0 1rem;
+    }
+
+    .sucursales-title {
+        text-align: center;
+        color: #0e4532;
+        margin-bottom: 3rem;
+    }
+
+    .sucursal-card {
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        transition: transform 0.2s ease;
+        border-left: 4px solid #0e4532;
+        background-color: white;
+        border-radius: 0 10px 10px 0;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .sucursal-card:hover {
+        transform: translateX(10px);
+    }
+
+    .sucursal-card h3 {
+        color: #0e4532;
+        margin-bottom: 1rem;
+    }
+
+    .sucursal-card p {
+        margin-bottom: 0.5rem;
+        color: #555;
+    }
+
+    .menu-reservas {
+        background-color: rgba(60, 107, 60, 0.9);
+        text-align: center;
+        border-radius: 30px;
+        padding: 30px;
+        max-width: 600px;
+        margin: 0 auto;
+        backdrop-filter: blur(10px);
+        font-family: 'DM Sans', sans-serif;
+    }
+
+    .menu-reservas h2 {
+        font-family: 'DM Sans', sans-serif;
+        font-weight: 600;
+        margin-bottom: 2rem;
+    }
+
+    .menu-reservas .form-group {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        margin: 15px 0;
+        padding: 0 20px;
+        gap: 15px;
+    }
+
+    .menu-reservas label {
+        min-width: 180px;
+        text-align: right;
+        color: white;
+        font-weight: 500;
+        font-family: 'DM Sans', sans-serif;
+    }
+
+    .menu-reservas select,
+    .menu-reservas input[type="date"],
+    .menu-reservas input[type="text"] {
+        flex: 1;
+        max-width: 250px;
+        padding: 8px 12px;
+        border-radius: 6px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        font-size: 14px;
+        font-family: 'DM Sans', sans-serif;
+        background-color: rgba(255, 255, 255, 0.9);
+    }
+
+    .menu-reservas select:focus,
+    .menu-reservas input[type="date"]:focus,
+    .menu-reservas input[type="text"]:focus {
+        outline: none;
+        border-color: #0e4532;
+        box-shadow: 0 0 0 2px rgba(14, 69, 50, 0.2);
+    }
+
+    .menu-reservas .form-group:first-child {
+        justify-content: flex-start;
+        padding-left: 20px;
+    }
+
+    .menu-reservas .form-group:first-child label {
+        min-width: auto;
+        text-align: left;
+    }
+
+    .menu-reservas .form-group:last-child {
+        justify-content: center;
+        margin-top: 2rem;
+    }
+
+    .menu-reservas .btn-primary {
+        padding: 12px 30px;
+        font-size: 16px;
+        background-color: #0e4532;
+        border: none;
+        border-radius: 6px;
+        font-family: 'DM Sans', sans-serif;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .menu-reservas .btn-primary:hover {
+        background-color: #0a3425;
+        transform: translateY(-1px);
+    }
+
+    .menu-reservas select option {
+        padding: 8px;
+        font-family: 'DM Sans', sans-serif;
+    }
+</style>
+
+<section class="hero-section">
+    <div class="container">
+        <div class="welcome-text">
+            <h1>Bienvenido a AutoRental</h1>
+            <p>Tu mejor opción para alquilar vehículos de calidad</p>
+        </div>
+
         <div>
-            <style>
-                .menu-reservas {
-                    background-color: rgb(60, 107, 60);
-                    text-align: center;
-                    border-radius: 30px;
-                    padding: 30px;
-                    max-width: 600px;
-                    margin: 0 auto;
-                }
-                .menu-reservas .form-group {
-                    display: flex;
-                    align-items: center;
-                    justify-content: flex-start;
-                    margin: 15px 0;
-                    padding: 0 20px;
-                    gap: 15px;
-                }
-                .menu-reservas label {
-                    min-width: 180px;
-                    text-align: right;
-                    color: white;
-                    font-weight: 500;
-                }
-                .menu-reservas select {
-                    flex: 1;
-                    max-width: 250px;
-                    padding: 8px;
-                    border-radius: 4px;
-                    border: 1px solid #ccc;
-                    font-size: 14px;
-                }
-                .menu-reservas input[type="date"] {
-                    flex: 1;
-                    max-width: 250px;
-                    padding: 8px;
-                    border-radius: 4px;
-                    border: 1px solid #ccc;
-                    font-size: 14px;
-                }
-                .menu-reservas input[type="text"] {
-                    flex: 1;
-                    max-width: 250px;
-                    padding: 8px;
-                    border-radius: 4px;
-                    border: 1px solid #ccc;
-                    font-size: 14px;
-                }
-                .menu-reservas .form-group:first-child {
-                    justify-content: flex-start;
-                    padding-left: 20px;
-                }
-                .menu-reservas .form-group:first-child label {
-                    min-width: auto;
-                    text-align: left;
-                }
-                .menu-reservas .form-group:last-child {
-                    justify-content: center;
-                }
-                .menu-reservas .btn-primary {
-                    margin-top: 20px;
-                    padding: 10px 30px;
-                    font-size: 16px;
-                }
-                .menu-reservas select option {
-                    padding: 5px;
-                }
-            </style>
-            <fieldset class="menu-reservas">
-                <form method="POST" action="{% url 'home:buscar_vehiculos' %}">
-                    {% csrf_token %}
-                    <div class="form-group" style="justify-content: flex-start;">
-                        <input type="checkbox" id="misma_sucursal" name="misma_sucursal" checked style="margin-right: 10px;">
-                        <label for="misma_sucursal">Misma sucursal de retiro y devolución</label>
-                    </div>
-                    <div class="form-group">
-                        <label>Sucursal de retiro</label>
-                        <select id="sucursal_retiro" name="sucursal_retiro" class="form-select" required>
-                            <option value="">Seleccione una sucursal</option>
-                            {% for sucursal in sucursales %}
-                                <option value="{{ sucursal.id }}" {% if sucursal.id|stringformat:"i" == sucursal_seleccionada %}selected{% endif %}>
-                                    {{ sucursal.nombre }} - {{ sucursal.direccion }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    
-                    <div class="form-group" id="sucursal_devolucion_group" style="display: none;">
-                        <label>Sucursal de devolución</label>
-                        <select id="sucursal_devolucion" name="sucursal_devolucion" class="form-select">
-                            <option value="">Seleccione una sucursal</option>
-                            {% for sucursal in sucursales %}
-                                <option value="{{ sucursal.id }}" {% if sucursal.id|stringformat:"i" == sucursal_seleccionada %}selected{% endif %}>
-                                    {{ sucursal.nombre }} - {{ sucursal.direccion }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Fecha de Retiro</label>
-                        <input type="date" id="fechaRetiro" name="fecha_retiro" value="{{ fecha_retiro|date:'Y-m-d' }}" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Fecha de Entrega</label>
-                        <input type="date" id="fechaEntrega" name="fecha_entrega" value="{{ fecha_entrega|date:'Y-m-d' }}" required>
-                    </div>
-                    <div class="form-group">
-                        <button type="submit" class="btn btn-primary">Buscar Vehículos Disponibles</button>
-                    </div>
-                </form>
-            </fieldset>
-
-            <script>
-                const hoy = new Date().toISOString().split('T')[0];
-                const fechaRetiro = document.getElementById('fechaRetiro');
-                const fechaEntrega = document.getElementById('fechaEntrega');
-                const mismaSucursal = document.getElementById('misma_sucursal');
-                const sucursalRetiro = document.getElementById('sucursal_retiro');
-                const sucursalDevolucion = document.getElementById('sucursal_devolucion');
-                const sucursalDevolucionGroup = document.getElementById('sucursal_devolucion_group');
-
-                // Configuración inicial de fechas
-                fechaRetiro.min = hoy;
-                fechaEntrega.min = hoy;
-
-                // Manejo de fechas
-                fechaRetiro.addEventListener('change', function () {
-                    const fechaSeleccionada = fechaRetiro.value;
-                    fechaEntrega.min = fechaSeleccionada;
-                    if (fechaEntrega.value && fechaEntrega.value < fechaSeleccionada) {
-                        fechaEntrega.value = "";
-                    }
-                });
-
-                // Manejo de sucursal de devolución
-                mismaSucursal.addEventListener('change', function() {
-                    if (this.checked) {
-                        sucursalDevolucionGroup.style.display = 'none';
-                        sucursalDevolucion.value = sucursalRetiro.value;
-                    } else {
-                        sucursalDevolucionGroup.style.display = 'flex';
-                    }
-                });
-
-                // Sincronizar sucursal de devolución cuando cambia la de retiro
-                sucursalRetiro.addEventListener('change', function() {
-                    if (mismaSucursal.checked) {
-                        sucursalDevolucion.value = this.value;
-                    }
-                });
-            </script>
-            <br><br><br><br><br>
-            <hr>
+            <h2 class="text-center text-white mb-4">¡Realiza tu reserva online!</h2>
+            <div>
+                <fieldset class="menu-reservas">
+                    <form method="POST" action="{% url 'home:buscar_vehiculos' %}">
+                        {% csrf_token %}
+                        <div class="form-group" style="justify-content: flex-start;">
+                            <input type="checkbox" id="misma_sucursal" name="misma_sucursal" checked style="margin-right: 10px;">
+                            <label for="misma_sucursal">Misma sucursal de retiro y devolución</label>
+                        </div>
+                        <div class="form-group">
+                            <label>Sucursal de retiro</label>
+                            <select id="sucursal_retiro" name="sucursal_retiro" class="form-select" required>
+                                <option value="">Seleccione una sucursal</option>
+                                {% for sucursal in sucursales %}
+                                    <option value="{{ sucursal.id }}" {% if sucursal.id|stringformat:"i" == sucursal_seleccionada %}selected{% endif %}>
+                                        {{ sucursal.nombre }} - {{ sucursal.direccion }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="form-group" id="sucursal_devolucion_group" style="display: none;">
+                            <label>Sucursal de devolución</label>
+                            <select id="sucursal_devolucion" name="sucursal_devolucion" class="form-select">
+                                <option value="">Seleccione una sucursal</option>
+                                {% for sucursal in sucursales %}
+                                    <option value="{{ sucursal.id }}" {% if sucursal.id|stringformat:"i" == sucursal_seleccionada %}selected{% endif %}>
+                                        {{ sucursal.nombre }} - {{ sucursal.direccion }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Fecha de Retiro</label>
+                            <input type="date" id="fechaRetiro" name="fecha_retiro" value="{{ fecha_retiro|date:'Y-m-d' }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Fecha de Entrega</label>
+                            <input type="date" id="fechaEntrega" name="fecha_entrega" value="{{ fecha_entrega|date:'Y-m-d' }}" required>
+                        </div>
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">Buscar Vehículos Disponibles</button>
+                        </div>
+                    </form>
+                </fieldset>
+            </div>
         </div>
     </div>
+</section>
 
-    <div class="lista autos fondo">
-        {% if vehiculos_disponibles %}
-            <h3>Vehículos Disponibles</h3>
-            <div class="row">
-                {% for vehiculo in vehiculos_disponibles %}
-                    <div class="col-md-4 mb-4">
-                        <div class="card h-100">
-                            <div class="card-body">
-                                <h5 class="card-title">{{ vehiculo.marca }} {{ vehiculo.modelo }}</h5>
-                                <p class="card-text">
-                                    <strong>Año:</strong> {{ vehiculo.año }}<br>
-                                    <strong>Patente:</strong> {{ vehiculo.patente }}<br>
-                                    <strong>Precio por día:</strong> ${{ vehiculo.precio_por_dia|floatformat:2 }}<br>
-                                    <strong>Ubicación:</strong> {{ vehiculo.sucursal_actual.nombre }}
-                                </p>
-                                <a href="{% url 'reservas:crear_reserva' vehiculo.id %}?fecha_retiro={{ fecha_retiro|date:'Y-m-d' }}&fecha_entrega={{ fecha_entrega|date:'Y-m-d' }}" 
-                                   class="btn btn-primary">Reservar este vehículo</a>
-                            </div>
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            {% if request.method == 'POST' %}
-                <h3>No hay vehículos disponibles para los criterios seleccionados</h3>
-            {% endif %}
-        {% endif %}
+<section class="sucursales-section">
+    <div class="container">
+        <div class="sucursales-list">
+            <h2 class="sucursales-title">Nuestras Sucursales</h2>
+            {% for sucursal in sucursales %}
+                <div class="sucursal-card">
+                    <h3>{{ sucursal.nombre }}</h3>
+                    <p><strong>Dirección:</strong> {{ sucursal.direccion }}</p>
+                    <p><strong>Teléfono:</strong> {{ sucursal.telefono }}</p>
+                    <p><strong>Email:</strong> {{ sucursal.email }}</p>
+                </div>
+            {% endfor %}
+        </div>
     </div>
+</section>
+
+<script>
+    const hoy = new Date().toISOString().split('T')[0];
+    const fechaRetiro = document.getElementById('fechaRetiro');
+    const fechaEntrega = document.getElementById('fechaEntrega');
+    const mismaSucursal = document.getElementById('misma_sucursal');
+    const sucursalRetiro = document.getElementById('sucursal_retiro');
+    const sucursalDevolucion = document.getElementById('sucursal_devolucion');
+    const sucursalDevolucionGroup = document.getElementById('sucursal_devolucion_group');
+
+    // Configuración inicial de fechas
+    fechaRetiro.min = hoy;
+    fechaEntrega.min = hoy;
+
+    // Manejo de fechas
+    fechaRetiro.addEventListener('change', function () {
+        const fechaSeleccionada = fechaRetiro.value;
+        fechaEntrega.min = fechaSeleccionada;
+        if (fechaEntrega.value && fechaEntrega.value < fechaSeleccionada) {
+            fechaEntrega.value = "";
+        }
+    });
+
+    // Manejo de sucursal de devolución
+    mismaSucursal.addEventListener('change', function() {
+        if (this.checked) {
+            sucursalDevolucionGroup.style.display = 'none';
+            sucursalDevolucion.value = sucursalRetiro.value;
+        } else {
+            sucursalDevolucionGroup.style.display = 'flex';
+        }
+    });
+
+    // Sincronizar sucursal de devolución cuando cambia la de retiro
+    sucursalRetiro.addEventListener('change', function() {
+        if (mismaSucursal.checked) {
+            sucursalDevolucion.value = this.value;
+        }
+    });
+</script>
 {% endblock %}

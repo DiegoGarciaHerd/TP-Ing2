@@ -5,78 +5,112 @@
     <title>{% block title %}Autorental{% endblock %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-   {% load static %}
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+    {% load static %}
     <link rel="stylesheet" href="{% static 'home/styles.css' %}">
 </head>
 <body>
 
 <nav class="navbar navbar-expand-lg navbar-custom">
-  <div class="container-fluid">
-    {% load static %}
-    <a class="navbar-brand" href="{% url 'home:home' %}" style="margin-left: 10px;">
-        <img src="{% static 'home/img/AutoRental_Logo.png' %}" alt="Autorental" height="60">
-    </a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-            data-bs-target="#navbarNav" aria-controls="navbarNav"
-            aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav ms-auto">
-        
-        <li class="nav-item">
-          <a class="nav-link fs-5" href="">Contacto</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link fs-5" href="{% url 'sucursales:lista_sucursales' %}">Ver Sucursales y Vehículos</a>
-        </li>
-        {% if user.is_authenticated %}
-          {% if user.is_superuser %}
-          <li class="nav-item">
-            <a class="nav-link fs-5" href="{% url 'admin_menu' %}">Panel Admin</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link fs-5" href="{% url 'logout' %}">Cerrar sesión</a>
-          </li>
-        {% else %}
-        <li class="nav-item">
-          <a class="nav-link fs-5" href="{% url 'reservas:mis_reservas' %}">Mis reservas</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link fs-5" href=>Mi Perfil</a> <!--Por ahora no se debe poder editar el perfil-->
-        </li>
-        <li class="nav-item">
-          <a class="nav-link fs-5" href="{% url 'logout' %}">Cerrar sesión</a>
-        </li>
-    {% endif %}
-{% else %}
-    <li class="nav-item">
-      <a class="nav-link fs-5" href="{% url 'login' %}">Iniciar sesión</a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link fs-5" href="{% url 'registro' %}">Registrarse</a>
-    </li>
-{% endif %}
-      
-      </ul>
+    <div class="container-fluid position-relative">
+        {% load static %}
+        <a class="navbar-brand" href="{% url 'home:home' %}">
+            <img src="{% static 'home/img/AutoRental_Logo.png' %}" alt="Autorental" height="60">
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarNav" aria-controls="navbarNav"
+                aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav navbar-center">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'sucursales:lista_sucursales' %}">Ver Sucursales y Vehículos</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'home:contacto' %}">Contacto</a>
+                </li>
+            </ul>
+            
+            <ul class="navbar-nav navbar-right">
+                {% if user.is_authenticated %}
+                    {% if user.is_superuser %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'admin_menu' %}">Panel Admin</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'logout' %}">Cerrar sesión</a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'reservas:mis_reservas' %}">Mis reservas</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href=>Mi Perfil</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'logout' %}">Cerrar sesión</a>
+                        </li>
+                    {% endif %}
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'login' %}">Iniciar sesión</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'registro' %}">Registrarse</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
     </div>
-  </div>
 </nav>
 
 {% if messages %}
 <div class="container mt-3">
-  {% for message in messages %}
-    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-      {{ message }}
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-  {% endfor %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    {% endfor %}
 </div>
 {% endif %}
 
-<div class="container mt-4">
-  {% block content %}{% endblock %}
+<div class="container mt-4 {% if request.path == '/' %}home-content{% endif %}">
+    {% block content %}{% endblock %}
 </div>
+
+<footer class="footer">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h5>Contacto</h5>
+                <p>📞 Teléfono: (221) 123-4567</p>
+                <p>📧 Email: info@autorental.com</p>
+                <p>📍 Dirección: Calle 50 #1234</p>
+                <p>La Plata, Buenos Aires</p>
+            </div>
+            <div class="footer-section">
+                <h5>Horarios</h5>
+                <p>Lunes a Viernes: 9:00 - 20:00</p>
+                <p>Sábados: 9:00 - 14:00</p>
+                <p>Domingos: Cerrado</p>
+            </div>
+            <div class="footer-section">
+                <h5>Enlaces Rápidos</h5>
+                <a href="{% url 'sucursales:lista_sucursales' %}">Sucursales y Vehículos</a>
+                <a href="{% url 'home:contacto' %}">Contacto</a>
+                {% if not user.is_authenticated %}
+                    <a href="{% url 'login' %}">Iniciar Sesión</a>
+                    <a href="{% url 'registro' %}">Registrarse</a>
+                {% endif %}
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; {% now "Y" %} AutoRental. Todos los derechos reservados.</p>
+        </div>
+    </div>
+</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
