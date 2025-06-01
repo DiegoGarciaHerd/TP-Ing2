@@ -1,43 +1,219 @@
 {% extends 'home/base.html' %}
 {% block content %}
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Menú de Administrador</title>
-</head>
-<body>
-    <h1>Bienvenido, Administrador. Elija una opción</h1>
-    <ul class="admin">
-    <li><a href ="#">Vehículos</a>
-      <ul>
-        <a href ="{% url 'cargar_autos' %}">Agregar Vehículo</a>
-        <a href ="{% url 'modificar_autos' %}">Modificar Vehículo</a>
-        <a href ="{% url 'borrar_autos' %}">Eliminar vehículo</a>
-        <a href ="{% url 'ver_autos'%}">Ver listado de vehículos</a>
-      </ul>
-    </li>
-    <li><a href ="#">Empleados</a>
-      <ul>
-        <a href ="{% url 'cargar_empleados' %}">Agregar Empleado</a>
-        <a href ="#">Modificar Empleado</a>
-        <a href ="#">Eliminar Empleado</a>
-        <a href ="#">Ver listado de vehículos</a>
-      </ul>
-    </li>
-    <li><a href ="#">Estadísticas</a>
-      <ul>
-        <a href ="#">Ver estadísticas</a>
-      </ul>
-    </li>
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-12">
+            <!-- Header del Panel Admin -->
+            <div class="text-center mb-5">
+                <h1 class="display-4 fw-bold" style="color: #0e4532;">Panel de Administración</h1>
+                <p class="lead text-muted">Gestione vehículos, empleados, sucursales y estadísticas desde aquí</p>
+                <hr class="mx-auto" style="width: 100px; height: 3px; background-color: #0e4532; border: none;">
+            </div>
 
-    <li><a href ="#">Sucursales</a>
-      <ul>
-        <a href ="#">Agregar Sucursal</a>
-        <a href ="#">Modificar Sucursal</a>
-        <a href ="#">Eliminar Sucursal</a>
-        <a href ="#">Ver información de sucursales</a>
-      </ul>
-  </ul>
-</body>
-</html>
+            <!-- Tarjetas del Menú -->
+            <div class="row g-4">
+                <!-- Sección Vehículos -->
+                <div class="col-lg-6 col-md-6">
+                    <div class="card h-100 shadow-lg border-0">
+                        <div class="card-header text-white text-center" style="background-color: #0e4532;">
+                            <h4 class="mb-0">
+                                <i class="fas fa-car me-2"></i>Gestión de Vehículos
+                            </h4>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="d-grid gap-3">
+                                <a href="{% url 'cargar_autos' %}" class="btn btn-outline-success btn-lg">
+                                    <i class="fas fa-plus-circle me-2"></i>Agregar Vehículo
+                                </a>
+                                <a href="{% url 'modificar_autos' %}" class="btn btn-outline-primary btn-lg">
+                                    <i class="fas fa-edit me-2"></i>Modificar Vehículo
+                                </a>
+                                <a href="{% url 'borrar_autos' %}" class="btn btn-outline-danger btn-lg">
+                                    <i class="fas fa-trash-alt me-2"></i>Eliminar Vehículo
+                                </a>
+                                <a href="{% url 'ver_autos' %}" class="btn btn-outline-info btn-lg">
+                                    <i class="fas fa-list me-2"></i>Ver Listado de Vehículos
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección Empleados -->
+                <div class="col-lg-6 col-md-6">
+                    <div class="card h-100 shadow-lg border-0">
+                        <div class="card-header text-white text-center" style="background-color: #0e4532;">
+                            <h4 class="mb-0">
+                                <i class="fas fa-users me-2"></i>Gestión de Empleados
+                            </h4>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="d-grid gap-3">
+                                <a href="#" class="btn btn-outline-success btn-lg disabled">
+                                    <i class="fas fa-user-plus me-2"></i>Agregar Empleado
+                                    <small class="d-block text-muted">Próximamente</small>
+                                </a>
+                                <a href="#" class="btn btn-outline-primary btn-lg disabled">
+                                    <i class="fas fa-user-edit me-2"></i>Modificar Empleado
+                                    <small class="d-block text-muted">Próximamente</small>
+                                </a>
+                                <a href="#" class="btn btn-outline-danger btn-lg disabled">
+                                    <i class="fas fa-user-minus me-2"></i>Eliminar Empleado
+                                    <small class="d-block text-muted">Próximamente</small>
+                                </a>
+                                <a href="#" class="btn btn-outline-info btn-lg disabled">
+                                    <i class="fas fa-users me-2"></i>Ver Listado de Empleados
+                                    <small class="d-block text-muted">Próximamente</small>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección Estadísticas -->
+                <div class="col-lg-6 col-md-6">
+                    <div class="card h-100 shadow-lg border-0">
+                        <div class="card-header text-white text-center" style="background-color: #0e4532;">
+                            <h4 class="mb-0">
+                                <i class="fas fa-chart-bar me-2"></i>Estadísticas
+                            </h4>
+                        </div>
+                        <div class="card-body p-4 d-flex align-items-center justify-content-center">
+                            <div class="text-center">
+                                <i class="fas fa-chart-line" style="font-size: 3rem; color: #0e4532; opacity: 0.3;"></i>
+                                <h5 class="mt-3 text-muted">Próximamente</h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sección Sucursales -->
+                <div class="col-lg-6 col-md-6">
+                    <div class="card h-100 shadow-lg border-0">
+                        <div class="card-header text-white text-center" style="background-color: #0e4532;">
+                            <h4 class="mb-0">
+                                <i class="fas fa-building me-2"></i>Gestión de Sucursales
+                            </h4>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="d-grid gap-3">
+                                <a href="#" class="btn btn-outline-success btn-lg disabled">
+                                    <i class="fas fa-plus-circle me-2"></i>Agregar Sucursal
+                                    <small class="d-block text-muted">Próximamente</small>
+                                </a>
+                                <a href="#" class="btn btn-outline-primary btn-lg disabled">
+                                    <i class="fas fa-edit me-2"></i>Modificar Sucursal
+                                    <small class="d-block text-muted">Próximamente</small>
+                                </a>
+                                <a href="#" class="btn btn-outline-danger btn-lg disabled">
+                                    <i class="fas fa-trash-alt me-2"></i>Eliminar Sucursal
+                                    <small class="d-block text-muted">Próximamente</small>
+                                </a>
+                                <a href="#" class="btn btn-outline-info btn-lg disabled">
+                                    <i class="fas fa-info-circle me-2"></i>Ver Información de Sucursales
+                                    <small class="d-block text-muted">Próximamente</small>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-5">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- FontAwesome para los iconos -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<style>
+/* Estilos adicionales para mejorar el diseño */
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 15px;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1) !important;
+}
+
+.card-header {
+    border-radius: 15px 15px 0 0 !important;
+    border: none;
+    padding: 1.5rem;
+}
+
+.btn {
+    border-radius: 10px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn:hover:not(.disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.btn.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn small {
+    font-size: 0.75rem;
+    font-style: italic;
+}
+
+/* Animación para el título */
+.display-4 {
+    animation: fadeInDown 1s ease-out;
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Animación para las tarjetas */
+.card {
+    animation: fadeInUp 0.8s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsivo para móviles */
+@media (max-width: 768px) {
+    .display-4 {
+        font-size: 2rem;
+    }
+    
+    .card-body {
+        padding: 1.5rem !important;
+    }
+    
+    .btn-lg {
+        font-size: 1rem;
+        padding: 0.75rem 1rem;
+    }
+}
+</style>
 {% endblock %}
