@@ -95,6 +95,8 @@ def modificar_autos(request):
                 vehiculo.precio_por_dia = precio
             if foto := request.POST.get('foto_base64'):
                 vehiculo.foto_base64 = foto
+            if (politica_reembolso := request.POST.get('politica_reembolso')) and politica_reembolso != "Sin elegir":
+                vehiculo.politica_de_reembolso = politica_reembolso
                 
             vehiculo.save()
             messages.success(request, "Auto modificado exitosamente")
