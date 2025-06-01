@@ -4,6 +4,7 @@ from vehiculos.models import Vehiculo
 from administrador.decorators import admin_required
 from django.core.exceptions import ValidationError
 from sucursales.models import Sucursal
+from django.http import JsonResponse
 
 @admin_required
 def cargar_autos(request):
@@ -75,27 +76,17 @@ def modificar_autos(request):
     # Obtener todos los vehículos para el selector
     vehiculos = Vehiculo.objects.all().order_by('patente')
     
-    # Formatear el precio_por_dia para cada vehículo
-    for vehiculo in vehiculos:
-        vehiculo.precio_por_dia = f"{float(vehiculo.precio_por_dia):.2f}"
-    
     if request.method == 'POST':
         patente = request.POST.get('patente')
         try:
             vehiculo = Vehiculo.objects.get(patente=patente)
             
             # Actualizar campos si se proporcionaron
-            if marca := request.POST.get('marca'):
-                vehiculo.marca = marca
-            if modelo := request.POST.get('modelo'):
-                vehiculo.modelo = modelo
-            if año := request.POST.get('año'):
-                vehiculo.año = int(año)
             if precio := request.POST.get('precio'):
                 vehiculo.precio_por_dia = precio
             if foto := request.POST.get('foto_base64'):
                 vehiculo.foto_base64 = foto
-            if (politica_reembolso := request.POST.get('politica_reembolso')) and politica_reembolso != "Sin elegir":
+            if (politica_reembolso := request.POST.get('politica_reembolso')):
                 vehiculo.politica_de_reembolso = politica_reembolso
                 
             vehiculo.save()
@@ -107,7 +98,25 @@ def modificar_autos(request):
         except Exception as e:
             messages.error(request, f"Error al modificar el auto: {e}")
     
-    return render(request, 'administrador/modificar_autos.html', {'vehiculos': vehiculos}) 
+    return render(request, 'administrador/modificar_autos.html', {'vehiculos': vehiculos})
+
+@admin_required
+def obtener_datos_vehiculo(request):
+    """Vista para obtener los datos de un vehículo específico vía AJAX"""
+    if request.method == 'GET':
+        patente = request.GET.get('patente')
+        try:
+            vehiculo = Vehiculo.objects.get(patente=patente)
+            data = {
+                'precio_por_dia': str(vehiculo.precio_por_dia),
+                'politica_de_reembolso': vehiculo.politica_de_reembolso,
+                'foto_base64': vehiculo.foto_base64
+            }
+            return JsonResponse(data)
+        except Vehiculo.DoesNotExist:
+            return JsonResponse({'error': 'Vehículo no encontrado'}, status=404)
+    
+    return JsonResponse({'error': 'Método no permitido'}, status=405)
 
 @admin_required
 def ver_autos(request):
