@@ -1,51 +1,201 @@
 {% extends 'home/base.html' %}
 {% block content %}
-<!DOCTYPE html>
-<html>
-    <h1>Ingrese los datos que desee modificar del vehículo</h1>
-    <form method="POST">
-        {% csrf_token %}
-        <ul>
-            <li>
-                <label for="patente">Patente: </label>
-                <input type="text" id="patente" name="patente" required/>
-            </li>
-            <li>
-                <label for="precio">Precio Por Día: </label>
-                <input type="text" id="precio" name="precio"/>
-            </li>
-            <li>
-                <label for="reembolso">Política de Reembolso: </label>
-                <select id="politica_reembolso" name="politica_reembolso">
-                    <option value="Sin elegir" selected>Sin elegir</option>
-                    <option value="0">0%</option>
-                    <option value="20">20%</option>
-                    <option value="100">100%</option>
-                </select>
-            </li>
-            <li>
-                <input type="file" id="foto" accept="image/*"/>
-                <input type="hidden" id="foto_base64" name="foto_base64">
-            </li>
-        </ul>
-        <button type="submit">Guardar cambios del vehículo</button>
-    </form>
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg">
+                <div class="card-header text-white" style="background-color: #0e4532;">
+                    <h2 class="mb-0">Modificar Vehículo</h2>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
 
-    <script>
-        const fileInput = document.getElementById('foto');
-        const base64Input = document.getElementById('foto_base64');
+                    <form method="POST" enctype="multipart/form-data" id="modificarAutoForm">
+                        {% csrf_token %}
+                        
+                        <!-- Selector de Patente -->
+                        <div class="mb-3">
+                            <label for="patente" class="form-label">Seleccionar Vehículo por Patente:</label>
+                            <select class="form-select" id="patente" name="patente" required>
+                                <option value="" disabled selected>Seleccione un vehículo</option>
+                                {% for vehiculo in vehiculos %}
+                                    <option value="{{ vehiculo.patente }}">{{ vehiculo.patente }} - {{ vehiculo.marca }} {{ vehiculo.modelo }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
 
-        fileInput.addEventListener('change', function() {
+                        <!-- Campos modificables - inicialmente ocultos -->
+                        <div id="camposModificables" style="display: none;">
+                            <hr>
+                            <h5 class="mb-3">Datos Modificables</h5>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="precio" class="form-label">Precio por Día:</label>
+                                    <input type="text" class="form-control" id="precio" name="precio">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="politica_reembolso" class="form-label">Política de Reembolso:</label>
+                                    <select class="form-select" id="politica_reembolso" name="politica_reembolso">
+                                        <option value="0">0% - No se realizan reembolsos</option>
+                                        <option value="20">20% - Reembolso del 20% en ARS de la reserva</option>
+                                        <option value="100">100% - Reembolso del 100% en ARS de la reserva</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="foto" class="form-label">Foto del Vehículo:</label>
+                                <input type="file" class="form-control" id="foto" name="foto" accept="image/*">
+                                <input type="hidden" id="foto_base64" name="foto_base64">
+                                
+                                <!-- Preview de la imagen actual -->
+                                <div id="previewContainer" class="mt-2" style="display: none;">
+                                    <p class="text-muted">Imagen actual:</p>
+                                    <img id="previewImage" class="img-fluid rounded" style="max-height: 200px;">
+                                </div>
+                                
+                                <!-- Preview de la nueva imagen -->
+                                <div id="newPreviewContainer" class="mt-2" style="display: none;">
+                                    <p class="text-muted">Nueva imagen:</p>
+                                    <img id="newPreviewImage" class="img-fluid rounded" style="max-height: 200px;">
+                                </div>
+                            </div>
+
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <button type="button" class="btn btn-secondary me-md-2" id="btnCancelar">
+                                    Cancelar
+                                </button>
+                                <button type="submit" class="btn text-white" style="background-color: #0e4532;" id="btnAceptar">
+                                    Aceptar
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const patenteSelect = document.getElementById('patente');
+        const camposModificables = document.getElementById('camposModificables');
+        const precioInput = document.getElementById('precio');
+        const politicaSelect = document.getElementById('politica_reembolso');
+        const fotoInput = document.getElementById('foto');
+        const fotoBase64Input = document.getElementById('foto_base64');
+        const previewContainer = document.getElementById('previewContainer');
+        const previewImage = document.getElementById('previewImage');
+        const newPreviewContainer = document.getElementById('newPreviewContainer');
+        const newPreviewImage = document.getElementById('newPreviewImage');
+        const btnCancelar = document.getElementById('btnCancelar');
+        
+        // Datos originales para el botón cancelar
+        let datosOriginales = {};
+        
+        // Cuando se selecciona una patente, cargar los datos del vehículo
+        patenteSelect.addEventListener('change', function() {
+            const patente = this.value;
+            if (patente) {
+                // Hacer petición AJAX para obtener los datos del vehículo
+                fetch(`/admin-auth/obtener-datos-vehiculo/?patente=${patente}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            alert('Error: ' + data.error);
+                            return;
+                        }
+                        
+                        // Guardar datos originales
+                        datosOriginales = {
+                            precio_por_dia: data.precio_por_dia,
+                            politica_de_reembolso: data.politica_de_reembolso,
+                            foto_base64: data.foto_base64
+                        };
+                        
+                        // Llenar los campos con los datos actuales
+                        precioInput.value = data.precio_por_dia;
+                        politicaSelect.value = data.politica_de_reembolso;
+                        fotoBase64Input.value = data.foto_base64;
+                        
+                        // Mostrar la imagen actual
+                        if (data.foto_base64) {
+                            previewImage.src = 'data:image/jpeg;base64,' + data.foto_base64;
+                            previewContainer.style.display = 'block';
+                        } else {
+                            previewContainer.style.display = 'none';
+                        }
+                        
+                        // Ocultar preview de nueva imagen
+                        newPreviewContainer.style.display = 'none';
+                        
+                        // Mostrar los campos modificables
+                        camposModificables.style.display = 'block';
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error al cargar los datos del vehículo');
+                    });
+            } else {
+                camposModificables.style.display = 'none';
+            }
+        });
+        
+        // Manejar cambio de archivo de foto
+        fotoInput.addEventListener('change', function() {
             const file = this.files[0];
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     const base64String = e.target.result.split(',')[1];
-                    base64Input.value = base64String;
+                    fotoBase64Input.value = base64String;
+                    newPreviewImage.src = e.target.result;
+                    newPreviewContainer.style.display = 'block';
                 };
                 reader.readAsDataURL(file);
+            } else {
+                newPreviewContainer.style.display = 'none';
+                // Restaurar la imagen original
+                fotoBase64Input.value = datosOriginales.foto_base64;
             }
         });
-    </script>
-</html>
+        
+        // Botón cancelar - restaurar valores originales
+        btnCancelar.addEventListener('click', function() {
+            if (Object.keys(datosOriginales).length > 0) {
+                precioInput.value = datosOriginales.precio_por_dia;
+                politicaSelect.value = datosOriginales.politica_de_reembolso;
+                fotoBase64Input.value = datosOriginales.foto_base64;
+                
+                // Restaurar vista de imagen
+                if (datosOriginales.foto_base64) {
+                    previewImage.src = 'data:image/jpeg;base64,' + datosOriginales.foto_base64;
+                    previewContainer.style.display = 'block';
+                } else {
+                    previewContainer.style.display = 'none';
+                }
+                
+                // Ocultar nueva imagen y limpiar input de archivo
+                newPreviewContainer.style.display = 'none';
+                fotoInput.value = '';
+            }
+        });
+        
+        // Prevenir que Enter envíe el formulario
+        document.getElementById('modificarAutoForm').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                return false;
+            }
+        });
+    });
+</script>
 {% endblock %}
