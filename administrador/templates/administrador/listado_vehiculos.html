@@ -1,0 +1,223 @@
+{% extends 'home/base.html' %}
+{% load static %}
+
+{% block title %}Administración de Vehículos{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow-lg">
+        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+            <h2 class="mb-0">Gestión de Vehículos</h2>
+            <div>
+                <a href="{% url 'admin:vehiculos_vehiculo_add' %}" class="btn btn-success">
+                    <i class="fas fa-plus"></i> Agregar Vehículo
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            <!-- Filtros -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <select class="form-select" id="filtroSucursal">
+                        <option value="">Todas las sucursales</option>
+                        {% for sucursal in sucursales %}
+                            <option value="{{ sucursal.id }}">{{ sucursal.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" id="filtroEstado">
+                        <option value="">Todos los estados</option>
+                        <option value="disponible">Disponible</option>
+                        <option value="reservado">Reservado</option>
+                        <option value="mantenimiento">En mantenimiento</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" id="filtroTipo">
+                        <option value="">Todos los tipos</option>
+                        {% for tipo in tipos_vehiculo %}
+                            <option value="{{ tipo.0 }}">{{ tipo.1 }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <input type="text" class="form-control" id="busqueda" placeholder="Buscar...">
+                </div>
+            </div>
+
+            <!-- Tabla de vehículos -->
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th>Imagen</th>
+                            <th>Marca/Modelo</th>
+                            <th>Patente</th>
+                            <th>Sucursal</th>
+                            <th>Estado</th>
+                            <th>Precio/día</th>
+                            <th>Reservas Activas</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for vehiculo in vehiculos %}
+                        <tr>
+                            <td>{{ vehiculo.id }}</td>
+                            <td>
+                                {% if vehiculo.foto_base64 %}
+                                    <img src="data:image/jpeg;base64,{{ vehiculo.foto_base64 }}" 
+                                         alt="{{ vehiculo.modelo }}" 
+                                         style="width: 50px; height: 50px; object-fit: cover;">
+                                {% else %}
+                                    <div class="bg-light text-center" style="width: 50px; height: 50px;">
+                                        <i class="fas fa-car"></i>
+                                    </div>
+                                {% endif %}
+                            </td>
+                            <td>{{ vehiculo.marca }} {{ vehiculo.modelo }}</td>
+                            <td>{{ vehiculo.patente }}</td>
+                            <td>{{ vehiculo.sucursal_actual.nombre }}</td>
+                            <td>
+                                <span class="badge {% if vehiculo.disponible %}bg-success{% else %}bg-danger{% endif %}">
+                                    {% if vehiculo.disponible %}Disponible{% else %}No disponible{% endif %}
+                                </span>
+                            </td>
+                            <td>${{ vehiculo.precio_por_dia }}</td>
+                            <td>{{ vehiculo.reservas_activas_count }}</td>
+                            <td>
+                                <div class="btn-group">
+                                    <a href="{% url 'admin:vehiculos_vehiculo_change' vehiculo.id %}" 
+                                       class="btn btn-sm btn-primary">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'admin:vehiculos_vehiculo_delete' vehiculo.id %}" 
+                                       class="btn btn-sm btn-danger">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                    <button type="button" 
+                                            class="btn btn-sm btn-info" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#historialModal{{ vehiculo.id }}">
+                                        <i class="fas fa-history"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <!-- Modal de Historial -->
+                        <div class="modal fade" id="historialModal{{ vehiculo.id }}" tabindex="-1">
+                            <div class="modal-dialog modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Historial de {{ vehiculo.marca }} {{ vehiculo.modelo }}</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <h6>Historial de Reservas</h6>
+                                        <table class="table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Cliente</th>
+                                                    <th>Fecha Inicio</th>
+                                                    <th>Fecha Fin</th>
+                                                    <th>Estado</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for reserva in vehiculo.reservas.all %}
+                                                <tr>
+                                                    <td>{{ reserva.cliente.get_full_name }}</td>
+                                                    <td>{{ reserva.fecha_recogida }}</td>
+                                                    <td>{{ reserva.fecha_devolucion }}</td>
+                                                    <td>{{ reserva.get_estado_display }}</td>
+                                                </tr>
+                                                {% empty %}
+                                                <tr>
+                                                    <td colspan="4" class="text-center">No hay reservas registradas</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Paginación -->
+            {% if is_paginated %}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1">&laquo; Primera</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a>
+                        </li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Siguiente</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Última &raquo;</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Scripts para filtros -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const filtroSucursal = document.getElementById('filtroSucursal');
+    const filtroEstado = document.getElementById('filtroEstado');
+    const filtroTipo = document.getElementById('filtroTipo');
+    const busqueda = document.getElementById('busqueda');
+
+    function aplicarFiltros() {
+        const url = new URL(window.location.href);
+        
+        if (filtroSucursal.value) url.searchParams.set('sucursal', filtroSucursal.value);
+        if (filtroEstado.value) url.searchParams.set('estado', filtroEstado.value);
+        if (filtroTipo.value) url.searchParams.set('tipo', filtroTipo.value);
+        if (busqueda.value) url.searchParams.set('q', busqueda.value);
+        
+        window.location.href = url.toString();
+    }
+
+    filtroSucursal.addEventListener('change', aplicarFiltros);
+    filtroEstado.addEventListener('change', aplicarFiltros);
+    filtroTipo.addEventListener('change', aplicarFiltros);
+    
+    let timeoutId;
+    busqueda.addEventListener('input', function() {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(aplicarFiltros, 500);
+    });
+});
+</script>
+{% endblock %} 
