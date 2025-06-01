@@ -3,9 +3,11 @@ from django.contrib import messages
 from vehiculos.models import Vehiculo
 from administrador.decorators import admin_required
 from django.core.exceptions import ValidationError
+from sucursales.models import Sucursal
 
 @admin_required
 def cargar_autos(request):
+    sucursales = Sucursal.objects.all()
     if request.method == 'POST':
         try:
             # Obtener datos del formulario
@@ -48,7 +50,7 @@ def cargar_autos(request):
         except Exception as e:
             messages.error(request, f"Error al cargar el vehículo: {str(e)}")
     
-    return render(request, 'administrador/cargar_autos.html')
+    return render(request, 'administrador/cargar_autos.html', {'sucursales': sucursales})
 
 @admin_required
 def borrar_autos(request):
