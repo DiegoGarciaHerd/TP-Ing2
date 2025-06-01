@@ -16,9 +16,10 @@ def cargar_autos(request):
             precio_por_dia = request.POST.get('precio')
             foto_base64 = request.POST.get('foto_base64')
             politica_reembolso = request.POST.get('politica_reembolso')
+            sucursal_actual_id = request.POST.get('sucursal')
 
             # Validaciones
-            if not all([marca, modelo, año, patente, precio_por_dia, foto_base64, politica_reembolso]):
+            if not all([marca, modelo, año, patente, precio_por_dia, foto_base64, politica_reembolso, sucursal_actual_id]):
                 raise ValidationError("Todos los campos son obligatorios.")
 
             if Vehiculo.objects.filter(patente=patente).exists():
@@ -32,7 +33,7 @@ def cargar_autos(request):
                 patente=patente.upper(),  # Convertir a mayúsculas
                 precio_por_dia=precio_por_dia,
                 disponible=True,
-                sucursal_actual_id=1,  # TODO: Permitir seleccionar sucursal
+                sucursal_actual_id=sucursal_actual_id,  # TODO: Permitir seleccionar sucursal
                 foto_base64=foto_base64,
                 politica_de_reembolso=politica_reembolso
             )

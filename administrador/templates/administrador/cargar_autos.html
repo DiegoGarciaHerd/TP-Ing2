@@ -55,6 +55,16 @@
                             </div>
                         </div>
 
+                        <div class="col-md-6 mb-3">
+                            <label for="sucursal" class="form-label">Política de Reembolso:</label>
+                            <select class="form-select" id="sucursal" name="sucursal" required>
+                                <option value="" disabled selected>Seleccione una Sucursal</option>
+                                {% for sucursal in sucursales %}
+                                    <option value="{{ sucursal.id }}">{{ sucursal.nombre }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
                         <div class="mb-3">
                             <label for="foto" class="form-label">Foto del Vehículo:</label>
                             <input type="file" class="form-control" id="foto" name="foto" accept="image/*" required>
