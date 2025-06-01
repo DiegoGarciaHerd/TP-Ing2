@@ -3,3 +3,8 @@ __pycache__/
 *.pyc
 .env
 db.sqlite3
+staticfiles/
+media/
+.DS_Store
+*.log
+local_settings.py
