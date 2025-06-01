@@ -55,12 +55,9 @@
                     </div>
 
                     <div class="d-grid gap-2">
-                        <form method="post" action="{% url 'reservas:confirmar_reserva' vehiculo.id %}" class="d-inline">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-lg btn-success w-100 mb-2">
-                                Aceptar la Reserva
-                            </button>
-                        </form>
+                        <a href="{% url 'reservas:procesar_pago' vehiculo.id %}" class="btn btn-lg btn-success w-100 mb-2">
+                            Proceder al Pago
+                        </a>
                         <a href="{% url 'home:home' %}" class="btn btn-lg btn-danger w-100">
                             Cancelar la Reserva
                         </a>

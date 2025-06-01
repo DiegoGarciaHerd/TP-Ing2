@@ -17,7 +17,8 @@
             <li>
                 <label for="reembolso">Política de Reembolso: </label>
                 <select id="politica_reembolso" name="politica_reembolso">
-                    <option value="0%" selected>0%</option>
+                    <option value="Sin elegir" selected>Sin elegir</option>
+                    <option value="0%">0%</option>
                     <option value="20%">20%</option>
                     <option value="100%">100%</option>
                 </select>
@@ -28,5 +29,23 @@
             </li>
         </ul>
         <button type="submit">Guardar cambios del vehículo</button>
+    </form>
+
+    <script>
+        const fileInput = document.getElementById('foto');
+        const base64Input = document.getElementById('foto_base64');
+
+        fileInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const base64String = e.target.result.split(',')[1];
+                    base64Input.value = base64String;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
 </html>
 {% endblock %}

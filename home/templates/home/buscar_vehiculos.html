@@ -5,6 +5,31 @@
 
 {% block content %}
 <style>
+    body {
+        background-image: url("{% static 'home/img/Carretera1.jpg' %}");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        background-repeat: no-repeat;
+        min-height: 100vh;
+    }
+
+    .search-container {
+        background-color: rgba(255, 255, 255, 0.95);
+        padding: 2rem;
+        border-radius: 15px;
+        box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        margin: 2rem auto;
+    }
+
+    .vehicle-container {
+        background-color: rgba(255, 255, 255, 0.95);
+        padding: 2rem;
+        border-radius: 15px;
+        box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        margin-top: 2rem;
+    }
+
     .sucursal-devolucion-hidden {
         display: none;
     }
@@ -13,149 +38,122 @@
     }
 </style>
 
-<div class="container">
-    <div class="row justify-content-center mb-5">
-        <div class="col-md-8">
-            <div class="card shadow-lg">
-                <div class="card-header text-white" style="background-color: #0e4532;">
-                    <h2 class="mb-0 text-center">Buscar Vehículos Disponibles</h2>
-                </div>
-                <div class="card-body">
-                    <form method="POST" action="{% url 'home:buscar_vehiculos' %}">
-                        {% csrf_token %}
-                        <div class="form-group mb-3" style="display: flex; align-items: center;">
-                            <input type="checkbox" id="misma_sucursal" name="misma_sucursal" 
-                                   {% if misma_sucursal %}checked{% endif %} style="margin-right: 10px;">
-                            <label for="misma_sucursal" class="mb-0">Misma sucursal de retiro y devolución</label>
-                        </div>
+<div class="search-container">
+    <h2 class="mb-4">Buscar Vehículos Disponibles</h2>
+    <form method="post" class="mb-4">
+        {% csrf_token %}
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label for="sucursal_retiro" class="form-label">Sucursal de Retiro</label>
+                <select name="sucursal_retiro" id="sucursal_retiro" class="form-select" required>
+                    <option value="">Seleccione una sucursal</option>
+                    {% for sucursal in sucursales %}
+                        <option value="{{ sucursal.id }}" {% if sucursal_seleccionada == sucursal.id|stringformat:"s" %}selected{% endif %}>
+                            {{ sucursal.nombre }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="col-md-6" id="sucursal_devolucion_container" {% if misma_sucursal %}style="display: none;"{% endif %}>
+                <label for="sucursal_devolucion" class="form-label">Sucursal de Devolución</label>
+                <select name="sucursal_devolucion" id="sucursal_devolucion" class="form-select" {% if misma_sucursal %}disabled{% endif %}>
+                    <option value="">Seleccione una sucursal</option>
+                    {% for sucursal in sucursales %}
+                        <option value="{{ sucursal.id }}" {% if sucursal_devolucion_seleccionada == sucursal.id|stringformat:"s" %}selected{% endif %}>
+                            {{ sucursal.nombre }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
 
-                        <div class="form-group mb-3">
-                            <label for="sucursal_retiro" class="form-label">Sucursal de retiro</label>
-                            <select id="sucursal_retiro" name="sucursal_retiro" class="form-select" required>
-                                <option value="">Seleccione una sucursal</option>
-                                {% for sucursal in sucursales %}
-                                    <option value="{{ sucursal.id }}" 
-                                            {% if sucursal.id|stringformat:"i" == sucursal_seleccionada %}selected{% endif %}>
-                                        {{ sucursal.nombre }} - {{ sucursal.direccion }}
-                                    </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-
-                        <div class="form-group mb-3 {% if misma_sucursal %}sucursal-devolucion-hidden{% else %}sucursal-devolucion-visible{% endif %}" id="sucursal_devolucion_group">
-                            <label for="sucursal_devolucion" class="form-label">Sucursal de devolución</label>
-                            <select id="sucursal_devolucion" name="sucursal_devolucion" class="form-select">
-                                <option value="">Seleccione una sucursal</option>
-                                {% for sucursal in sucursales %}
-                                    <option value="{{ sucursal.id }}" 
-                                            {% if sucursal.id|stringformat:"i" == sucursal_devolucion_seleccionada %}selected{% endif %}>
-                                        {{ sucursal.nombre }} - {{ sucursal.direccion }}
-                                    </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label for="fechaRetiro" class="form-label">Fecha de Retiro</label>
-                                    <input type="date" id="fechaRetiro" name="fecha_retiro" class="form-control" 
-                                           value="{{ fecha_retiro|date:'Y-m-d' }}" required>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label for="fechaEntrega" class="form-label">Fecha de Entrega</label>
-                                    <input type="date" id="fechaEntrega" name="fecha_entrega" class="form-control" 
-                                           value="{{ fecha_entrega|date:'Y-m-d' }}" required>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="d-grid gap-2 mt-4">
-                            <button type="submit" class="btn btn-lg text-white" style="background-color: #0e4532;">
-                                Buscar Vehículos
-                            </button>
-                        </div>
-                    </form>
+            <div class="col-12">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="misma_sucursal" name="misma_sucursal" {% if misma_sucursal %}checked{% endif %}>
+                    <label class="form-check-label" for="misma_sucursal">
+                        Devolver en la misma sucursal
+                    </label>
                 </div>
             </div>
+
+            <div class="col-md-6">
+                <label for="fecha_retiro" class="form-label">Fecha de Retiro</label>
+                <input type="date" class="form-control" id="fecha_retiro" name="fecha_retiro" 
+                       value="{{ fecha_retiro|date:'Y-m-d' }}" required min="{{ today|date:'Y-m-d' }}">
+            </div>
+
+            <div class="col-md-6">
+                <label for="fecha_entrega" class="form-label">Fecha de Entrega</label>
+                <input type="date" class="form-control" id="fecha_entrega" name="fecha_entrega" 
+                       value="{{ fecha_entrega|date:'Y-m-d' }}" required min="{{ today|date:'Y-m-d' }}">
+            </div>
+
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary">Buscar Vehículos</button>
+            </div>
         </div>
-    </div>
+    </form>
 
     {% if error %}
-    <div class="alert alert-danger" role="alert">
-        {{ error }}
-    </div>
-    {% endif %}
-
-    {% if vehiculos_disponibles %}
-        <h3 class="mb-4">Vehículos Disponibles</h3>
-        <div class="row">
-            {% for vehiculo in vehiculos_disponibles %}
-                <div class="col-md-4 mb-4">
-                    <div class="card h-100 shadow-sm">
-                        <div class="card-body">
-                            <h5 class="card-title">{{ vehiculo.marca }} {{ vehiculo.modelo }}</h5>
-                            <p class="card-text">
-                                <strong>Año:</strong> {{ vehiculo.año }}<br>
-                                <strong>Patente:</strong> {{ vehiculo.patente }}<br>
-                                <strong>Precio por día:</strong> ${{ vehiculo.precio_por_dia|floatformat:2 }}<br>
-                                <strong>Ubicación:</strong> {{ vehiculo.sucursal_actual.nombre }}
-                            </p>
-                            <a href="{% url 'reservas:crear_reserva' vehiculo.id %}?fecha_retiro={{ fecha_retiro|date:'Y-m-d' }}&fecha_entrega={{ fecha_entrega|date:'Y-m-d' }}" 
-                               class="btn btn-primary w-100">Reservar este vehículo</a>
-                        </div>
-                    </div>
-                </div>
-            {% endfor %}
-        </div>
-    {% elif request.method == 'POST' %}
-        <div class="alert alert-info" role="alert">
-            No hay vehículos disponibles para los criterios seleccionados
-        </div>
+        <div class="alert alert-danger">{{ error }}</div>
     {% endif %}
 </div>
 
+{% if vehiculos_disponibles %}
+<div class="vehicle-container">
+    <h3 class="mb-4">Vehículos Disponibles</h3>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        {% for vehiculo in vehiculos_disponibles %}
+            <div class="col">
+                <div class="card h-100">
+                    {% if vehiculo.foto_base64 %}
+                        <img src="data:image/jpeg;base64,{{ vehiculo.foto_base64 }}" class="card-img-top" alt="{{ vehiculo.modelo }}">
+                    {% else %}
+                        <div class="card-img-top d-flex align-items-center justify-content-center bg-light" style="height: 200px;">
+                            <span class="text-muted">Sin imagen disponible</span>
+                        </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ vehiculo.marca }} {{ vehiculo.modelo }}</h5>
+                        <p class="card-text">
+                            <strong>Año:</strong> {{ vehiculo.anio }}<br>
+                            <strong>Tipo:</strong> {{ vehiculo.get_tipo_display }}<br>
+                            <strong>Capacidad:</strong> {{ vehiculo.capacidad }} personas<br>
+                            <strong>Precio por día:</strong> ${{ vehiculo.precio_dia }}
+                        </p>
+                        <a href="{% url 'reservas:crear_reserva' vehiculo.id %}?fecha_retiro={{ fecha_retiro|date:'Y-m-d' }}&fecha_entrega={{ fecha_entrega|date:'Y-m-d' }}&sucursal_retiro={{ sucursal_seleccionada }}&sucursal_devolucion={% if misma_sucursal %}{{ sucursal_seleccionada }}{% else %}{{ sucursal_devolucion_seleccionada }}{% endif %}" 
+                           class="btn btn-primary">Reservar</a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
 <script>
-    const hoy = new Date().toISOString().split('T')[0];
-    const fechaRetiro = document.getElementById('fechaRetiro');
-    const fechaEntrega = document.getElementById('fechaEntrega');
-    const mismaSucursal = document.getElementById('misma_sucursal');
-    const sucursalRetiro = document.getElementById('sucursal_retiro');
-    const sucursalDevolucion = document.getElementById('sucursal_devolucion');
-    const sucursalDevolucionGroup = document.getElementById('sucursal_devolucion_group');
+document.getElementById('misma_sucursal').addEventListener('change', function() {
+    var sucursalDevolucionContainer = document.getElementById('sucursal_devolucion_container');
+    var sucursalDevolucionSelect = document.getElementById('sucursal_devolucion');
+    
+    if (this.checked) {
+        sucursalDevolucionContainer.style.display = 'none';
+        sucursalDevolucionSelect.disabled = true;
+    } else {
+        sucursalDevolucionContainer.style.display = 'block';
+        sucursalDevolucionSelect.disabled = false;
+    }
+});
 
-    // Configuración inicial de fechas
-    fechaRetiro.min = hoy;
-    fechaEntrega.min = hoy;
-
-    // Manejo de fechas
-    fechaRetiro.addEventListener('change', function () {
-        const fechaSeleccionada = fechaRetiro.value;
-        fechaEntrega.min = fechaSeleccionada;
-        if (fechaEntrega.value && fechaEntrega.value < fechaSeleccionada) {
-            fechaEntrega.value = "";
-        }
-    });
-
-    // Manejo de sucursal de devolución
-    mismaSucursal.addEventListener('change', function() {
-        if (this.checked) {
-            sucursalDevolucionGroup.classList.remove('sucursal-devolucion-visible');
-            sucursalDevolucionGroup.classList.add('sucursal-devolucion-hidden');
-            sucursalDevolucion.value = sucursalRetiro.value;
-        } else {
-            sucursalDevolucionGroup.classList.remove('sucursal-devolucion-hidden');
-            sucursalDevolucionGroup.classList.add('sucursal-devolucion-visible');
-        }
-    });
-
-    // Sincronizar sucursal de devolución cuando cambia la de retiro
-    sucursalRetiro.addEventListener('change', function() {
-        if (mismaSucursal.checked) {
-            sucursalDevolucion.value = this.value;
-        }
-    });
+// Validación de fechas
+document.getElementById('fecha_retiro').addEventListener('change', function() {
+    var fechaRetiro = new Date(this.value);
+    var fechaEntrega = document.getElementById('fecha_entrega');
+    fechaEntrega.min = this.value;
+    
+    if (fechaEntrega.value && new Date(fechaEntrega.value) < fechaRetiro) {
+        fechaEntrega.value = this.value;
+    }
+});
 </script>
 {% endblock %} 

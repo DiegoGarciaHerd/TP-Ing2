@@ -11,6 +11,14 @@ class Reserva(models.Model):
         ('FINALIZADA', 'Finalizada'),
     )
 
+    ESTADO_PAGO_CHOICES = (
+        ('PENDIENTE', 'Pendiente'),
+        ('PROCESANDO', 'Procesando'),
+        ('PAGADO', 'Pagado'),
+        ('FALLIDO', 'Fallido'),
+        ('REEMBOLSADO', 'Reembolsado'),
+    )
+
     cliente = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='reservas')
     vehiculo = models.ForeignKey(Vehiculo, on_delete=models.CASCADE, related_name='reservas')
     fecha_recogida = models.DateField()
@@ -18,6 +26,12 @@ class Reserva(models.Model):
     costo_total = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     estado = models.CharField(max_length=20, choices=ESTADO_RESERVA_CHOICES, default='PENDIENTE')
     fecha_creacion = models.DateTimeField(auto_now_add=True)
+    
+    # Campos de pago
+    estado_pago = models.CharField(max_length=20, choices=ESTADO_PAGO_CHOICES, default='PENDIENTE')
+    fecha_pago = models.DateTimeField(null=True, blank=True)
+    referencia_pago = models.CharField(max_length=100, null=True, blank=True)
+    ultimos_4_digitos_tarjeta = models.CharField(max_length=4, null=True, blank=True)
 
     def clean(self):
 
@@ -39,6 +53,9 @@ class Reserva(models.Model):
                 self.costo_total = self.vehiculo.precio_por_dia
         super().save(*args, **kwargs)
 
+    @property
+    def esta_pagado(self):
+        return self.estado_pago == 'PAGADO'
 
     def __str__(self):
         return f"Reserva {self.id} de {self.cliente.get_full_name() or self.cliente.email} para {self.vehiculo}"

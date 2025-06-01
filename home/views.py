@@ -10,6 +10,9 @@ def home(request):
     sucursales = Sucursal.objects.all()
     return render(request, 'home/home.html', {'sucursales': sucursales})
 
+def contacto(request):
+    return render(request, 'home/contacto.html')
+
 def buscar_vehiculos(request):
     # Obtener todas las sucursales para el formulario
     sucursales = Sucursal.objects.all()
