@@ -199,13 +199,26 @@ class PagoForm(forms.Form):
 
     def clean_cvv(self):
         cvv = self.cleaned_data.get('cvv', '')
+        numero_tarjeta = self.cleaned_data.get('numero_tarjeta', '')
+        
         if not cvv:
             raise forms.ValidationError("El CVV es requerido.")
             
         if not cvv.isdigit():
             raise forms.ValidationError("El CVV debe contener solo dígitos.")
+            
         if len(cvv) < 3 or len(cvv) > 4:
             raise forms.ValidationError("El CVV debe tener 3 o 4 dígitos.")
+            
+        # Limpiar número de tarjeta (eliminar espacios y guiones)
+        numero_limpio = re.sub(r'[\s-]', '', numero_tarjeta)
+        
+        # Validar CVV específico para cada tarjeta
+        if numero_limpio == '4517660196851645' and cvv != '789':
+            raise forms.ValidationError("CVV incorrecto para esta tarjeta.")
+        elif numero_limpio == '5258556802017961' and cvv != '345':
+            raise forms.ValidationError("CVV incorrecto para esta tarjeta.")
+            
         return cvv
 
     def clean(self):
@@ -231,34 +244,26 @@ class PagoForm(forms.Form):
                 # Limpiar número de tarjeta (eliminar espacios y guiones)
                 numero_limpio = re.sub(r'[\s-]', '', numero_tarjeta)
                 
-                # Tarjetas permitidas
+                # Tarjetas permitidas con los CVV específicos
                 tarjetas_permitidas = [
                     {
                         'numero': '4517660196851645',
                         'mes': '8',
                         'ano': '2030',
-                        'cvv': '456',
+                        'cvv': '789',  # CVV actualizado
                         'nombre': 'CONRADO FEDERICO ESCOBARES'
                     },
                     {
                         'numero': '5258556802017961',
                         'mes': '8',
                         'ano': '2029',
-                        'cvv': '789',
+                        'cvv': '345',  # CVV actualizado
                         'nombre': 'ESCOBARES CONRADO F'
-                    },
-                    {
-                        'numero': '4532015112830366',
-                        'mes': '10',
-                        'ano': '2030',
-                        'cvv': '123',
-                        'nombre': 'JUAN PEREZ'
                     }
                 ]
                 
                 # Verificar si la tarjeta coincide con alguna permitida
                 tarjeta_valida = False
-                tarjeta_sin_fondos = False
                 
                 for tarjeta in tarjetas_permitidas:
                     if (numero_limpio == tarjeta['numero'] and
@@ -267,15 +272,9 @@ class PagoForm(forms.Form):
                         cvv == tarjeta['cvv'] and
                         nombre_titular.upper() == tarjeta['nombre']):
                         tarjeta_valida = True
-                        # Verificar si es la tarjeta sin fondos
-                        if numero_limpio == '4532015112830366':
-                            tarjeta_sin_fondos = True
                         break
                 
                 if not tarjeta_valida:
-                    raise forms.ValidationError("Los datos de la tarjeta no coinciden con una tarjeta autorizada.")
-                
-                if tarjeta_sin_fondos:
-                    raise forms.ValidationError("La tarjeta no tiene fondos suficientes para realizar el pago.")
+                    raise forms.ValidationError("Los datos de la tarjeta no coinciden con una tarjeta autorizada o el CVV es incorrecto.")
         
         return cleaned_data

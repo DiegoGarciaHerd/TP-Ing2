@@ -8,6 +8,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.conf import settings
 import datetime
+import re
 
 from .models import Reserva
 from sucursales.models import Sucursal 
@@ -212,6 +213,33 @@ def procesar_pago(request, vehiculo_id):
                     nombre_titular = tarjeta_guardada.nombre_titular
                     mes_vencimiento = tarjeta_guardada.mes_vencimiento
                     ano_vencimiento = tarjeta_guardada.ano_vencimiento
+                    
+                    # Validar CVV específico para tarjeta guardada
+                    cvv = form.cleaned_data['cvv']
+                    numero_limpio = re.sub(r'[\s-]', '', numero_tarjeta)
+                    
+                    # Tarjetas permitidas con sus CVV específicos
+                    tarjetas_permitidas = {
+                        '4517660196851645': '789',
+                        '5258556802017961': '345'
+                    }
+                    
+                    if numero_limpio in tarjetas_permitidas:
+                        if cvv != tarjetas_permitidas[numero_limpio]:
+                            messages.error(request, 'CVV incorrecto para esta tarjeta.')
+                            return render(request, 'reservas/procesar_pago.html', {
+                                'form': form, 
+                                'reserva': reserva, 
+                                'vehiculo': vehiculo
+                            })
+                    else:
+                        messages.error(request, 'Tarjeta no autorizada.')
+                        return render(request, 'reservas/procesar_pago.html', {
+                            'form': form, 
+                            'reserva': reserva, 
+                            'vehiculo': vehiculo
+                        })
+                        
                 except:
                     messages.error(request, 'No se pudo acceder a tu tarjeta guardada. Por favor, ingresa los datos manualmente.')
                     return render(request, 'reservas/procesar_pago.html', {
@@ -444,20 +472,73 @@ def seleccionar_metodo_pago(request, vehiculo_id):
     })()
     
     if request.method == 'POST':
-        # Simular pago exitoso con tarjeta guardada
-        # Generar una referencia de pago única
-        referencia_pago = f"PAY-{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"
+        # Obtener el CVV del formulario
+        cvv = request.POST.get('cvv')
+        print(f"CVV recibido: {cvv}")  # Debug log
         
-        # Guardar información del pago en la sesión
-        request.session['pago_procesado'] = {
-            'referencia_pago': referencia_pago,
-            'ultimos_4_digitos': '****',  # En una implementación real, obtendríamos esto de la tarjeta guardada
-            'fecha_pago': datetime.datetime.now().isoformat(),
-            'monto': float(reserva_temporal['costo_total'])
-        }
-        
-        messages.success(request, '¡Pago procesado exitosamente con tu tarjeta guardada!')
-        return redirect('reservas:confirmar_reserva', vehiculo_id=vehiculo.id)
+        if not cvv:
+            messages.error(request, 'El CVV es requerido.')
+            return render(request, 'reservas/seleccionar_metodo_pago.html', {
+                'reserva': reserva,
+                'vehiculo': vehiculo,
+                'tarjeta_guardada': request.user.tarjeta_guardada
+            })
+            
+        try:
+            tarjeta_guardada = request.user.tarjeta_guardada
+            ultimos_4_digitos = tarjeta_guardada.ultimos_4_digitos
+            
+            # Tarjetas permitidas con sus CVV específicos y últimos 4 dígitos
+            tarjetas_permitidas = {
+                '1645': '789',  # Para 4517660196851645
+                '7961': '345'   # Para 5258556802017961
+            }
+            
+            print(f"Últimos 4 dígitos de la tarjeta: {ultimos_4_digitos}")  # Debug log
+            print(f"CVV esperado para la tarjeta: {tarjetas_permitidas.get(ultimos_4_digitos)}")  # Debug log
+            
+            if ultimos_4_digitos in tarjetas_permitidas:
+                if cvv != tarjetas_permitidas[ultimos_4_digitos]:
+                    print(f"CVV incorrecto. Recibido: {cvv}, Esperado: {tarjetas_permitidas[ultimos_4_digitos]}")  # Debug log
+                    messages.error(request, 'CVV incorrecto para esta tarjeta.')
+                    return render(request, 'reservas/seleccionar_metodo_pago.html', {
+                        'reserva': reserva,
+                        'vehiculo': vehiculo,
+                        'tarjeta_guardada': tarjeta_guardada
+                    })
+                else:
+                    print("CVV correcto, procediendo con el pago")  # Debug log
+            else:
+                print(f"Tarjeta no autorizada: {ultimos_4_digitos}")  # Debug log
+                messages.error(request, 'Tarjeta no autorizada.')
+                return render(request, 'reservas/seleccionar_metodo_pago.html', {
+                    'reserva': reserva,
+                    'vehiculo': vehiculo,
+                    'tarjeta_guardada': tarjeta_guardada
+                })
+            
+            # Si el CVV es correcto, proceder con el pago
+            referencia_pago = f"PAY-{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"
+            
+            # Guardar información del pago en la sesión
+            request.session['pago_procesado'] = {
+                'referencia_pago': referencia_pago,
+                'ultimos_4_digitos': tarjeta_guardada.ultimos_4_digitos,
+                'fecha_pago': datetime.datetime.now().isoformat(),
+                'monto': float(reserva_temporal['costo_total'])
+            }
+            
+            messages.success(request, '¡Pago procesado exitosamente con tu tarjeta guardada!')
+            return redirect('reservas:confirmar_reserva', vehiculo_id=vehiculo.id)
+            
+        except Exception as e:
+            print(f"Error en el procesamiento del pago: {str(e)}")  # Debug log
+            messages.error(request, 'Error al procesar el pago. Por favor, intenta nuevamente.')
+            return render(request, 'reservas/seleccionar_metodo_pago.html', {
+                'reserva': reserva,
+                'vehiculo': vehiculo,
+                'tarjeta_guardada': request.user.tarjeta_guardada
+            })
     
     # Verificar si el usuario tiene tarjeta guardada
     tarjeta_guardada = None

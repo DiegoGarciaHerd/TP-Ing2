@@ -1,0 +1,101 @@
+{% extends 'home/base.html' %}
+
+{% block title %}Vehículos Disponibles{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <!-- Filtros -->
+        <div class="col-md-3">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header text-white" style="background-color: #0e4532;">
+                    <h5 class="mb-0">Filtros</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" class="mb-3">
+                        <!-- Filtro de Categoría -->
+                        <div class="mb-3">
+                            <label for="categoria" class="form-label">Categoría:</label>
+                            <select class="form-select" id="categoria" name="categoria">
+                                <option value="">Todas las categorías</option>
+                                {% for codigo, nombre in categorias.items %}
+                                    <option value="{{ codigo }}" {% if categoria_seleccionada == codigo %}selected{% endif %}>
+                                        {{ nombre }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Filtro de Capacidad -->
+                        <div class="mb-3">
+                            <label for="capacidad" class="form-label">Capacidad (pasajeros):</label>
+                            <select class="form-select" id="capacidad" name="capacidad">
+                                <option value="">Todas las capacidades</option>
+                                {% for cap in capacidades %}
+                                    <option value="{{ cap }}" {% if capacidad_seleccionada == cap|stringformat:"i" %}selected{% endif %}>
+                                        {{ cap }} pasajeros
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn text-white" style="background-color: #0e4532;">
+                                Aplicar Filtros
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lista de Vehículos -->
+        <div class="col-md-9">
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                {% for vehiculo in vehiculos %}
+                    <div class="col">
+                        <div class="card h-100 shadow-sm">
+                            {% if vehiculo.foto_base64 %}
+                                <img src="data:image/jpeg;base64,{{ vehiculo.foto_base64 }}" 
+                                     class="card-img-top" 
+                                     alt="{{ vehiculo.marca }} {{ vehiculo.modelo }}"
+                                     style="height: 200px; object-fit: cover;">
+                            {% else %}
+                                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" 
+                                     style="height: 200px;">
+                                    <i class="fas fa-car fa-3x text-muted"></i>
+                                </div>
+                            {% endif %}
+                            <div class="card-body">
+                                <h5 class="card-title">{{ vehiculo.marca }} {{ vehiculo.modelo }}</h5>
+                                <p class="card-text">
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar"></i> {{ vehiculo.año }}<br>
+                                        <i class="fas fa-car"></i> {{ vehiculo.get_tipo_display }}<br>
+                                        <i class="fas fa-users"></i> {{ vehiculo.capacidad }} pasajeros<br>
+                                        <i class="fas fa-map-marker-alt"></i> {{ vehiculo.sucursal_actual.nombre }}
+                                    </small>
+                                </p>
+                                <p class="card-text">
+                                    <strong>${{ vehiculo.precio_por_dia|floatformat:2 }}</strong> por día
+                                </p>
+                                <a href="{% url 'detalle_vehiculo' vehiculo.id %}" 
+                                   class="btn text-white w-100" 
+                                   style="background-color: #0e4532;">
+                                    Ver Detalles y Reservar
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="col-12">
+                        <div class="alert alert-info">
+                            No se encontraron vehículos que coincidan con los criterios de búsqueda.
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
