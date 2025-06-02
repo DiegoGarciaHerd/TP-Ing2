@@ -30,6 +30,8 @@
                             <div class="card-body">
                                 <h4 class="card-title">{{ vehiculo.marca }} {{ vehiculo.modelo }}</h4>
                                 <p><strong>Año:</strong> {{ vehiculo.año }}</p>
+                                <p><strong>Tipo:</strong> {{ vehiculo.get_tipo_display }}</p>
+                                <p><strong>Capacidad:</strong> {{ vehiculo.capacidad }} personas</p>
                                 <p><strong>Patente:</strong> {{ vehiculo.patente }}</p>
                                 <p><strong>Estado:</strong>
                                     {% if vehiculo.disponible %}

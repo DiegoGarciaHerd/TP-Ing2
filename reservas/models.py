@@ -27,6 +27,11 @@ class Reserva(models.Model):
     estado = models.CharField(max_length=20, choices=ESTADO_RESERVA_CHOICES, default='PENDIENTE')
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     
+    # Campos del conductor
+    conductor_nombre = models.CharField(max_length=100, null=True, blank=True)
+    conductor_apellido = models.CharField(max_length=100, null=True, blank=True)
+    conductor_dni = models.CharField(max_length=20, null=True, blank=True, unique=True)
+    
     # Campos de pago
     estado_pago = models.CharField(max_length=20, choices=ESTADO_PAGO_CHOICES, default='PENDIENTE')
     fecha_pago = models.DateTimeField(null=True, blank=True)
@@ -34,7 +39,6 @@ class Reserva(models.Model):
     ultimos_4_digitos_tarjeta = models.CharField(max_length=4, null=True, blank=True)
 
     def clean(self):
-
         if self.fecha_recogida and self.fecha_recogida < datetime.date.today():
             from django.core.exceptions import ValidationError
             raise ValidationError({'fecha_recogida': "La fecha de recogida no puede ser anterior a la fecha actual."})
@@ -43,9 +47,22 @@ class Reserva(models.Model):
             from django.core.exceptions import ValidationError
             raise ValidationError({'fecha_devolucion': "La fecha de devolución no puede ser anterior a la fecha de recogida."})
 
+        # Validar que el DNI del conductor no esté en uso en otra reserva activa
+        if self.conductor_dni:
+            reservas_existentes = Reserva.objects.filter(
+                conductor_dni=self.conductor_dni,
+                fecha_recogida__lt=self.fecha_devolucion,
+                fecha_devolucion__gt=self.fecha_recogida,
+                estado__in=['PENDIENTE', 'CONFIRMADA']
+            ).exclude(id=self.id)  # Excluir la reserva actual en caso de actualización
+
+            if reservas_existentes.exists():
+                raise ValidationError({
+                    'conductor_dni': "Este DNI ya está asignado a otra reserva activa en las fechas seleccionadas."
+                })
 
     def save(self, *args, **kwargs):
-        if self.fecha_recogida and self.fecha_devolucion and self.vehiculo.precio_por_dia: # <--- Usa .precio_por_dia
+        if self.fecha_recogida and self.fecha_devolucion and self.vehiculo.precio_por_dia:
             dias = (self.fecha_devolucion - self.fecha_recogida).days
             if dias > 0:
                 self.costo_total = self.vehiculo.precio_por_dia * dias

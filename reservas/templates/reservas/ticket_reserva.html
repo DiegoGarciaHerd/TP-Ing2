@@ -24,12 +24,18 @@
                                 <h5 style="color: #0e4532;">Detalles del Vehículo</h5>
                                 <p><strong>Marca y Modelo:</strong> {{ reserva.vehiculo.marca }} {{ reserva.vehiculo.modelo }}</p>
                                 <p><strong>Patente:</strong> {{ reserva.vehiculo.patente }}</p>
+                                <p><strong>Tipo:</strong> {{ reserva.vehiculo.get_tipo_display }}</p>
+                                <p><strong>Capacidad:</strong> {{ reserva.vehiculo.capacidad }} personas</p>
                                 <p><strong>Precio por día:</strong> ${{ reserva.vehiculo.precio_por_dia|floatformat:2 }}</p>
                             </div>
                             <div class="col-md-6">
                                 <h5 style="color: #0e4532;">Detalles de la Reserva</h5>
                                 <p><strong>Fecha y Hora de reserva:</strong> {% now "d/m/Y H:i" %}</p>
                                 <p><strong>Duración:</strong> {{ reserva.fecha_devolucion|dias_duracion:reserva.fecha_recogida }} día{% if reserva.fecha_devolucion|dias_duracion:reserva.fecha_recogida != 1 %}s{% endif %}</p>
+                                <p><strong>Conductor designado:</strong><br>
+                                    {{ reserva.conductor_nombre }} {{ reserva.conductor_apellido }}<br>
+                                    DNI: {{ reserva.conductor_dni }}
+                                </p>
                             </div>
                         </div>
 
@@ -55,7 +61,7 @@
                     </div>
 
                     <div class="d-grid gap-2">
-                        <a href="{% url 'reservas:procesar_pago' vehiculo.id %}" class="btn btn-lg btn-success w-100 mb-2">
+                        <a href="{% url 'reservas:seleccionar_metodo_pago' vehiculo.id %}" class="btn btn-lg btn-success w-100 mb-2">
                             Proceder al Pago
                         </a>
                         <a href="{% url 'home:home' %}" class="btn btn-lg btn-danger w-100">

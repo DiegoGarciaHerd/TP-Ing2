@@ -1,0 +1,209 @@
+{% extends 'home/base.html' %}
+{% load static %}
+
+{% block title %}Seleccionar Método de Pago{% endblock %}
+
+{% block extra_css %}
+<style>
+    .payment-container {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 2rem 0;
+    }
+    
+    .payment-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        overflow: hidden;
+    }
+    
+    .payment-header {
+        background: linear-gradient(135deg, #0e4532 0%, #1e6548 100%);
+        color: white;
+        padding: 2rem;
+        text-align: center;
+    }
+    
+    .credit-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 15px;
+        padding: 1.5rem;
+        color: white;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .credit-card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+    }
+    
+    .card-number {
+        font-family: 'Courier New', monospace;
+        font-size: 1.2rem;
+        letter-spacing: 2px;
+        margin: 1rem 0;
+    }
+    
+    .payment-option {
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .payment-option:hover {
+        border-color: #0e4532;
+        background-color: #f8f9fa;
+    }
+    
+    .payment-option.selected {
+        border-color: #0e4532;
+        background-color: #e8f5e8;
+    }
+    
+    .reservation-summary {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="payment-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="payment-card">
+                    <div class="payment-header">
+                        <h2><i class="fas fa-credit-card me-2"></i>Seleccionar Método de Pago</h2>
+                        <p class="mb-0">Elige cómo deseas realizar el pago de tu reserva</p>
+                    </div>
+                    
+                    <div class="row g-0">
+                        <!-- Resumen de la reserva -->
+                        <div class="col-lg-5 p-4" style="background-color: #f8f9fa;">
+                            <h5 class="mb-3">Resumen de la Reserva</h5>
+                            
+                            <div class="reservation-summary">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <strong>Vehículo:</strong>
+                                    <span>{{ reserva.vehiculo.marca }} {{ reserva.vehiculo.modelo }}</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <strong>Patente:</strong>
+                                    <span>{{ reserva.vehiculo.patente }}</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <strong>Desde:</strong>
+                                    <span>{{ reserva.fecha_recogida|date:"d/m/Y" }}</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <strong>Hasta:</strong>
+                                    <span>{{ reserva.fecha_devolucion|date:"d/m/Y" }}</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <strong>Precio/día:</strong>
+                                    <span>${{ reserva.vehiculo.precio_por_dia|floatformat:2 }}</span>
+                                </div>
+                                <hr>
+                                <div class="d-flex justify-content-between">
+                                    <strong style="font-size: 1.2rem;">Total:</strong>
+                                    <strong style="font-size: 1.2rem; color: #0e4532;">${{ reserva.costo_total|floatformat:2 }}</strong>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Opciones de pago -->
+                        <div class="col-lg-7 p-4">
+                            {% if error_pago %}
+                                <div class="alert alert-danger">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    {{ error_pago.mensaje }}
+                                    {% if error_pago.codigo_error %}
+                                        <br><small>Código de error: {{ error_pago.codigo_error }}</small>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                            
+                            <form method="post" id="payment-method-form">
+                                {% csrf_token %}
+                                
+                                <!-- Opción de tarjeta guardada -->
+                                <div class="payment-option selected" id="saved-card-option">
+                                    <h5 class="mb-3"><i class="fas fa-credit-card me-2"></i>Tarjeta Guardada</h5>
+                                    
+                                    <div class="credit-card">
+                                        <div class="card-chip"></div>
+                                        <div class="card-number">
+                                            **** **** **** {{ tarjeta_guardada.ultimos_4_digitos }}
+                                        </div>
+                                        <div class="card-info">
+                                            <div>
+                                                <small style="opacity: 0.8;">TITULAR</small>
+                                                <div style="font-weight: 500;">{{ tarjeta_guardada.nombre_titular|upper }}</div>
+                                            </div>
+                                            <div>
+                                                <small style="opacity: 0.8;">VENCE</small>
+                                                <div style="font-weight: 500;">{{ tarjeta_guardada.mes_vencimiento|stringformat:"02d" }}/{{ tarjeta_guardada.ano_vencimiento }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Campo CVV para tarjeta guardada -->
+                                    <div class="mb-3">
+                                        <label for="cvv" class="form-label">CVV</label>
+                                        <input type="text" class="form-control" id="cvv" name="cvv" maxlength="4" required
+                                               placeholder="123" pattern="[0-9]*" inputmode="numeric">
+                                        <small class="text-muted">Ingresa el código de seguridad de tu tarjeta</small>
+                                    </div>
+
+                                    <div class="d-grid gap-2">
+                                        <button type="submit" class="btn btn-success btn-lg">
+                                            <i class="fas fa-lock me-2"></i>
+                                            Pagar con Tarjeta Guardada
+                                        </button>
+                                        <a href="{% url 'reservas:procesar_pago' vehiculo.id %}" class="btn btn-outline-primary btn-lg">
+                                            <i class="fas fa-plus-circle me-2"></i>
+                                            Usar Nueva Tarjeta
+                                        </a>
+                                        <a href="{% url 'reservas:ticket_reserva' vehiculo.id %}" class="btn btn-outline-secondary">
+                                            <i class="fas fa-arrow-left me-2"></i>Volver al Ticket
+                                        </a>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const cvvInput = document.getElementById('cvv');
+    
+    // Formatear CVV
+    cvvInput.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        e.target.value = value;
+    });
+});
+</script>
+{% endblock %} 

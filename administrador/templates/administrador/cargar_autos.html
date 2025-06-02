@@ -42,6 +42,24 @@
 
                         <div class="row">
                             <div class="col-md-6 mb-3">
+                                <label for="tipo" class="form-label">Tipo de Vehículo:</label>
+                                <select class="form-select" id="tipo" name="tipo" required>
+                                    <option value="SEDAN">Sedán</option>
+                                    <option value="SUV">SUV</option>
+                                    <option value="PICKUP">Pickup</option>
+                                    <option value="VAN">Van</option>
+                                    <option value="DEPORTIVO">Deportivo</option>
+                                    <option value="COMPACTO">Compacto</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="capacidad" class="form-label">Capacidad (pasajeros):</label>
+                                <input type="number" class="form-control" id="capacidad" name="capacidad" min="1" max="9" value="5" required>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
                                 <label for="precio" class="form-label">Precio por Día:</label>
                                 <input type="number" class="form-control" id="precio" name="precio" step="0.01" min="0" required>
                             </div>

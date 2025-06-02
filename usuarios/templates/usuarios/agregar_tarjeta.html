@@ -1,0 +1,330 @@
+{% extends 'home/base.html' %}
+{% load static %}
+
+{% block title %}Agregar Tarjeta - Autorental{% endblock %}
+
+{% block extra_css %}
+<style>
+    .payment-container {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 2rem 0;
+    }
+    
+    .payment-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        overflow: hidden;
+    }
+    
+    .payment-header {
+        background: linear-gradient(135deg, #0e4532 0%, #1e6548 100%);
+        color: white;
+        padding: 2rem;
+        text-align: center;
+    }
+    
+    .form-control:focus {
+        border-color: #0e4532;
+        box-shadow: 0 0 0 0.2rem rgba(14, 69, 50, 0.25);
+    }
+    
+    .btn-save {
+        background: linear-gradient(135deg, #0e4532 0%, #1e6548 100%);
+        border: none;
+        padding: 1rem 2rem;
+        font-size: 1.1rem;
+        font-weight: bold;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-save:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(14, 69, 50, 0.4);
+    }
+    
+    .security-info {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .security-icons {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-top: 1rem;
+        opacity: 0.7;
+    }
+    
+    .card-preview {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 15px;
+        padding: 1.5rem;
+        color: white;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+        min-height: 180px;
+    }
+    
+    .card-preview::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+    }
+    
+    .card-number-preview {
+        font-family: 'Courier New', monospace;
+        font-size: 1.2rem;
+        letter-spacing: 2px;
+        margin: 1rem 0;
+    }
+    
+    .card-chip {
+        width: 35px;
+        height: 25px;
+        background: #ffd700;
+        border-radius: 5px;
+        margin-bottom: 1rem;
+        position: relative;
+    }
+    
+    .card-chip::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 18px;
+        height: 12px;
+        background: repeating-linear-gradient(
+            45deg,
+            #c9b037,
+            #c9b037 2px,
+            #ffd700 2px,
+            #ffd700 4px
+        );
+        border-radius: 2px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="payment-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="payment-card">
+                    <div class="payment-header">
+                        <h2><i class="fas fa-credit-card me-2"></i>Agregar Tarjeta</h2>
+                        <p class="mb-0">Ingresa los datos de tu tarjeta para guardarla de forma segura</p>
+                    </div>
+                    
+                    <div class="row g-0">
+                        <!-- Vista previa de la tarjeta -->
+                        <div class="col-lg-5 p-4" style="background: #f8f9fa;">
+                            <h5 class="mb-3">Vista Previa</h5>
+                            <div class="card-preview">
+                                <div class="card-chip"></div>
+                                <div class="card-number-preview" id="card-preview-number">
+                                    **** **** **** ****
+                                </div>
+                                <div class="d-flex justify-content-between align-items-end mt-3">
+                                    <div>
+                                        <small style="opacity: 0.8;">TITULAR</small>
+                                        <div style="font-weight: 500;" id="card-preview-name">NOMBRE DEL TITULAR</div>
+                                    </div>
+                                    <div>
+                                        <small style="opacity: 0.8;">VENCE</small>
+                                        <div style="font-weight: 500;" id="card-preview-expiry">MM/AA</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="security-info">
+                                <h6><i class="fas fa-shield-alt me-2" style="color: #0e4532;"></i>Seguridad</h6>
+                                <ul class="list-unstyled mb-0" style="font-size: 0.9rem;">
+                                    <li><i class="fas fa-check text-success me-2"></i>Solo guardamos los últimos 4 dígitos</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>Datos encriptados de forma segura</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>Nunca almacenamos el CVV</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="security-icons">
+                                <i class="fab fa-cc-visa fa-2x" title="Visa"></i>
+                                <i class="fab fa-cc-mastercard fa-2x" title="MasterCard"></i>
+                                <i class="fas fa-shield-alt fa-2x" title="Seguro"></i>
+                            </div>
+                        </div>
+                        
+                        <!-- Formulario -->
+                        <div class="col-lg-7 p-4">
+                            <form method="post" id="card-form">
+                                {% csrf_token %}
+                                
+                                <div class="mb-4">
+                                    <label for="{{ form.numero_tarjeta.id_for_label }}" class="form-label">
+                                        <i class="fas fa-credit-card me-2"></i>{{ form.numero_tarjeta.label }}
+                                    </label>
+                                    {{ form.numero_tarjeta }}
+                                    {% if form.numero_tarjeta.errors %}
+                                        <div class="text-danger mt-1">
+                                            {% for error in form.numero_tarjeta.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label for="{{ form.nombre_titular.id_for_label }}" class="form-label">
+                                        <i class="fas fa-user me-2"></i>{{ form.nombre_titular.label }}
+                                    </label>
+                                    {{ form.nombre_titular }}
+                                    {% if form.nombre_titular.errors %}
+                                        <div class="text-danger mt-1">
+                                            {% for error in form.nombre_titular.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-4 mb-4">
+                                        <label for="{{ form.mes_vencimiento.id_for_label }}" class="form-label">
+                                            <i class="fas fa-calendar me-2"></i>{{ form.mes_vencimiento.label }}
+                                        </label>
+                                        {{ form.mes_vencimiento }}
+                                        {% if form.mes_vencimiento.errors %}
+                                            <div class="text-danger mt-1">
+                                                {% for error in form.mes_vencimiento.errors %}
+                                                    <small>{{ error }}</small>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-4 mb-4">
+                                        <label for="{{ form.ano_vencimiento.id_for_label }}" class="form-label">
+                                            <i class="fas fa-calendar me-2"></i>{{ form.ano_vencimiento.label }}
+                                        </label>
+                                        {{ form.ano_vencimiento }}
+                                        {% if form.ano_vencimiento.errors %}
+                                            <div class="text-danger mt-1">
+                                                {% for error in form.ano_vencimiento.errors %}
+                                                    <small>{{ error }}</small>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-4 mb-4">
+                                        <label for="{{ form.cvv.id_for_label }}" class="form-label">
+                                            <i class="fas fa-lock me-2"></i>{{ form.cvv.label }}
+                                        </label>
+                                        {{ form.cvv }}
+                                        {% if form.cvv.errors %}
+                                            <div class="text-danger mt-1">
+                                                {% for error in form.cvv.errors %}
+                                                    <small>{{ error }}</small>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                {% if form.non_field_errors %}
+                                    <div class="alert alert-danger">
+                                        {% for error in form.non_field_errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-success btn-save" id="save-button">
+                                        <i class="fas fa-save me-2"></i>Guardar Tarjeta
+                                    </button>
+                                    <a href="{% url 'gestionar_forma_pago' %}" class="btn btn-outline-secondary">
+                                        <i class="fas fa-arrow-left me-2"></i>Cancelar
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const numeroTarjetaInput = document.getElementById('id_numero_tarjeta');
+    const nombreTitularInput = document.getElementById('id_nombre_titular');
+    const mesVencimientoSelect = document.getElementById('id_mes_vencimiento');
+    const anoVencimientoSelect = document.getElementById('id_ano_vencimiento');
+    const cvvInput = document.getElementById('id_cvv');
+    const saveButton = document.getElementById('save-button');
+    const form = document.getElementById('card-form');
+    
+    // Elementos de vista previa
+    const previewNumber = document.getElementById('card-preview-number');
+    const previewName = document.getElementById('card-preview-name');
+    const previewExpiry = document.getElementById('card-preview-expiry');
+    
+    // Formatear número de tarjeta y actualizar vista previa
+    numeroTarjetaInput.addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+        let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
+        e.target.value = formattedValue;
+        
+        // Actualizar vista previa
+        if (value.length > 0) {
+            let displayValue = value.replace(/.(?=.{4})/g, '*');
+            displayValue = displayValue.match(/.{1,4}/g)?.join(' ') || displayValue;
+            previewNumber.textContent = displayValue;
+        } else {
+            previewNumber.textContent = '**** **** **** ****';
+        }
+    });
+    
+    // Actualizar nombre en vista previa
+    nombreTitularInput.addEventListener('input', function(e) {
+        const value = e.target.value.toUpperCase();
+        previewName.textContent = value || 'NOMBRE DEL TITULAR';
+    });
+    
+    // Actualizar fecha de vencimiento en vista previa
+    function updateExpiryPreview() {
+        const mes = mesVencimientoSelect.value || 'MM';
+        const ano = anoVencimientoSelect.value ? anoVencimientoSelect.value.slice(-2) : 'AA';
+        previewExpiry.textContent = `${mes}/${ano}`;
+    }
+    
+    mesVencimientoSelect.addEventListener('change', updateExpiryPreview);
+    anoVencimientoSelect.addEventListener('change', updateExpiryPreview);
+    
+    // Permitir solo números en CVV
+    cvvInput.addEventListener('input', function(e) {
+        e.target.value = e.target.value.replace(/[^0-9]/g, '');
+    });
+    
+    // Prevenir múltiples envíos
+    form.addEventListener('submit', function(e) {
+        saveButton.disabled = true;
+        saveButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Guardando...';
+    });
+});
+</script>
+{% endblock %} 

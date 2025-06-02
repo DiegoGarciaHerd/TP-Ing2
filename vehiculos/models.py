@@ -2,6 +2,15 @@ from django.db import models
 from sucursales.models import Sucursal
 
 class Vehiculo(models.Model):
+    TIPO_CHOICES = [
+        ('SEDAN', 'Sedán'),
+        ('SUV', 'SUV'),
+        ('PICKUP', 'Pickup'),
+        ('VAN', 'Van'),
+        ('DEPORTIVO', 'Deportivo'),
+        ('COMPACTO', 'Compacto'),
+    ]
+
     REEMBOLSO_CHOICES = [
         ('0', '0%'),
         ('20', '20%'),
@@ -12,6 +21,8 @@ class Vehiculo(models.Model):
     modelo = models.CharField(max_length=100)
     año = models.PositiveIntegerField()
     patente = models.CharField(max_length=10, unique=True)
+    tipo = models.CharField(max_length=20, choices=TIPO_CHOICES, default='SEDAN')
+    capacidad = models.PositiveIntegerField(default=5, help_text='Número de pasajeros')
     precio_por_dia = models.DecimalField(max_digits=10, decimal_places=2)
     sucursal_actual = models.ForeignKey(Sucursal, on_delete=models.CASCADE, related_name='vehiculos_en_sucursal')
     disponible = models.BooleanField(default=True)

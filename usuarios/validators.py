@@ -49,4 +49,26 @@ class NumericValidator:
             )
 
     def get_help_text(self):
-        return _("Tu contraseña debe contener al menos un dígito (0-9).") 
+        return _("Tu contraseña debe contener al menos un dígito (0-9).")
+
+
+def validar_edad(edad):
+    """Valida que la edad sea mayor o igual a 18 años"""
+    if edad < 18:
+        raise ValidationError('Debe ser mayor de 18 años para registrarse.')
+
+
+def validar_dni(dni):
+    """Valida el formato del DNI argentino"""
+    # Eliminar espacios y puntos
+    dni_limpio = re.sub(r'[\s\.]', '', str(dni))
+    
+    # Verificar que solo contenga dígitos
+    if not dni_limpio.isdigit():
+        raise ValidationError('El DNI debe contener solo números.')
+    
+    # Verificar longitud (7-8 dígitos para DNI argentino)
+    if len(dni_limpio) < 7 or len(dni_limpio) > 8:
+        raise ValidationError('El DNI debe tener entre 7 y 8 dígitos.')
+    
+    return dni_limpio 
