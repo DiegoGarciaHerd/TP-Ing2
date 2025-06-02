@@ -43,6 +43,14 @@ class VehiculoDetailView(DetailView):
 
 @login_required 
 def crear_reserva(request, vehiculo_id):
+    # --- AÑADIR ESTA VERIFICACIÓN AQUÍ ---
+    if request.user.is_superuser: # O request.user.is_admin si tu modelo Usuario tiene ese campo
+        messages.error(request, 'Los administradores no pueden realizar reservas de vehículos.')
+        # Puedes redirigir a donde consideres más apropiado para un admin
+        # Por ejemplo, al home del admin, o a la página principal del sitio.
+        return redirect('admin_menu') # O a 'home:home' si prefieres que vayan al home principal
+    # --- FIN DE LA VERIFICACIÓN ---
+
     vehiculo = get_object_or_404(Vehiculo, pk=vehiculo_id)
 
     if not vehiculo.disponible:
@@ -108,6 +116,7 @@ def crear_reserva(request, vehiculo_id):
         form = ReservaForm(initial=initial_data)
         
     return render(request, 'reservas/crear_reserva.html', {'form': form, 'vehiculo': vehiculo})
+
 
 
 @login_required
