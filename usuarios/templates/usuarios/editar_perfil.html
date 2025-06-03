@@ -6,14 +6,15 @@
 {% block content %}
 <div class="row justify-content-center">
     <div class="col-md-8">
-        <div class="card shadow-lg">
+        <!-- Formulario de Edición de Perfil -->
+        <div class="card shadow-lg mb-4">
             <div class="card-header text-white" style="background-color: #0e4532;">
                 <h2 class="mb-0">Editar Perfil</h2>
             </div>
             <div class="card-body">
                 <form method="post" id="profileForm">
                     {% csrf_token %}
-                    {% for field in form %}
+                    {% for field in form_perfil %}
                         <div class="form-group mb-3">
                             {{ field.label_tag }}
                             {{ field.errors }}
@@ -24,8 +25,36 @@
                         </div>
                     {% endfor %}
                     <div class="d-flex gap-2 mt-4">
-                        <button type="submit" class="btn btn-lg text-white flex-grow-1" style="background-color: #0e4532;">Confirmar Cambios</button>
+                        <button type="submit" class="btn btn-lg text-white flex-grow-1" style="background-color: #0e4532;">Guardar Cambios</button>
                         <button type="button" class="btn btn-lg btn-secondary flex-grow-1" onclick="resetForm()">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Formulario de Cambio de Contraseña -->
+        <div class="card shadow-lg">
+            <div class="card-header text-white" style="background-color: #0e4532;">
+                <h2 class="mb-0">Cambiar Contraseña</h2>
+            </div>
+            <div class="card-body">
+                <form method="post" id="passwordForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="cambiar_password" value="1">
+                    {% for field in form_password %}
+                        <div class="form-group mb-3">
+                            {{ field.label_tag }}
+                            {{ field.errors }}
+                            {{ field|add_class:"form-control" }}
+                            {% if field.help_text %}
+                                <small class="form-text text-muted">{{ field.help_text }}</small>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-lg text-white" style="background-color: #0e4532;">
+                            Cambiar Contraseña
+                        </button>
                     </div>
                 </form>
             </div>
@@ -34,7 +63,7 @@
 </div>
 
 <script>
-    // Guardar los valores originales del formulario
+    // Guardar los valores originales del formulario de perfil
     const originalValues = {};
     document.addEventListener('DOMContentLoaded', function() {
         const form = document.getElementById('profileForm');
@@ -44,7 +73,7 @@
         });
     });
 
-    // Función para resetear el formulario a los valores originales
+    // Función para resetear el formulario de perfil a los valores originales
     function resetForm() {
         const form = document.getElementById('profileForm');
         const inputs = form.querySelectorAll('input');
