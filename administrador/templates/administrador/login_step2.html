@@ -1,34 +1,74 @@
 {% extends 'home/base.html' %}
 
 {% block content %}
-<div class="container">
-    <h2>Verificación en Dos Pasos</h2>
-    {% if messages %}
-        {% for message in messages %}
-        <div class="alert alert-{{ message.tags }}">
-            {{ message }}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-4">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-white border-0 text-center py-4">
+                    <h4 class="mb-0 fw-bold text-secondary">Verificación de Seguridad</h4>
+                </div>
+                <div class="card-body px-4 py-4">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="POST" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        <div class="form-group mb-4">
+                            <label for="code" class="form-label text-muted small fw-bold">Código de verificación</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0">
+                                    <i class="fas fa-key text-muted"></i>
+                                </span>
+                                <input type="text" 
+                                       class="form-control border-start-0 text-center letter-spacing-2"
+                                       id="code" 
+                                       name="code" 
+                                       maxlength="6"
+                                       pattern="\d{6}"
+                                       title="Ingrese exactamente 6 dígitos numéricos"
+                                       required
+                                       placeholder="123456"
+                                       style="letter-spacing: 0.5em; font-family: monospace;">
+                            </div>
+                            <div class="form-text text-muted text-center mt-2">
+                                <i class="fas fa-envelope me-1"></i>
+                                Revisa tu correo electrónico para obtener el código
+                            </div>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary text-white fw-bold py-2" style="background-color: #0e4532; border-color: #0e4532;">
+                                Verificar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer bg-white text-center border-0 pb-4">
+                    <small class="text-muted">
+                        <i class="fas fa-clock me-1"></i>
+                        El código expira en 5 minutos
+                    </small>
+                </div>
+            </div>
         </div>
-        {% endfor %}
-    {% endif %}
-    
-    <form method="POST">
-        {% csrf_token %}
-        <div class="form-group">
-            <label for="code">Código de 6 dígitos</label>
-            <input type="text" 
-                   id="code" 
-                   name="code" 
-                   class="form-control"
-                   maxlength="6"
-                   pattern="\d{6}"
-                   title="Ingrese exactamente 6 dígitos numéricos"
-                   required
-                   placeholder="123456">
-            <small class="form-text text-muted">
-                Revisa tu correo electrónico para obtener el código
-            </small>
-        </div>
-        <button type="submit" class="btn btn-primary">Verificar</button>
-    </form>
+    </div>
 </div>
+
+<!-- Agregar Font Awesome para los iconos -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+<style>
+    /* Estilo para el input del código */
+    .letter-spacing-2 {
+        letter-spacing: 0.5em;
+        font-family: monospace;
+        font-size: 1.2em;
+    }
+</style>
 {% endblock %}

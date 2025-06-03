@@ -1,0 +1,235 @@
+{% extends 'home/base.html' %}
+{% load static %}
+
+{% block title %}Forma de Pago - Autorental{% endblock %}
+
+{% block extra_css %}
+<style>
+    .payment-container {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        min-height: 80vh;
+        padding: 2rem 0;
+    }
+    
+    .payment-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+    
+    .payment-header {
+        background: linear-gradient(135deg, #0e4532 0%, #1e6548 100%);
+        color: white;
+        padding: 2rem;
+        text-align: center;
+    }
+    
+    .credit-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 15px;
+        padding: 2rem;
+        color: white;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+        min-height: 200px;
+    }
+    
+    .credit-card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+    }
+    
+    .card-number {
+        font-family: 'Courier New', monospace;
+        font-size: 1.4rem;
+        letter-spacing: 3px;
+        margin: 1.5rem 0;
+    }
+    
+    .card-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: end;
+        margin-top: 2rem;
+    }
+    
+    .no-card-container {
+        text-align: center;
+        padding: 3rem;
+        color: #6c757d;
+    }
+    
+    .btn-primary-custom {
+        background: linear-gradient(135deg, #0e4532 0%, #1e6548 100%);
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 10px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-primary-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(14, 69, 50, 0.4);
+    }
+    
+    .btn-danger-custom {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 10px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-danger-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(220, 53, 69, 0.4);
+    }
+    
+    .warning-box {
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .card-chip {
+        width: 40px;
+        height: 30px;
+        background: #ffd700;
+        border-radius: 5px;
+        margin-bottom: 1rem;
+        position: relative;
+    }
+    
+    .card-chip::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 20px;
+        height: 15px;
+        background: repeating-linear-gradient(
+            45deg,
+            #c9b037,
+            #c9b037 2px,
+            #ffd700 2px,
+            #ffd700 4px
+        );
+        border-radius: 2px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="payment-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="payment-card">
+                    <div class="payment-header">
+                        <h2><i class="fas fa-credit-card me-2"></i>Gestión de Forma de Pago</h2>
+                        <p class="mb-0">Administra tu tarjeta guardada para futuras reservas</p>
+                    </div>
+                    
+                    <div class="p-4">
+                        {% if tarjeta %}
+                            <!-- Tarjeta existente -->
+                            <div class="credit-card">
+                                <div class="card-chip"></div>
+                                <div class="card-number">
+                                    **** **** **** {{ tarjeta.ultimos_4_digitos }}
+                                </div>
+                                <div class="card-info">
+                                    <div>
+                                        <small style="opacity: 0.8;">TITULAR</small>
+                                        <div style="font-weight: 500;">{{ tarjeta.nombre_titular|upper }}</div>
+                                    </div>
+                                    <div>
+                                        <small style="opacity: 0.8;">VENCE</small>
+                                        <div style="font-weight: 500;">{{ tarjeta.mes_vencimiento|stringformat:"02d" }}/{{ tarjeta.ano_vencimiento }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {% if tarjeta.esta_vencida %}
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    <strong>Tarjeta Vencida:</strong> Tu tarjeta está vencida. Por favor, actualízala con una nueva.
+                                </div>
+                            {% endif %}
+                            
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <a href="{% url 'agregar_tarjeta' %}" class="btn btn-primary-custom w-100">
+                                        <i class="fas fa-edit me-2"></i>Cambiar Tarjeta
+                                    </a>
+                                </div>
+                                <div class="col-md-6">
+                                    {% if tiene_reservas_activas %}
+                                        <button class="btn btn-secondary w-100" disabled title="No puedes eliminar tu tarjeta con reservas activas">
+                                            <i class="fas fa-lock me-2"></i>Eliminar Tarjeta
+                                        </button>
+                                    {% else %}
+                                        <form method="post" style="display: inline-block; width: 100%;" onsubmit="return confirmarEliminacion()">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="eliminar_tarjeta" value="1">
+                                            <button type="submit" class="btn btn-danger-custom w-100">
+                                                <i class="fas fa-trash me-2"></i>Eliminar Tarjeta
+                                            </button>
+                                        </form>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            {% if tiene_reservas_activas %}
+                                <div class="warning-box mt-3">
+                                    <i class="fas fa-info-circle me-2" style="color: #856404;"></i>
+                                    <strong>Nota:</strong> No puedes eliminar tu tarjeta porque tienes reservas activas o pendientes. 
+                                    La tarjeta se mantiene como garantía para posibles daños al vehículo. 
+                                    Puedes cambiarla por otra tarjeta nueva.
+                                </div>
+                            {% endif %}
+                            
+                            <div class="mt-4 p-3" style="background: #f8f9fa; border-radius: 10px;">
+                                <ul class="list-unstyled mb-0" style="font-size: 0.9rem;">
+                                    <li><i class="fas fa-check text-success me-2"></i>Los datos están encriptados de forma segura</li>
+                                    <li><i class="fas fa-check text-success me-2"></i>Nunca compartimos tu información con terceros</li>
+                                </ul>
+                            </div>
+                            
+                        {% else %}
+                            <!-- Sin tarjeta -->
+                            <div class="no-card-container">
+                                <i class="fas fa-credit-card fa-4x mb-3" style="color: #dee2e6;"></i>
+                                <h4>No tienes ninguna tarjeta guardada</h4>
+                            </div>
+                            
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+<script>
+function confirmarEliminacion() {
+    return confirm('¿Estás seguro de que deseas eliminar tu tarjeta guardada?\n\nEsta acción no se puede deshacer y tendrás que volver a ingresar los datos de tu tarjeta en futuras reservas.');
+}
+</script>
+{% endblock %} 

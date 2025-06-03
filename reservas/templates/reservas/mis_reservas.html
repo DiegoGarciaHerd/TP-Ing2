@@ -45,6 +45,8 @@
                                             {% endif %}
                                             <br>
                                             <strong>Fecha de Creación:</strong> {{ reserva.fecha_creacion|date:"d/m/Y H:i" }}
+                                            <br>
+                                            <strong>Conductor:</strong> {{ reserva.conductor_nombre }} {{ reserva.conductor_apellido }}<br>DNI: {{ reserva.conductor_dni }}
                                         </p>
                                         <div class="d-flex gap-2">
                                             <a href="{% url 'reservas:detalle_reserva' reserva.id %}" class="btn btn-info flex-grow-1">Ver Detalle</a>

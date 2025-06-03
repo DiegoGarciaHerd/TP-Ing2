@@ -1,17 +1,18 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
-from .forms import RegistroForm, EditarPerfilForm, CustomLoginForm
-from .models import Usuario
+from .forms import RegistroForm, EditarPerfilForm, CustomLoginForm, TarjetaGuardadaForm
+from .models import Usuario, TarjetaGuardada
 import random
 import string
-from django.core.mail import EmailMultiAlternatives
+from django.core.mail import EmailMultiAlternatives, send_mail
 from django.template.loader import render_to_string
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.contrib.auth.views import LoginView
+import secrets
 
 Usuario = get_user_model()
 
@@ -21,7 +22,7 @@ def registro(request):
         if form.is_valid():
             user = form.save()
             login(request, user)  # Iniciar sesión automáticamente después del registro
-            messages.success(request, '¡Te has registrado correctamente! Bienvenido/a a AutoRental.')
+            messages.success(request, '¡Registro exitoso! Bienvenido/a a AutoRental.')
             return redirect('home:home')
     else:
         form = RegistroForm()
@@ -47,25 +48,79 @@ class UsuarioLoginView(LoginView):
         return super().form_valid(form)
 
     def get_success_url(self):
-        return '/'  # Redirige a la página principal
-
-def logout_view(request):
-    if request.user.is_authenticated:
-        messages.success(request, 'Has cerrado sesión correctamente.')
-        logout(request)
-    return redirect('home:home')
+        return '/admin/' if self.request.user.is_superuser else '/'
 
 @login_required
-def editar_perfil(request):
+def logout_view(request):
+    logout(request)
+    messages.info(request, 'Has cerrado sesión correctamente.')
+    return redirect('home:home')
+
+# @login_required
+# def editar_perfil(request):
+#     if request.method == 'POST':
+#         form = EditarPerfilForm(request.POST, instance=request.user)
+#         if form.is_valid():
+#             form.save()
+#             messages.success(request, 'Tu perfil ha sido actualizado correctamente.')
+#             return redirect('editar_perfil')
+#     else:
+#         form = EditarPerfilForm(instance=request.user)
+#     return render(request, 'usuarios/editar_perfil.html', {'form': form})
+
+@login_required
+def gestionar_forma_pago(request):
+    """Vista para mostrar y gestionar la tarjeta guardada del usuario"""
+    tarjeta = None
+    try:
+        tarjeta = request.user.tarjeta_guardada
+    except TarjetaGuardada.DoesNotExist:
+        pass
+    
+    # Manejar eliminación de tarjeta
+    if request.method == 'POST' and 'eliminar_tarjeta' in request.POST:
+        if tarjeta:
+            # Verificar si tiene reservas activas o pendientes
+            if request.user.tiene_reservas_activas:
+                messages.error(request, 
+                              'No puedes eliminar tu tarjeta porque tienes reservas activas o pendientes. '
+                              'La tarjeta se mantiene como garantía para posibles daños al vehículo o irregularidades en la reserva. '
+                              'Puedes cambiarla por otra tarjeta nueva.')
+            else:
+                tarjeta.delete()
+                messages.success(request, 'Tarjeta eliminada exitosamente.')
+                tarjeta = None  # Actualizar la variable local
+        else:
+            messages.error(request, 'No tienes ninguna tarjeta guardada.')
+        
+        return redirect('gestionar_forma_pago')
+    
+    context = {
+        'tarjeta': tarjeta,
+        'tiene_reservas_activas': request.user.tiene_reservas_activas
+    }
+    return render(request, 'usuarios/gestionar_forma_pago.html', context)
+
+@login_required
+def agregar_tarjeta(request):
+    """Vista para agregar o cambiar la tarjeta guardada"""
     if request.method == 'POST':
-        form = EditarPerfilForm(request.POST, instance=request.user)
+        form = TarjetaGuardadaForm(request.POST)
         if form.is_valid():
-            form.save()
-            messages.success(request, 'Tu perfil ha sido actualizado correctamente.')
-            return redirect('editar_perfil')
+            # Crear nueva tarjeta (esto eliminará la anterior automáticamente)
+            TarjetaGuardada.crear_tarjeta(
+                usuario=request.user,
+                numero_tarjeta=form.cleaned_data['numero_tarjeta'],
+                nombre_titular=form.cleaned_data['nombre_titular'],
+                mes_vencimiento=int(form.cleaned_data['mes_vencimiento']),
+                ano_vencimiento=int(form.cleaned_data['ano_vencimiento'])
+            )
+            messages.success(request, 'Tarjeta guardada exitosamente.')
+            return redirect('gestionar_forma_pago')
     else:
-        form = EditarPerfilForm(instance=request.user)
-    return render(request, 'usuarios/editar_perfil.html', {'form': form})
+        form = TarjetaGuardadaForm()
+    
+    return render(request, 'usuarios/agregar_tarjeta.html', {'form': form})
 
 def generate_random_password():
     """Genera una contraseña aleatoria de 8 caracteres con al menos una letra y un número"""
@@ -113,27 +168,21 @@ def recuperar_password(request):
     if request.method == 'POST':
         email = request.POST.get('email')
         try:
-            user = Usuario.objects.get(email=email)
-            if user.is_admin:
-                messages.error(request, 'Esta función no está disponible para administradores.')
-                return render(request, 'usuarios/recuperar_password.html')
+            usuario = Usuario.objects.get(email=email)
             
-            # Generar nueva contraseña
-            new_password = generate_random_password()
+            # Generar nueva contraseña temporal
+            nueva_password = secrets.token_urlsafe(8)
+            usuario.set_password(nueva_password)
+            usuario.save()
             
-            # Actualizar la contraseña del usuario
-            user.set_password(new_password)
-            user.save()
+            # Enviar email (simulación)
+            messages.success(request, 
+                           f'Se ha enviado una nueva contraseña a tu email: {email}. '
+                           f'Tu nueva contraseña temporal es: {nueva_password}')
             
-            # Enviar email con la nueva contraseña
-            send_password_reset_email(user, new_password)
-            
-            messages.success(request, 'Se ha enviado una nueva contraseña a tu correo electrónico.')
             return redirect('login')
             
         except Usuario.DoesNotExist:
-            # Por seguridad, mostramos el mismo mensaje aunque el usuario no exista
-            messages.success(request, 'Si el correo existe en nuestra base de datos, recibirás una nueva contraseña.')
-            return redirect('login')
-            
+            messages.error(request, 'No existe un usuario registrado con ese email.')
+    
     return render(request, 'usuarios/recuperar_password.html')

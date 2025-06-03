@@ -16,13 +16,15 @@ def cargar_autos(request):
             modelo = request.POST.get('modelo')
             año = request.POST.get('año')
             patente = request.POST.get('patente')
+            tipo = request.POST.get('tipo')
+            capacidad = request.POST.get('capacidad')
             precio_por_dia = request.POST.get('precio')
             foto_base64 = request.POST.get('foto_base64')
             politica_reembolso = request.POST.get('politica_reembolso')
             sucursal_actual_id = request.POST.get('sucursal')
 
             # Validaciones
-            if not all([marca, modelo, año, patente, precio_por_dia, foto_base64, politica_reembolso, sucursal_actual_id]):
+            if not all([marca, modelo, año, patente, tipo, capacidad, precio_por_dia, foto_base64, politica_reembolso, sucursal_actual_id]):
                 raise ValidationError("Todos los campos son obligatorios.")
 
             if Vehiculo.objects.filter(patente=patente).exists():
@@ -34,6 +36,8 @@ def cargar_autos(request):
                 modelo=modelo,
                 año=int(año),
                 patente=patente.upper(),  # Convertir a mayúsculas
+                tipo=tipo,
+                capacidad=int(capacidad),
                 precio_por_dia=precio_por_dia,
                 disponible=True,
                 sucursal_actual_id=sucursal_actual_id,  # TODO: Permitir seleccionar sucursal
@@ -55,6 +59,9 @@ def cargar_autos(request):
 
 @admin_required
 def borrar_autos(request):
+    # Obtener todos los vehículos para el selector
+    vehiculos = Vehiculo.objects.all().order_by('patente')
+    
     if request.method == 'POST':
         patente = request.POST.get('patente')
         
@@ -66,9 +73,9 @@ def borrar_autos(request):
             messages.error(request, "El auto a borrar no existe")
         except Exception as e:
             messages.error(request, f"Error al borrar el auto: {e}")
-            return render(request, 'administrador/borrar_autos.html')
+            return render(request, 'administrador/borrar_autos.html', {'vehiculos': vehiculos})
         return redirect('admin_menu')   
-    return render(request, 'administrador/borrar_autos.html')
+    return render(request, 'administrador/borrar_autos.html', {'vehiculos': vehiculos})
 
 
 @admin_required
@@ -108,9 +115,16 @@ def obtener_datos_vehiculo(request):
         try:
             vehiculo = Vehiculo.objects.get(patente=patente)
             data = {
+                'marca': vehiculo.marca,
+                'modelo': vehiculo.modelo,
+                'año': vehiculo.año,
+                'tipo': vehiculo.get_tipo_display(),
+                'capacidad': vehiculo.capacidad,
                 'precio_por_dia': str(vehiculo.precio_por_dia),
                 'politica_de_reembolso': vehiculo.politica_de_reembolso,
-                'foto_base64': vehiculo.foto_base64
+                'foto_base64': vehiculo.foto_base64,
+                'sucursal': vehiculo.sucursal_actual.nombre,
+                'disponible': vehiculo.disponible
             }
             return JsonResponse(data)
         except Vehiculo.DoesNotExist:

@@ -42,6 +42,21 @@
 
                         <div class="row">
                             <div class="col-md-6 mb-3">
+                                <label for="tipo" class="form-label">Tipo de Vehículo:</label>
+                                <select class="form-select" id="tipo" name="tipo" required>
+                                    <option value="AUTOMOVIL">Automóvil</option>
+                                    <option value="CAMIONETA">Camioneta</option>
+                                    <option value="4X4">4x4</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="capacidad" class="form-label">Capacidad (pasajeros):</label>
+                                <input type="number" class="form-control" id="capacidad" name="capacidad" min="1" max="9" value="5" required>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
                                 <label for="precio" class="form-label">Precio por Día:</label>
                                 <input type="number" class="form-control" id="precio" name="precio" step="0.01" min="0" required>
                             </div>
@@ -49,8 +64,8 @@
                                 <label for="politica_reembolso" class="form-label">Política de Reembolso:</label>
                                 <select class="form-select" id="politica_reembolso" name="politica_reembolso" required>
                                     <option value="0">0% - No se realizan reembolsos</option>
-                                    <option value="20">20% - Reembolso hasta 24 horas antes</option>
-                                    <option value="100">100% - Reembolso hasta 48 horas antes</option>
+                                    <option value="20">20%</option>
+                                    <option value="100">100%</option>
                                 </select>
                             </div>
                         </div>

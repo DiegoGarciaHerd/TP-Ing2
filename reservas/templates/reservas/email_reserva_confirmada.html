@@ -1,0 +1,101 @@
+{% load reserva_filters %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        .reservation-container {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 2px solid #28a745;
+        }
+        .reservation-header {
+            text-align: center;
+            color: #28a745;
+            margin-bottom: 20px;
+        }
+        .reservation-details {
+            margin: 15px 0;
+        }
+        .reservation-details h5 {
+            color: #28a745;
+            margin-bottom: 10px;
+        }
+        .reservation-details p {
+            margin: 5px 0;
+        }
+        .total-cost {
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: #e8f5e9;
+            border-radius: 5px;
+        }
+        .note {
+            color: #7f8c8d;
+            font-size: 14px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Confirmación de Reserva - AutoRental</h2>
+    <p>Hola {{ reserva.cliente.first_name }},</p>
+    <p>Tu reserva ha sido confirmada exitosamente. A continuación encontrarás los detalles de tu reserva:</p>
+    
+    <div class="reservation-container">
+        <div class="reservation-header">
+            <h3>Reserva #{{ reserva.id }}</h3>
+            <p>Estado: <strong style="color: #28a745;">Confirmada</strong></p>
+        </div>
+
+        <div class="reservation-details">
+            <h5>Detalles del Vehículo</h5>
+            <p><strong>Marca y Modelo:</strong> {{ reserva.vehiculo.marca }} {{ reserva.vehiculo.modelo }}</p>
+            <p><strong>Patente:</strong> {{ reserva.vehiculo.patente }}</p>
+            <p><strong>Precio por día:</strong> ${{ reserva.vehiculo.precio_por_dia|floatformat:2 }}</p>
+        </div>
+
+        <div class="reservation-details">
+            <h5>Detalles de la Reserva</h5>
+            <p><strong>Duración:</strong> {{ reserva.fecha_devolucion|dias_duracion:reserva.fecha_recogida }} día{% if reserva.fecha_devolucion|dias_duracion:reserva.fecha_recogida != 1 %}s{% endif %}</p>
+            <p><strong>Estado:</strong> <span style="color: #28a745;">Pago Confirmado</span></p>
+        </div>
+
+        <div class="reservation-details">
+            <h5>Retiro del Vehículo</h5>
+            <p><strong>Sucursal:</strong> {{ reserva.vehiculo.sucursal_actual.nombre }}</p>
+            <p><strong>Dirección:</strong> {{ reserva.vehiculo.sucursal_actual.direccion }}</p>
+            <p><strong>Fecha:</strong> {{ reserva.fecha_recogida|date:"d/m/Y" }}</p>
+        </div>
+
+        <div class="reservation-details">
+            <h5>Devolución del Vehículo</h5>
+            <p><strong>Sucursal:</strong> {{ reserva.vehiculo.sucursal_actual.nombre }}</p>
+            <p><strong>Dirección:</strong> {{ reserva.vehiculo.sucursal_actual.direccion }}</p>
+            <p><strong>Fecha:</strong> {{ reserva.fecha_devolucion|date:"d/m/Y" }}</p>
+        </div>
+
+        <div class="reservation-details">
+            <h5>Información de Pago</h5>
+            <p><strong>Estado:</strong> <span style="color: #28a745;">Pagado</span></p>
+            <p><strong>Referencia:</strong> {{ reserva.referencia_pago }}</p>
+            <p><strong>Tarjeta:</strong> ****{{ reserva.ultimos_4_digitos_tarjeta }}</p>
+            <p><strong>Fecha de Pago:</strong> {{ reserva.fecha_pago|date:"d/m/Y H:i" }}</p>
+        </div>
+
+        <div class="total-cost">
+            <h4>Costo Total</h4>
+            <h3 style="color: #28a745;">${{ reserva.costo_total|floatformat:2 }}</h3>
+            <p>Pagado exitosamente</p>
+        </div>
+    </div>
+
+    <p class="note">Este correo sirve como comprobante de tu reserva. Por favor, guárdalo para tus registros.</p>
+    <p>Si tienes alguna pregunta, no dudes en contactarnos.</p>
+    
+    <p>Saludos,<br>El equipo de AutoRental</p>
+</body>
+</html> 
