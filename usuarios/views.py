@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
-from .forms import RegistroForm, EditarPerfilForm, CustomLoginForm, TarjetaGuardadaForm
+from .forms import RegistroForm, EditarPerfilForm, CustomLoginForm, TarjetaGuardadaForm, CambiarPasswordForm
 from .models import Usuario, TarjetaGuardada
 import random
 import string
@@ -56,17 +56,32 @@ def logout_view(request):
     messages.info(request, 'Has cerrado sesión correctamente.')
     return redirect('home:home')
 
-# @login_required
-# def editar_perfil(request):
-#     if request.method == 'POST':
-#         form = EditarPerfilForm(request.POST, instance=request.user)
-#         if form.is_valid():
-#             form.save()
-#             messages.success(request, 'Tu perfil ha sido actualizado correctamente.')
-#             return redirect('editar_perfil')
-#     else:
-#         form = EditarPerfilForm(instance=request.user)
-#     return render(request, 'usuarios/editar_perfil.html', {'form': form})
+@login_required
+def editar_perfil(request):
+    # Formulario de edición de perfil
+    if request.method == 'POST':
+        if 'cambiar_password' in request.POST:
+            # Procesar cambio de contraseña
+            form_password = CambiarPasswordForm(request.user, request.POST)
+            if form_password.is_valid():
+                form_password.save()
+                messages.success(request, 'Tu contraseña ha sido actualizada correctamente.')
+                return redirect('editar_perfil')
+        else:
+            # Procesar edición de perfil
+            form_perfil = EditarPerfilForm(request.POST, instance=request.user)
+            if form_perfil.is_valid():
+                form_perfil.save()
+                messages.success(request, 'Tu perfil ha sido actualizado correctamente.')
+                return redirect('editar_perfil')
+    else:
+        form_perfil = EditarPerfilForm(instance=request.user)
+        form_password = CambiarPasswordForm(request.user)
+
+    return render(request, 'usuarios/editar_perfil.html', {
+        'form_perfil': form_perfil,
+        'form_password': form_password
+    })
 
 @login_required
 def gestionar_forma_pago(request):
@@ -171,14 +186,23 @@ def recuperar_password(request):
             usuario = Usuario.objects.get(email=email)
             
             # Generar nueva contraseña temporal
-            nueva_password = secrets.token_urlsafe(8)
+            nueva_password = generate_random_password()  # Usamos nuestra función que genera contraseñas más seguras
             usuario.set_password(nueva_password)
             usuario.save()
             
-            # Enviar email (simulación)
-            messages.success(request, 
-                           f'Se ha enviado una nueva contraseña a tu email: {email}. '
-                           f'Tu nueva contraseña temporal es: {nueva_password}')
+            try:
+                # Enviar email con la nueva contraseña
+                send_password_reset_email(usuario, nueva_password)
+                messages.success(request, 
+                               f'Se ha enviado una nueva contraseña a tu email: {email}. '
+                               'Por favor, revisa tu bandeja de entrada.')
+            except Exception as e:
+                # Si falla el envío del correo, revertimos el cambio de contraseña
+                usuario.set_password(usuario.password)  # Mantenemos la contraseña anterior
+                usuario.save()
+                messages.error(request, 
+                             'Hubo un error al enviar el correo. Por favor, intenta nuevamente más tarde.')
+                print(f"Error al enviar correo de recuperación: {str(e)}")
             
             return redirect('login')
             

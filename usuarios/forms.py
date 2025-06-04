@@ -112,6 +112,50 @@ class CambiarRolForm(forms.ModelForm):
             'rol': 'Rol del usuario'
         }
 
+class CambiarPasswordForm(forms.Form):
+    password_nueva = forms.CharField(
+        label='Nueva contraseña',
+        widget=forms.PasswordInput(attrs={'class': 'form-control'}),
+        required=True,
+        help_text='La contraseña debe tener al menos 5 caracteres, una letra y un número.'
+    )
+    password_nueva_confirmacion = forms.CharField(
+        label='Confirmar nueva contraseña',
+        widget=forms.PasswordInput(attrs={'class': 'form-control'}),
+        required=True
+    )
+
+    def __init__(self, user, *args, **kwargs):
+        self.user = user
+        super().__init__(*args, **kwargs)
+
+    def clean_password_nueva(self):
+        password = self.cleaned_data.get('password_nueva')
+        if len(password) < 5:
+            raise ValidationError('La contraseña debe tener al menos 5 caracteres.')
+        
+        if not any(c.isalpha() for c in password):
+            raise ValidationError('La contraseña debe contener al menos una letra.')
+            
+        if not any(c.isdigit() for c in password):
+            raise ValidationError('La contraseña debe contener al menos un número.')
+            
+        return password
+
+    def clean_password_nueva_confirmacion(self):
+        password_nueva = self.cleaned_data.get('password_nueva')
+        password_nueva_confirmacion = self.cleaned_data.get('password_nueva_confirmacion')
+        
+        if password_nueva and password_nueva_confirmacion and password_nueva != password_nueva_confirmacion:
+            raise ValidationError('Las contraseñas no coinciden.')
+        
+        return password_nueva_confirmacion
+
+    def save(self):
+        password_nueva = self.cleaned_data.get('password_nueva')
+        self.user.set_password(password_nueva)
+        self.user.save()
+
 class RecuperarPasswordForm(forms.Form):
     email = forms.EmailField(
         max_length=254,

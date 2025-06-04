@@ -5,6 +5,7 @@ from administrador.decorators import admin_required
 from django.core.exceptions import ValidationError
 from sucursales.models import Sucursal
 from django.http import JsonResponse
+from reservas.models import Reserva
 
 @admin_required
 def cargar_autos(request):
@@ -67,6 +68,12 @@ def borrar_autos(request):
         
         try:
             vehiculo = Vehiculo.objects.get(patente=patente)
+
+            # Verificar si el vehículo tiene reservas activas
+            if Reserva.objects.filter(vehiculo=vehiculo, estado='activa').exists():
+                messages.error(request, "No se puede borrar el vehículo porque tiene reservas activas.")
+                return render(request, 'administrador/borrar_autos.html', {'vehiculos': vehiculos})
+            
             vehiculo.delete()
             messages.success(request, "Auto borrado exitosamente")
         except Vehiculo.DoesNotExist:
