@@ -3,16 +3,13 @@
 <div class="container mt-4">
     <div class="row justify-content-center">
         <div class="col-12">
-            <!-- Header del Panel Admin -->
             <div class="text-center mb-5">
                 <h1 class="display-4 fw-bold" style="color: #0e4532;">Panel de Administración</h1>
                 <p class="lead text-muted">Gestione vehículos, empleados, sucursales y estadísticas desde aquí</p>
                 <hr class="mx-auto" style="width: 100px; height: 3px; background-color: #0e4532; border: none;">
             </div>
 
-            <!-- Tarjetas del Menú -->
             <div class="row g-4">
-                <!-- Sección Vehículos -->
                 <div class="col-lg-6 col-md-6">
                     <div class="card h-100 shadow-lg border-0">
                         <div class="card-header text-white text-center" style="background-color: #0e4532;">
@@ -39,7 +36,6 @@
                     </div>
                 </div>
 
-                <!-- Sección Empleados -->
                 <div class="col-lg-6 col-md-6">
                     <div class="card h-100 shadow-lg border-0">
                         <div class="card-header text-white text-center" style="background-color: #0e4532;">
@@ -49,9 +45,8 @@
                         </div>
                         <div class="card-body p-4">
                             <div class="d-grid gap-3">
-                                <a href="#" class="btn btn-outline-success btn-lg disabled">
+                                <a href="{% url 'cargar_empleados' %}" class="btn btn-outline-success btn-lg">
                                     <i class="fas fa-user-plus me-2"></i>Agregar Empleado
-                                    <small class="d-block text-muted">Próximamente</small>
                                 </a>
                                 <a href="#" class="btn btn-outline-primary btn-lg disabled">
                                     <i class="fas fa-user-edit me-2"></i>Modificar Empleado
@@ -70,7 +65,6 @@
                     </div>
                 </div>
 
-                <!-- Sección Estadísticas -->
                 <div class="col-lg-6 col-md-6">
                     <div class="card h-100 shadow-lg border-0">
                         <div class="card-header text-white text-center" style="background-color: #0e4532;">
@@ -87,7 +81,6 @@
                     </div>
                 </div>
 
-                <!-- Sección Sucursales -->
                 <div class="col-lg-6 col-md-6">
                     <div class="card h-100 shadow-lg border-0">
                         <div class="card-header text-white text-center" style="background-color: #0e4532;">
@@ -124,7 +117,6 @@
     </div>
 </div>
 
-<!-- FontAwesome para los iconos -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 <style>
