@@ -1,3 +1,4 @@
+from datetime import timezone
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from vehiculos.models import Vehiculo
@@ -70,12 +71,19 @@ def borrar_autos(request):
             vehiculo = Vehiculo.objects.get(patente=patente)
 
             # Verificar si el vehículo tiene reservas activas
-            if Reserva.objects.filter(vehiculo=vehiculo, estado='activa').exists():
-                messages.error(request, "No se puede borrar el vehículo porque tiene reservas activas.")
-                return render(request, 'administrador/borrar_autos.html', {'vehiculos': vehiculos})
-            
-            vehiculo.delete()
-            messages.success(request, "Auto borrado exitosamente")
+            reservado = Reserva.objects.filter(
+                vehiculo=vehiculo,
+                estado__in=['PENDIENTE', 'CONFIRMADA']
+            )
+
+            if reservado.exists():
+                vehiculo.disponible = False
+                vehiculo.save()
+                messages.info(request, "Se ha eliminado el vehiculo del catalogo." \
+                " Vuelva a seleccionar Eliminar Vehículo una vez que este vehiculo no posea reservas para eliminarlo definitivamente del sistema")
+            else:
+                vehiculo.delete()
+                messages.success(request, "Auto borrado exitosamente")
         except Vehiculo.DoesNotExist:
             messages.error(request, "El auto a borrar no existe")
         except Exception as e:
