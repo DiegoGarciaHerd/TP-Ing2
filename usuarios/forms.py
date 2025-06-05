@@ -6,6 +6,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from .validators import validar_edad, validar_dni
 import re
 import datetime
+from dateutil.relativedelta import relativedelta
 
 class RegistroForm(UserCreationForm):
     email = forms.EmailField(
@@ -16,93 +17,160 @@ class RegistroForm(UserCreationForm):
     first_name = forms.CharField(
         max_length=30,
         widget=forms.TextInput(attrs={'class': 'form-control'}),
-        help_text='Requerido.'
+        help_text='Requerido.',
+        label='Nombre'
     )
     last_name = forms.CharField(
         max_length=30,
         widget=forms.TextInput(attrs={'class': 'form-control'}),
-        help_text='Requerido.'
+        help_text='Requerido.',
+        label='Apellido'
     )
     
-    edad = forms.IntegerField(
-        validators=[validar_edad],
-        widget=forms.NumberInput(attrs={'class': 'form-control'}),
-        help_text='Debe ser mayor de 18 años para registrarse.'
+    fecha_nacimiento = forms.DateField(
+        widget=forms.DateInput(attrs={
+            'class': 'form-control',
+            'type': 'date',
+            'max': datetime.date.today().isoformat()
+        }),
+        help_text='Debe ser mayor de 18 años para registrarse.',
+        label='Fecha de nacimiento'
     )
     
     DNI = forms.CharField(
         max_length=10,
         validators=[validar_dni],
         widget=forms.TextInput(attrs={'class': 'form-control'}),
-        help_text='Ingrese su DNI sin puntos ni espacios.'
+        help_text='Ingrese su DNI sin puntos ni espacios.',
+        label='DNI'
+    )
+
+    password1 = forms.CharField(
+        widget=forms.PasswordInput(attrs={'class': 'form-control'}),
+        label='Contraseña',
+        help_text='La contraseña debe tener al menos 5 caracteres, una letra y un número.'
+    )
+
+    password2 = forms.CharField(
+        widget=forms.PasswordInput(attrs={'class': 'form-control'}),
+        label='Confirmar contraseña',
+        help_text='Ingrese la misma contraseña para verificación.'
     )
 
     class Meta:
         model = Usuario
-        fields = ('email', 'first_name', 'last_name', 'edad', 'DNI', 'password1', 'password2')
+        fields = ('email', 'first_name', 'last_name', 'fecha_nacimiento', 'DNI', 'password1', 'password2')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field_name, field in self.fields.items():
             field.widget.attrs['class'] = 'form-control'
 
+    def clean_fecha_nacimiento(self):
+        fecha_nacimiento = self.cleaned_data['fecha_nacimiento']
+        hoy = datetime.date.today()
+        edad = relativedelta(hoy, fecha_nacimiento).years
+        
+        if edad < 18:
+            raise ValidationError('Debe ser mayor de 18 años para registrarse.')
+        
+        return fecha_nacimiento
+
     def save(self, commit=True):
         user = super().save(commit=False)
         user.email = self.cleaned_data['email']
-        user.edad = self.cleaned_data['edad']
+        fecha_nacimiento = self.cleaned_data['fecha_nacimiento']
+        hoy = datetime.date.today()
+        user.edad = relativedelta(hoy, fecha_nacimiento).years
         user.DNI = self.cleaned_data['DNI']
         if commit:
             user.save()
         return user
-    
+
 class CustomLoginForm(AuthenticationForm):
+    username = forms.EmailField(
+        widget=forms.EmailInput(attrs={'class': 'form-control'}),
+        label='Correo electrónico'
+    )
+    password = forms.CharField(
+        widget=forms.PasswordInput(attrs={'class': 'form-control'}),
+        label='Contraseña'
+    )
+
     def confirm_login_allowed(self, user):
-        print("Intento de login con rol:", user.rol)
         if user.is_admin:
-            print("Bloqueado: admin")
             raise ValidationError("Correo electrónico o contraseña incorrectos.")
 
 class EditarPerfilForm(UserChangeForm):
     password = None  # Elimina el campo de contraseña del formulario
-    edad = forms.IntegerField(
+    
+    email = forms.EmailField(
+        widget=forms.EmailInput(attrs={'class': 'form-control'}),
+        label='Correo electrónico'
+    )
+    
+    first_name = forms.CharField(
+        max_length=30,
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        label='Nombre'
+    )
+    
+    last_name = forms.CharField(
+        max_length=30,
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        label='Apellido'
+    )
+    
+    fecha_nacimiento = forms.DateField(
         required=True,
-        min_value=18,
-        help_text='Debe ser mayor de 18 años.'
+        widget=forms.DateInput(attrs={
+            'class': 'form-control',
+            'type': 'date',
+            'max': datetime.date.today().isoformat()
+        }),
+        help_text='Debe ser mayor de 18 años.',
+        label='Fecha de nacimiento'
+    )
+    
+    DNI = forms.CharField(
+        max_length=10,
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        label='DNI'
     )
     
     class Meta:
         model = Usuario
-        fields = [
-            'first_name',
-            'last_name',
-            'email',
-            'edad',
-            'DNI'
-        ]
-        labels = {
-            'first_name': 'Nombre',
-            'last_name': 'Apellido',
-            'email': 'Correo electrónico',
-            'edad': 'Edad',
-            'DNI': 'DNI',
-        }
+        fields = ['first_name', 'last_name', 'email', 'fecha_nacimiento', 'DNI']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field in self.fields.values():
             field.widget.attrs['class'] = 'form-control'
+        
+        # Si hay una instancia (usuario), convertir edad a fecha de nacimiento aproximada
+        if self.instance and self.instance.edad:
+            hoy = datetime.date.today()
+            fecha_aprox = hoy - relativedelta(years=self.instance.edad)
+            self.initial['fecha_nacimiento'] = fecha_aprox
 
-    def clean_edad(self):
-        edad = self.cleaned_data.get('edad')
-        if edad and edad < 18:
-            raise ValidationError('Debe ser mayor de 18 años.')
-        return edad
+    def clean_fecha_nacimiento(self):
+        fecha_nacimiento = self.cleaned_data.get('fecha_nacimiento')
+        if fecha_nacimiento:
+            hoy = datetime.date.today()
+            edad = relativedelta(hoy, fecha_nacimiento).years
+            if edad < 18:
+                raise ValidationError('Debe ser mayor de 18 años.')
+        return fecha_nacimiento
 
-    def clean_DNI(self):
-        dni = self.cleaned_data.get('DNI')
-        if dni:
-            validar_dni(dni)
-        return dni
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        fecha_nacimiento = self.cleaned_data.get('fecha_nacimiento')
+        if fecha_nacimiento:
+            hoy = datetime.date.today()
+            user.edad = relativedelta(hoy, fecha_nacimiento).years
+        if commit:
+            user.save()
+        return user
 
 class CambiarRolForm(forms.ModelForm):
     class Meta:
