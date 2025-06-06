@@ -25,4 +25,5 @@ urlpatterns = [
     path('obtener-datos-vehiculo/', obtener_datos_vehiculo, name="obtener_datos_vehiculo"),
     path('ver-autos/', ver_autos, name="ver_autos"),
     path('logout/', admin_logout, name='admin_logout'),
+    path('cargar-sucursal/', cargar_sucursal, name="cargar_sucursal"),
 ]
