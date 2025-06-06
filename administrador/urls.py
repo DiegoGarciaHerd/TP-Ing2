@@ -13,6 +13,7 @@ from .views.vehiculos import (
     obtener_datos_vehiculo
 )
 from .views.empleados import cargar_empleados
+from .views.sucursal import cargar_sucursal
 
 urlpatterns = [
     path('login/', login_admin_step1, name='admin_login_step1'),

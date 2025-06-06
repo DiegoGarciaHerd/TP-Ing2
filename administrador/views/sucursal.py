@@ -3,8 +3,31 @@ import random
 import string
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from administrador.decorators import admin_required1
+from administrador.decorators import admin_required
 from django.conf import settings
+from sucursales.models import Sucursal
 
+@admin_required
 def cargar_sucursal(request):
+    if request.method == 'POST':
+        try:
+            nombre = request.POST.get('nombre')
+            direccion = request.POST.get('direccion')
+            telefono = request.POST.get('telefono')
+
+            if Sucursal.objects.filter(nombre=nombre).exists():
+                messages.error(request, "Ya existe una sucursal con ese nombre.")
+                return render(request, 'administrador/cargar_sucursal.html')
+            
+            sucursal = Sucursal.objects.create(
+                nombre=nombre,
+                direccion=direccion,
+                telefono=telefono
+            )
+            messages.success(request, 'Sucursal cargada exitosamente.')
+            return redirect('admin_menu')
+        except Exception as e:
+            messages.error(request, f"Error al cargar la sucursal: {str(e)}")
+            return render(request, 'administrador/cargar_sucursal.html')
+
     return render(request, 'administrador/cargar_sucursal.html')
