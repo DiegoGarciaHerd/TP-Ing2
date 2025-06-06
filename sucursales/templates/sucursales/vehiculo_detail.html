@@ -26,6 +26,8 @@
                 <div class="row">
                     <div class="col-md-6">
                         <p><strong>Año:</strong> {{ vehiculo.año }}</p>
+                        <p><strong>Tipo:</strong> {{ vehiculo.get_tipo_display }}</p>
+                        <p><strong>Capacidad:</strong> {{ vehiculo.capacidad }} personas</p>
                         <p><strong>Precio por día:</strong> ${{ vehiculo.precio_por_dia|floatformat:2 }}</p>
                         <p><strong>Ubicación:</strong> {{ vehiculo.sucursal_actual.nombre }} ({{ vehiculo.sucursal_actual.direccion }})</p>
                         <p><strong>Estado:</strong>
@@ -44,9 +46,9 @@
                                     {% if vehiculo.politica_de_reembolso == '0' %}
                                         <span class="text-danger">No se realizan reembolsos</span>
                                     {% elif vehiculo.politica_de_reembolso == '20' %}
-                                        <span class="text-warning">Reembolso del 20% hasta 24 horas antes</span>
+                                        <span class="text-warning">Reembolso del 20%</span>
                                     {% else %}
-                                        <span class="text-success">Reembolso del 100% hasta 48 horas antes</span>
+                                        <span class="text-success">Reembolso del 100%</span>
                                     {% endif %}
                                 </p>
                                 <small class="text-muted">

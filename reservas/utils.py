@@ -56,7 +56,7 @@ def procesar_pago_tarjeta(numero_tarjeta, nombre_titular, mes_vencimiento, ano_v
     """
     
     # Simular delay de procesamiento
-    time.sleep(1)
+    time.sleep(2)
     
     # Simular una tasa de éxito del 95% (para demostración)
     exito = random.random() > 0.05

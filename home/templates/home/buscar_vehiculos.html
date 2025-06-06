@@ -116,10 +116,11 @@
                     <div class="card-body">
                         <h5 class="card-title">{{ vehiculo.marca }} {{ vehiculo.modelo }}</h5>
                         <p class="card-text">
-                            <strong>Año:</strong> {{ vehiculo.anio }}<br>
+                            <strong>Año:</strong> {{ vehiculo.año }}<br>
                             <strong>Tipo:</strong> {{ vehiculo.get_tipo_display }}<br>
                             <strong>Capacidad:</strong> {{ vehiculo.capacidad }} personas<br>
-                            <strong>Precio por día:</strong> ${{ vehiculo.precio_dia }}
+                            <strong>Patente:</strong> {{ vehiculo.patente }}<br>
+                            <strong>Precio por día:</strong> ${{ vehiculo.precio_por_dia|floatformat:2 }}
                         </p>
                         {% if not user.is_staff and not user.is_superuser %}
                             <a href="{% url 'reservas:crear_reserva' vehiculo.id %}?fecha_retiro={{ fecha_retiro|date:'Y-m-d' }}&fecha_entrega={{ fecha_entrega|date:'Y-m-d' }}&sucursal_retiro={{ sucursal_seleccionada }}&sucursal_devolucion={% if misma_sucursal %}{{ sucursal_seleccionada }}{% else %}{{ sucursal_devolucion_seleccionada }}{% endif %}" 

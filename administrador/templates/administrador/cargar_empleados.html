@@ -1,31 +1,148 @@
-{% extends 'home/base.html' %}
+{% extends 'home/base.html' %} {# Asegúrate de que esta ruta sea correcta para tu base template #}
+
 {% block content %}
-<!DOCTYPE html>
-<html>
-<body>
-    <h1>Ingrese aquí todos los datos del nuevo empleado</h1>
-    <form method="POST">
-        {% csrf_token %}
-        <ul>
-            <li>
-            <label for="nombre">Nombre: </label>
-            <input type="text" id="nombre" name="nombre" required/>
-            </li>
-            <li>
-            <label for="sucursal">Sucursal: </label>
-            <input type="text" id="sucursal" nombre="sucursal" required/>
-            </li>
-            <li>
-            <label for="direccion">Direccion: </label>
-            <input type="text" id="direccion" nombre="direccion" required/>
-            </li>
-            <li>
-            <label for="telefono">Telefono: </label>
-            <input type="text" id="telefono" nombre="telefono" required/>
-            </li>
-        </ul>
-        <button type="submit">Ingresar datos</button>
-    </form>
-</body>
-</html>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-7"> {# Aumentamos un poco el tamaño para mejor visualización del formulario #}
+            <div class="card shadow-lg border-0" style="border-radius: 15px;">
+                <div class="card-header text-white text-center py-4" style="background-color: #0e4532; border-radius: 15px 15px 0 0;">
+                    <h2 class="mb-0 fw-bold"><i class="fas fa-user-plus me-2"></i>Cargar Nuevo Empleado</h2>
+                    <p class="lead text-white-50 mb-0">Ingrese aquí todos los datos del nuevo empleado</p>
+                </div>
+                <div class="card-body p-4 p-md-5"> {# Más padding en pantallas grandes #}
+                    {% if messages %}
+                        <div class="mb-4">
+                            {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <form method="POST">
+                        {% csrf_token %}
+                        
+                        {# Adaptación de tus campos de formulario manuales con clases de Bootstrap #}
+                        <div class="mb-3">
+                            <label for="id_nombre" class="form-label">Nombre:</label>
+                            <input type="text" id="id_nombre" name="nombre" class="form-control" required/>
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_apellido" class="form-label">Apellido:</label>
+                            <input type="text" id="id_apellido" name="apellido" class="form-control" required/>
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_dni" class="form-label">DNI:</label>
+                            <input type="text" id="id_dni" name="dni" class="form-control" required/>
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_email" class="form-label">Email:</label>
+                            <input type="email" id="id_email" name="email" class="form-control" required/>
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_direccion" class="form-label">Dirección:</label>
+                            <input type="text" id="id_direccion" name="direccion" class="form-control" required/>
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_telefono" class="form-label">Teléfono:</label>
+                            <input type="text" id="id_telefono" name="telefono" class="form-control" required/>
+                        </div>
+                        
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-save me-2"></i>Ingresar datos
+                            </button>
+                            <a href="{% url 'admin_menu' %}" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-arrow-left me-2"></i>Volver al Panel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Los mismos estilos que tenías para las tarjetas y botones */
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 15px;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1) !important;
+}
+
+.card-header {
+    border-radius: 15px 15px 0 0 !important;
+    border: none;
+    padding: 1.5rem;
+}
+
+.btn {
+    border-radius: 10px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn:hover:not(.disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.btn.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn small {
+    font-size: 0.75rem;
+    font-style: italic;
+}
+
+/* Para los campos del formulario */
+.form-label {
+    font-weight: bold;
+    color: #333; /* Color de texto oscuro para las etiquetas */
+    margin-bottom: .5rem;
+}
+
+.form-control {
+    border-radius: .5rem; /* Bordes redondeados para inputs */
+    padding: .75rem 1rem;
+    font-size: 1rem;
+    border: 1px solid #ced4da; /* Borde estándar de Bootstrap */
+}
+
+.form-control:focus {
+    border-color: #0e4532; /* Borde al enfocar, para que combine con tu tema */
+    box-shadow: 0 0 0 0.25rem rgba(14, 69, 50, 0.25); /* Sombra al enfocar */
+}
+
+/* Estilos para mensajes de error o éxito */
+.alert {
+    border-radius: .5rem;
+}
+
+/* Animación para el título y la tarjeta (si no están ya en base.html) */
+@keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.card, .card-header h2 {
+    animation: fadeInUp 0.8s ease-out;
+}
+</style>
 {% endblock %}

@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     {% load static %}
     <link rel="stylesheet" href="{% static 'home/styles.css' %}">
 </head>
@@ -14,7 +15,7 @@
 <nav class="navbar navbar-expand-lg navbar-custom">
     <div class="container-fluid position-relative">
         {% load static %}
-        <a class="navbar-brand" href="{% url 'home:home' %}">
+        <a class="navbar-brand" href="{% if user.is_authenticated and user.is_superuser %}{% url 'admin_menu' %}{% else %}{% url 'home:home' %}{% endif %}">
             <img src="{% static 'home/img/AutoRental_Logo.png' %}" alt="Autorental" height="60">
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
@@ -25,7 +26,10 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav navbar-center">
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'sucursales:lista_sucursales' %}">Ver Sucursales y Vehículos</a>
+                    <a class="nav-link" href="{% url 'sucursales:lista_sucursales' %}">Sucursales</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'sucursales:lista_vehiculos' %}">Vehículos</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'home:contacto' %}">Contacto</a>
@@ -42,14 +46,33 @@
                             <a class="nav-link" href="{% url 'logout' %}">Cerrar sesión</a>
                         </li>
                     {% else %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'reservas:mis_reservas' %}">Mis reservas</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href=>Mi Perfil</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'logout' %}">Cerrar sesión</a>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-person-circle"></i> {{ user.get_full_name|default:user.email }}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'reservas:mis_reservas' %}">
+                                        <i class="bi bi-calendar-check"></i> Mis reservas
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'editar_perfil' %}">
+                                        <i class="bi bi-person"></i> Mi Perfil
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'gestionar_forma_pago' %}">
+                                        <i class="bi bi-credit-card"></i> Forma de Pago
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item text-danger" href="{% url 'logout' %}">
+                                        <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+                                    </a>
+                                </li>
+                            </ul>
                         </li>
                     {% endif %}
                 {% else %}

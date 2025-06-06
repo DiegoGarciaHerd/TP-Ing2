@@ -156,74 +156,95 @@
                             <form method="post" id="payment-form">
                                 {% csrf_token %}
                                 
-                                <div class="mb-4">
-                                    <label for="{{ form.numero_tarjeta.id_for_label }}" class="form-label">
-                                        <i class="fas fa-credit-card me-2"></i>{{ form.numero_tarjeta.label }}
-                                    </label>
-                                    {{ form.numero_tarjeta }}
-                                    {% if form.numero_tarjeta.errors %}
-                                        <div class="text-danger mt-1">
-                                            {% for error in form.numero_tarjeta.errors %}
-                                                <small>{{ error }}</small>
-                                            {% endfor %}
+                                <!-- Campos de nueva tarjeta -->
+                                <div id="new-card-fields">
+                                    <div class="mb-4">
+                                        <label for="{{ form.numero_tarjeta.id_for_label }}" class="form-label">
+                                            <i class="fas fa-credit-card me-2"></i>{{ form.numero_tarjeta.label }}
+                                        </label>
+                                        {{ form.numero_tarjeta }}
+                                        {% if form.numero_tarjeta.errors %}
+                                            <div class="text-danger mt-1">
+                                                {% for error in form.numero_tarjeta.errors %}
+                                                    <small>{{ error }}</small>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="mb-4">
+                                        <label for="{{ form.nombre_titular.id_for_label }}" class="form-label">
+                                            <i class="fas fa-user me-2"></i>{{ form.nombre_titular.label }}
+                                        </label>
+                                        {{ form.nombre_titular }}
+                                        {% if form.nombre_titular.errors %}
+                                            <div class="text-danger mt-1">
+                                                {% for error in form.nombre_titular.errors %}
+                                                    <small>{{ error }}</small>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="row mb-4">
+                                        <div class="col-md-4">
+                                            <label for="{{ form.mes_vencimiento.id_for_label }}" class="form-label">
+                                                <i class="fas fa-calendar me-2"></i>{{ form.mes_vencimiento.label }}
+                                            </label>
+                                            {{ form.mes_vencimiento }}
+                                            {% if form.mes_vencimiento.errors %}
+                                                <div class="text-danger mt-1">
+                                                    {% for error in form.mes_vencimiento.errors %}
+                                                        <small>{{ error }}</small>
+                                                    {% endfor %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label for="{{ form.ano_vencimiento.id_for_label }}" class="form-label">
+                                                {{ form.ano_vencimiento.label }}
+                                            </label>
+                                            {{ form.ano_vencimiento }}
+                                            {% if form.ano_vencimiento.errors %}
+                                                <div class="text-danger mt-1">
+                                                    {% for error in form.ano_vencimiento.errors %}
+                                                        <small>{{ error }}</small>
+                                                    {% endfor %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Información sobre guardado automático -->
+                                    {% if not form.usar_tarjeta_guardada %}
+                                        <div class="mb-4 p-3" style="background: #e3f2fd; border-radius: 10px; border: 1px solid #bbdefb;">
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-info-circle me-2" style="color: #1976d2;"></i>
+                                                <div>
+                                                    <strong style="color: #1976d2;">Guardado Automático</strong>
+                                                    <div style="font-size: 0.9rem; color: #666;">
+                                                        Tu tarjeta se guardará automáticamente de forma segura para futuras reservas
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     {% endif %}
                                 </div>
                                 
+                                <!-- Campo CVV siempre visible -->
                                 <div class="mb-4">
-                                    <label for="{{ form.nombre_titular.id_for_label }}" class="form-label">
-                                        <i class="fas fa-user me-2"></i>{{ form.nombre_titular.label }}
+                                    <label for="{{ form.cvv.id_for_label }}" class="form-label">
+                                        <i class="fas fa-lock me-2"></i>{{ form.cvv.label }}
                                     </label>
-                                    {{ form.nombre_titular }}
-                                    {% if form.nombre_titular.errors %}
+                                    {{ form.cvv }}
+                                    {% if form.cvv.errors %}
                                         <div class="text-danger mt-1">
-                                            {% for error in form.nombre_titular.errors %}
+                                            {% for error in form.cvv.errors %}
                                                 <small>{{ error }}</small>
                                             {% endfor %}
                                         </div>
                                     {% endif %}
-                                </div>
-                                
-                                <div class="row mb-4">
-                                    <div class="col-md-4">
-                                        <label for="{{ form.mes_vencimiento.id_for_label }}" class="form-label">
-                                            <i class="fas fa-calendar me-2"></i>{{ form.mes_vencimiento.label }}
-                                        </label>
-                                        {{ form.mes_vencimiento }}
-                                        {% if form.mes_vencimiento.errors %}
-                                            <div class="text-danger mt-1">
-                                                {% for error in form.mes_vencimiento.errors %}
-                                                    <small>{{ error }}</small>
-                                                {% endfor %}
-                                            </div>
-                                        {% endif %}
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label for="{{ form.ano_vencimiento.id_for_label }}" class="form-label">
-                                            {{ form.ano_vencimiento.label }}
-                                        </label>
-                                        {{ form.ano_vencimiento }}
-                                        {% if form.ano_vencimiento.errors %}
-                                            <div class="text-danger mt-1">
-                                                {% for error in form.ano_vencimiento.errors %}
-                                                    <small>{{ error }}</small>
-                                                {% endfor %}
-                                            </div>
-                                        {% endif %}
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label for="{{ form.cvv.id_for_label }}" class="form-label">
-                                            <i class="fas fa-lock me-2"></i>{{ form.cvv.label }}
-                                        </label>
-                                        {{ form.cvv }}
-                                        {% if form.cvv.errors %}
-                                            <div class="text-danger mt-1">
-                                                {% for error in form.cvv.errors %}
-                                                    <small>{{ error }}</small>
-                                                {% endfor %}
-                                            </div>
-                                        {% endif %}
-                                    </div>
+                                    <small class="text-muted">El CVV siempre es requerido por seguridad</small>
                                 </div>
                                 
                                 {% if form.non_field_errors %}
@@ -256,16 +277,46 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const numeroTarjetaInput = document.getElementById('numero_tarjeta');
+    const numeroTarjetaInput = document.getElementById('id_numero_tarjeta');
     const payButton = document.getElementById('pay-button');
     const form = document.getElementById('payment-form');
+    const newCardFields = document.getElementById('new-card-fields');
+    const usarTarjetaGuardada = document.getElementById('id_usar_tarjeta_guardada');
+    
+    // Función para toggle de campos de nueva tarjeta
+    function toggleNewCardFields() {
+        if (usarTarjetaGuardada && usarTarjetaGuardada.checked) {
+            newCardFields.style.display = 'none';
+            // Limpiar campos requeridos cuando se ocultan
+            const requiredFields = newCardFields.querySelectorAll('input[required], select[required]');
+            requiredFields.forEach(field => {
+                field.removeAttribute('required');
+            });
+        } else {
+            newCardFields.style.display = 'block';
+            // Restaurar campos requeridos
+            const fields = newCardFields.querySelectorAll('#id_numero_tarjeta, #id_nombre_titular, #id_mes_vencimiento, #id_ano_vencimiento');
+            fields.forEach(field => {
+                field.setAttribute('required', 'required');
+            });
+        }
+    }
+    
+    // Manejar cambio en checkbox de tarjeta guardada
+    if (usarTarjetaGuardada) {
+        usarTarjetaGuardada.addEventListener('change', toggleNewCardFields);
+        // Ejecutar al cargar la página
+        toggleNewCardFields();
+    }
     
     // Formatear número de tarjeta
-    numeroTarjetaInput.addEventListener('input', function(e) {
-        let value = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
-        let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
-        e.target.value = formattedValue;
-    });
+    if (numeroTarjetaInput) {
+        numeroTarjetaInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+            let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
+            e.target.value = formattedValue;
+        });
+    }
     
     // Prevenir múltiples envíos
     form.addEventListener('submit', function(e) {
@@ -274,9 +325,12 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Permitir solo números en CVV
-    document.getElementById('id_cvv').addEventListener('input', function(e) {
-        e.target.value = e.target.value.replace(/[^0-9]/g, '');
-    });
+    const cvvInput = document.getElementById('id_cvv');
+    if (cvvInput) {
+        cvvInput.addEventListener('input', function(e) {
+            e.target.value = e.target.value.replace(/[^0-9]/g, '');
+        });
+    }
 });
 </script>
 {% endblock %} 

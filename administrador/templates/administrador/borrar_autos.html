@@ -1,16 +1,147 @@
 {% extends 'home/base.html' %}
 {% block content %}
-<!DOCTYPE html>
-<html>
-    <h1>Ingrese la patente del vehículo a borrar</h1>
-    <form method="POST">
-        {% csrf_token %}
-        <ul>
-            <li>
-                <label for="patente">Patente: </label>
-                <input type="text" id="patente" name="patente" required/>
-            </li>
-        </ul>
-        <button type="submit">Borrar vehículo</button>
-</html>
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg">
+                <div class="card-header text-white" style="background-color: #0e4532;">
+                    <h2 class="mb-0">Remover Vehículo del Catálogo</h2>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="POST" id="borrarAutoForm">
+                        {% csrf_token %}
+                        
+                        <!-- Selector de Patente -->
+                        <div class="mb-3">
+                            <label for="patente" class="form-label">Seleccionar Vehículo por Patente:</label>
+                            <select class="form-select" id="patente" name="patente" required>
+                                <option value="" disabled selected>Seleccione un vehículo</option>
+                                {% for vehiculo in vehiculos %}
+                                    <option value="{{ vehiculo.patente }}">{{ vehiculo.patente }} - {{ vehiculo.marca }} {{ vehiculo.modelo }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Información del Vehículo -->
+                        <div id="infoVehiculo" style="display: none;">
+                            <h4 class="mb-3">Información del Vehículo</h4>
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <p><strong>Marca:</strong> <span id="marca"></span></p>
+                                    <p><strong>Modelo:</strong> <span id="modelo"></span></p>
+                                    <p><strong>Año:</strong> <span id="año"></span></p>
+                                    <p><strong>Tipo:</strong> <span id="tipo"></span></p>
+                                    <p><strong>Capacidad:</strong> <span id="capacidad"></span> personas</p>
+                                    <p><strong>Precio por día:</strong> $<span id="precio"></span></p>
+                                    <p><strong>Sucursal:</strong> <span id="sucursal"></span></p>
+                                    <p><strong>Estado:</strong> <span id="estado"></span></p>
+                                </div>
+                                <div class="col-md-4">
+                                    <div id="previewContainer" style="display: none;">
+                                        <img id="previewImage" src="" alt="Vista previa del vehículo" class="img-fluid">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <strong>¡Atención!</strong> Esta acción marcará el vehículo como no disponible y lo removerá del catálogo de vehículos disponibles. El vehículo permanecerá en el sistema pero no será visible para los clientes.
+                            </div>
+
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <button type="button" class="btn btn-secondary me-md-2" id="btnCancelar">
+                                    Cancelar
+                                </button>
+                                <button type="submit" class="btn btn-warning" id="btnEliminar">
+                                    <i class="fas fa-ban me-2"></i>Remover del Catálogo
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const patenteSelect = document.getElementById('patente');
+        const infoVehiculo = document.getElementById('infoVehiculo');
+        const btnCancelar = document.getElementById('btnCancelar');
+        const btnEliminar = document.getElementById('btnEliminar');
+        
+        // Cuando se selecciona una patente, cargar los datos del vehículo
+        patenteSelect.addEventListener('change', function() {
+            const patente = this.value;
+            if (patente) {
+                // Hacer petición AJAX para obtener los datos del vehículo
+                fetch(`/admin-auth/obtener-datos-vehiculo/?patente=${patente}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            alert('Error: ' + data.error);
+                            return;
+                        }
+                        
+                        // Mostrar la información del vehículo
+                        document.getElementById('marca').textContent = data.marca;
+                        document.getElementById('modelo').textContent = data.modelo;
+                        document.getElementById('año').textContent = data.año;
+                        document.getElementById('tipo').textContent = data.tipo;
+                        document.getElementById('capacidad').textContent = data.capacidad;
+                        document.getElementById('precio').textContent = data.precio_por_dia;
+                        document.getElementById('sucursal').textContent = data.sucursal;
+                        document.getElementById('estado').textContent = data.disponible ? 'Disponible' : 'No Disponible';
+                        
+                        // Mostrar la imagen si existe
+                        if (data.foto_base64) {
+                            document.getElementById('previewImage').src = 'data:image/jpeg;base64,' + data.foto_base64;
+                            document.getElementById('previewContainer').style.display = 'block';
+                        } else {
+                            document.getElementById('previewContainer').style.display = 'none';
+                        }
+                        
+                        // Mostrar la sección de información
+                        infoVehiculo.style.display = 'block';
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error al cargar los datos del vehículo');
+                    });
+            } else {
+                infoVehiculo.style.display = 'none';
+            }
+        });
+        
+        // Botón cancelar - limpiar selección
+        btnCancelar.addEventListener('click', function() {
+            patenteSelect.value = '';
+            infoVehiculo.style.display = 'none';
+        });
+        
+        // Confirmar acción
+        btnEliminar.addEventListener('click', function(e) {
+            if (!confirm('¿Está seguro que desea remover este vehículo del catálogo? El vehículo será marcado como no disponible.')) {
+                e.preventDefault();
+            }
+        });
+        
+        // Prevenir que Enter envíe el formulario
+        document.getElementById('borrarAutoForm').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                return false;
+            }
+        });
+    });
+</script>
 {% endblock %}

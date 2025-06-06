@@ -19,6 +19,13 @@
                 <p><strong>Estado:</strong> <span class="badge {% if reserva.estado == 'PENDIENTE' %}bg-warning{% elif reserva.estado == 'CONFIRMADA' %}bg-success{% elif reserva.estado == 'CANCELADA' %}bg-danger{% else %}bg-secondary{% endif %}">{{ reserva.get_estado_display }}</span></p>
                 <p><strong>Fecha de Creación:</strong> {{ reserva.fecha_creacion|date:"d/m/Y H:i" }}</p>
 
+                <h4>Datos del Conductor</h4>
+                <ul>
+                    <li><strong>Nombre:</strong> {{ reserva.conductor_nombre }}</li>
+                    <li><strong>Apellido:</strong> {{ reserva.conductor_apellido }}</li>
+                    <li><strong>DNI:</strong> {{ reserva.conductor_dni }}</li>
+                </ul>
+
                 {% if reserva.estado == 'PENDIENTE' or reserva.estado == 'CONFIRMADA' %}
                     {% if reserva.fecha_recogida >= today %}
                         <div class="mt-3">
