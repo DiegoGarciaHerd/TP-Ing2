@@ -1,17 +1,18 @@
-{% extends 'home/base.html' %} {# Asegúrate de que esta ruta sea correcta para tu base template #}
+{% extends 'home/base.html' %}
 
 {% block content %}
-<div class="container mt-5">
+<div class="container mt-4">
     <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-7"> {# Aumentamos un poco el tamaño para mejor visualización del formulario #}
-            <div class="card shadow-lg border-0" style="border-radius: 15px;">
-                <div class="card-header text-white text-center py-4" style="background-color: #0e4532; border-radius: 15px 15px 0 0;">
-                    <h2 class="mb-0 fw-bold"><i class="fas fa-user-plus me-2"></i>Cargar Nuevo Empleado</h2>
-                    <p class="lead text-white-50 mb-0">Ingrese aquí todos los datos del nuevo empleado</p>
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-lg border-0">
+                <div class="card-header text-white text-center" style="background-color: #0e4532;">
+                    <h4 class="mb-0">
+                        <i class="fas fa-user-plus me-2"></i>Cargar Nuevo Empleado
+                    </h4>
                 </div>
-                <div class="card-body p-4 p-md-5"> {# Más padding en pantallas grandes #}
+                <div class="card-body p-4">
                     {% if messages %}
-                        <div class="mb-4">
+                        <div class="messages mb-3">
                             {% for message in messages %}
                                 <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
                                     {{ message }}
@@ -21,40 +22,67 @@
                         </div>
                     {% endif %}
 
-                    <form method="POST">
+                    <form method="POST" class="needs-validation" novalidate>
                         {% csrf_token %}
-                        
-                        {# Adaptación de tus campos de formulario manuales con clases de Bootstrap #}
                         <div class="mb-3">
                             <label for="id_nombre" class="form-label">Nombre:</label>
-                            <input type="text" id="id_nombre" name="nombre" class="form-control" required/>
+                            <input type="text" class="form-control" id="id_nombre" name="nombre" value="{{ request_post.nombre|default:'' }}" required>
+                            <div class="invalid-feedback">
+                                Por favor, ingresa el nombre.
+                            </div>
                         </div>
                         <div class="mb-3">
                             <label for="id_apellido" class="form-label">Apellido:</label>
-                            <input type="text" id="id_apellido" name="apellido" class="form-control" required/>
+                            <input type="text" class="form-control" id="id_apellido" name="apellido" value="{{ request_post.apellido|default:'' }}" required>
+                            <div class="invalid-feedback">
+                                Por favor, ingresa el apellido.
+                            </div>
                         </div>
                         <div class="mb-3">
                             <label for="id_dni" class="form-label">DNI:</label>
-                            <input type="text" id="id_dni" name="dni" class="form-control" required/>
+                            <input type="text" class="form-control" id="id_dni" name="dni" value="{{ request_post.dni|default:'' }}" required>
+                            <div class="invalid-feedback">
+                                Por favor, ingresa el DNI.
+                            </div>
                         </div>
                         <div class="mb-3">
                             <label for="id_email" class="form-label">Email:</label>
-                            <input type="email" id="id_email" name="email" class="form-control" required/>
+                            <input type="email" class="form-control" id="id_email" name="email" value="{{ request_post.email|default:'' }}" required>
+                            <div class="invalid-feedback">
+                                Por favor, ingresa un email válido.
+                            </div>
                         </div>
                         <div class="mb-3">
                             <label for="id_direccion" class="form-label">Dirección:</label>
-                            <input type="text" id="id_direccion" name="direccion" class="form-control" required/>
+                            <input type="text" class="form-control" id="id_direccion" name="direccion" value="{{ request_post.direccion|default:'' }}" required>
+                            <div class="invalid-feedback">
+                                Por favor, ingresa la dirección.
+                            </div>
                         </div>
                         <div class="mb-3">
                             <label for="id_telefono" class="form-label">Teléfono:</label>
-                            <input type="text" id="id_telefono" name="telefono" class="form-control" required/>
+                            <input type="text" class="form-control" id="id_telefono" name="telefono" value="{{ request_post.telefono|default:'' }}" required>
+                            <div class="invalid-feedback">
+                                Por favor, ingresa el teléfono.
+                            </div>
                         </div>
-                        
+
+                        {# Campo Sucursal - Asegúrate de que tu modelo Empleado tenga un ForeignKey a Sucursal #}
+                        <div class="mb-3">
+                            <label for="id_sucursal" class="form-label">Sucursal:</label>
+                            {# Aquí usarías un <select> si tienes sucursales cargadas desde tu base de datos #}
+                            {# Por ahora, un input de texto simple para mantener la estructura anterior #}
+                            <input type="text" class="form-control" id="id_sucursal" name="sucursal" value="{{ request_post.sucursal|default:'' }}" required>
+                            <div class="invalid-feedback">
+                                Por favor, ingresa la sucursal.
+                            </div>
+                        </div>
+
                         <div class="d-grid gap-2 mt-4">
                             <button type="submit" class="btn btn-success btn-lg">
-                                <i class="fas fa-save me-2"></i>Ingresar datos
+                                <i class="fas fa-check-circle me-2"></i>Ingresar datos
                             </button>
-                            <a href="{% url 'admin_menu' %}" class="btn btn-outline-secondary btn-lg">
+                            <a href="{% url 'admin_menu' %}" class="btn btn-secondary btn-lg mt-2">
                                 <i class="fas fa-arrow-left me-2"></i>Volver al Panel
                             </a>
                         </div>
@@ -65,8 +93,10 @@
     </div>
 </div>
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
 <style>
-/* Los mismos estilos que tenías para las tarjetas y botones */
+/* Estilos adicionales para mejorar el diseño */
 .card {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     border-radius: 15px;
@@ -106,43 +136,32 @@
     font-style: italic;
 }
 
-/* Para los campos del formulario */
-.form-label {
-    font-weight: bold;
-    color: #333; /* Color de texto oscuro para las etiquetas */
-    margin-bottom: .5rem;
-}
-
-.form-control {
-    border-radius: .5rem; /* Bordes redondeados para inputs */
-    padding: .75rem 1rem;
-    font-size: 1rem;
-    border: 1px solid #ced4da; /* Borde estándar de Bootstrap */
-}
-
-.form-control:focus {
-    border-color: #0e4532; /* Borde al enfocar, para que combine con tu tema */
-    box-shadow: 0 0 0 0.25rem rgba(14, 69, 50, 0.25); /* Sombra al enfocar */
-}
-
-/* Estilos para mensajes de error o éxito */
-.alert {
-    border-radius: .5rem;
-}
-
-/* Animación para el título y la tarjeta (si no están ya en base.html) */
-@keyframes fadeInDown {
-    from { opacity: 0; transform: translateY(-30px); }
-    to { opacity: 1; transform: translateY(0); }
+/* Animación para las tarjetas */
+.card {
+    animation: fadeInUp 0.8s ease-out;
 }
 
 @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(30px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-.card, .card-header h2 {
-    animation: fadeInUp 0.8s ease-out;
+/* Responsivo para móviles */
+@media (max-width: 768px) {
+    .card-body {
+        padding: 1.5rem !important;
+    }
+    
+    .btn-lg {
+        font-size: 1rem;
+        padding: 0.75rem 1rem;
+    }
 }
 </style>
 {% endblock %}
