@@ -13,7 +13,12 @@ from .views.vehiculos import (
     obtener_datos_vehiculo
 )
 from .views.empleados import cargar_empleados
-from .views.sucursal import cargar_sucursal
+
+from .views.sucursal import (
+    cargar_sucursal,
+    modificar_sucursal,
+    borrar_sucursal
+)
 
 urlpatterns = [
     path('login/', login_admin_step1, name='admin_login_step1'),
@@ -27,4 +32,6 @@ urlpatterns = [
     path('ver-autos/', ver_autos, name="ver_autos"),
     path('logout/', admin_logout, name='admin_logout'),
     path('cargar-sucursal/', cargar_sucursal, name="cargar_sucursal"),
+    path('modificar-sucursal/', modificar_sucursal, name="modificar_sucursal"),
+    path('borrar-sucursal/', borrar_sucursal, name="borrar_sucursal")
 ]

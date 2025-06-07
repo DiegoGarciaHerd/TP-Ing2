@@ -1,0 +1,19 @@
+{% extends 'home/base.html' %}
+{% block content %}
+<html>
+    <h1>Modificar Sucursal</h1>
+    <form method="post" action="{% url 'cargar_sucursal' %}">
+        {% csrf_token %}
+        <label for="nombre">Nombre de la Sucursal:</label>
+        <input type="text" id="nombre" name="nombre" required>
+        <br>
+        <label for="direccion">Dirección:</label>
+        <input type="text" id="direccion" name="direccion">
+        <br>
+        <label for="telefono">Teléfono:</label>
+        <input type="text" id="telefono" name="telefono">
+        <br>
+        <button type="submit">Cargar Sucursal</button>
+</html>
+
+{%endblock%}

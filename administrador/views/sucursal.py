@@ -31,3 +31,11 @@ def cargar_sucursal(request):
             return render(request, 'administrador/cargar_sucursal.html')
 
     return render(request, 'administrador/cargar_sucursal.html')
+
+@admin_required
+def modificar_sucursal(request):
+    return render(request, 'administrador/modificar_sucursal.html')
+
+@admin_required
+def borrar_sucursal(request):
+    return render(request, 'administrador/borrar_sucursal.html')
