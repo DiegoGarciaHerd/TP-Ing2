@@ -1,5 +1,5 @@
 from datetime import timezone
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from vehiculos.models import Vehiculo
 from administrador.decorators import admin_required
@@ -137,5 +137,40 @@ def obtener_datos_vehiculo(request):
 
 @admin_required
 def ver_autos(request):
-    vehiculos = Vehiculo.objects.all().order_by('patente')
-    return render(request, 'administrador/ver_autos.html', {'vehiculos': vehiculos}) 
+    # Obtener todos los vehículos
+    queryset = Vehiculo.objects.all().select_related('sucursal_actual').order_by('patente')
+    
+    # Aplicar filtros
+    sucursal = request.GET.get('sucursal')
+    estado = request.GET.get('estado')
+    
+    if sucursal:
+        queryset = queryset.filter(sucursal_actual_id=sucursal)
+    if estado:
+        if estado == 'disponible':
+            queryset = queryset.filter(disponible=True)
+        elif estado == 'no_disponible':
+            queryset = queryset.filter(disponible=False)
+    
+    context = {
+        'vehiculos': queryset,
+        'sucursales': Sucursal.objects.all(),
+        'sucursal_seleccionada': sucursal,
+        'estado_seleccionado': estado
+    }
+    return render(request, 'administrador/ver_autos.html', context)
+
+@admin_required
+def toggle_disponibilidad(request, vehiculo_id):
+    """Vista para dar de baja o reactivar un vehículo"""
+    if request.method == 'POST':
+        vehiculo = get_object_or_404(Vehiculo, id=vehiculo_id)
+        vehiculo.disponible = not vehiculo.disponible
+        vehiculo.save()
+        
+        mensaje = "Vehículo reactivado en el catálogo" if vehiculo.disponible else "Vehículo dado de baja del catálogo"
+        messages.success(request, mensaje)
+        
+        return redirect('ver_autos')
+    
+    return redirect('ver_autos') 

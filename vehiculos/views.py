@@ -8,4 +8,8 @@ def lista_vehiculos(request):
 
 def detalle_vehiculo(request, pk):
     vehiculo = get_object_or_404(Vehiculo, pk=pk)
-    return render(request, 'sucursales/vehiculo_detail.html', {'vehiculo': vehiculo})
+    context = {
+        'vehiculo': vehiculo,
+        'is_admin': request.user.is_authenticated and (request.user.is_staff or request.user.is_superuser)
+    }
+    return render(request, 'sucursales/vehiculo_detail.html', context)

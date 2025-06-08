@@ -31,7 +31,6 @@ class AdminVehiculosListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
         # Aplicar filtros
         sucursal = self.request.GET.get('sucursal')
         estado = self.request.GET.get('estado')
-        tipo = self.request.GET.get('tipo')
         q = self.request.GET.get('q')
 
         if sucursal:
@@ -39,15 +38,8 @@ class AdminVehiculosListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
         if estado:
             if estado == 'disponible':
                 queryset = queryset.filter(disponible=True)
-            elif estado == 'reservado':
-                queryset = queryset.filter(
-                    reservas__estado__in=['PENDIENTE', 'CONFIRMADA'],
-                    reservas__fecha_devolucion__gte=timezone.now().date()
-                )
-            elif estado == 'mantenimiento':
+            elif estado == 'no_disponible':
                 queryset = queryset.filter(disponible=False)
-        if tipo:
-            queryset = queryset.filter(tipo=tipo)
         if q:
             queryset = queryset.filter(
                 Q(marca__icontains=q) |

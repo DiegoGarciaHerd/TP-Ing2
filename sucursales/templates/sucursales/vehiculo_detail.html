@@ -10,6 +10,15 @@
                 <h2 class="mb-0">{{ vehiculo.marca }} {{ vehiculo.modelo }} (Patente: {{ vehiculo.patente }})</h2>
             </div>
             <div class="card-body">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
                 {% if vehiculo.foto_base64 %}
                     <div class="text-center mb-4">
                         <img src="data:image/jpeg;base64,{{ vehiculo.foto_base64 }}" 
@@ -59,12 +68,28 @@
                     </div>
                 </div>
 
-                {% if vehiculo.disponible %}
-                    <a href="{% url 'reservas:crear_reserva' vehiculo.id %}" class="btn text-white mt-3" style="background-color: #0e4532;">
-                        Reservar Este Vehículo
-                    </a>
+                {% if is_admin %}
+                    <div class="mt-4">
+                        <h5 class="text-muted mb-3">Controles de Administrador</h5>
+                        <form method="POST" action="{% url 'toggle_disponibilidad' vehiculo.id %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn {% if vehiculo.disponible %}btn-danger{% else %}btn-success{% endif %}">
+                                {% if vehiculo.disponible %}
+                                    <i class="fas fa-ban"></i> Dar de baja
+                                {% else %}
+                                    <i class="fas fa-check"></i> Dar de alta
+                                {% endif %}
+                            </button>
+                        </form>
+                    </div>
                 {% else %}
-                    <p class="text-danger mt-3">Este vehículo no está disponible para reserva en este momento.</p>
+                    {% if vehiculo.disponible %}
+                        <a href="{% url 'reservas:crear_reserva' vehiculo.id %}" class="btn text-white mt-3" style="background-color: #0e4532;">
+                            Reservar Este Vehículo
+                        </a>
+                    {% else %}
+                        <p class="text-danger mt-3">Este vehículo no está disponible para reserva en este momento.</p>
+                    {% endif %}
                 {% endif %}
 
                 <hr>
