@@ -2,7 +2,7 @@
 
 import random
 import string
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from empleados.models import Empleado
 from administrador.decorators import admin_required
@@ -10,6 +10,10 @@ from django.contrib.auth import get_user_model
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.conf import settings
+from django.http import JsonResponse
+from ..forms import ModificarEmpleadoForm
+from django.views.generic import ListView
+from django.contrib.auth.mixins import UserPassesTestMixin
 
 Usuario = get_user_model() 
 
@@ -117,3 +121,49 @@ def cargar_empleados(request):
             
     # Para el método GET, renderizamos el formulario vacío
     return render(request, 'administrador/cargar_empleados.html')
+
+@admin_required
+def modificar_empleados(request):
+    if request.method == 'POST':
+        # Si hay un DNI en el POST, obtener el empleado y usarlo como instancia
+        dni = request.POST.get('dni')
+        empleado = get_object_or_404(Empleado, dni=dni) if dni else None
+        form = ModificarEmpleadoForm(request.POST, instance=empleado)
+        
+        if form.is_valid():
+            empleado = form.save(commit=False)
+            user = empleado.user
+            
+            # Actualizar también el usuario asociado
+            user.first_name = empleado.nombre
+            user.last_name = empleado.apellido
+            user.email = empleado.email
+            
+            try:
+                user.save()
+                empleado.save()
+                messages.success(request, f"Empleado {empleado.nombre} {empleado.apellido} modificado exitosamente")
+                return redirect('admin_menu')
+            except Exception as e:
+                messages.error(request, f"Error al modificar el empleado: {e}")
+    else:
+        # Si hay un DNI en el GET, pre-seleccionar ese empleado
+        dni = request.GET.get('dni')
+        empleado = get_object_or_404(Empleado, dni=dni) if dni else None
+        form = ModificarEmpleadoForm(instance=empleado)
+
+    return render(request, 'administrador/modificar_empleados.html', {'form': form})
+
+class ListarEmpleadosView(UserPassesTestMixin, ListView):
+    model = Empleado
+    template_name = 'administrador/listar_empleados.html'
+    context_object_name = 'empleados'
+    paginate_by = 10  # Número de empleados por página
+    ordering = ['apellido', 'nombre']  # Ordenar por apellido y nombre
+
+    def test_func(self):
+        return self.request.user.is_superuser
+
+    def handle_no_permission(self):
+        messages.error(self.request, "No tienes permisos para acceder a esta página.")
+        return redirect('home:home')
