@@ -1,13 +1,17 @@
 from django.urls import path
 from .views.auth import (
     login_admin_step1 as admin_login,
+    login_admin_step1 as admin_login,
     login_admin_step2,
+    admin_menu,
+    admin_logout
     admin_menu,
     admin_logout
 )
 from .views.vehiculos import (
     cargar_autos,
     modificar_autos,
+    borrar_autos,
     borrar_autos,
     ver_autos,
     obtener_datos_vehiculo,
@@ -36,6 +40,8 @@ urlpatterns = [
     path('modificar-autos/', modificar_autos, name="modificar_autos"),
     path('borrar-autos/', borrar_autos, name="borrar_autos"),
     path('ver-autos/', ver_autos, name="ver_autos"),
+    path('borrar-autos/', borrar_autos, name="borrar_autos"),
+    path('ver-autos/', ver_autos, name="ver_autos"),
     path('obtener-datos-vehiculo/', obtener_datos_vehiculo, name="obtener_datos_vehiculo"),
      path('ver-autos/<int:vehiculo_id>/toggle-disponibilidad/', toggle_disponibilidad, name="toggle_disponibilidad"),
     
@@ -47,5 +53,6 @@ urlpatterns = [
     # URLs de Sucursales
     path('cargar-sucursal/', cargar_sucursal, name="cargar_sucursal"),
     path('modificar-sucursal/', modificar_sucursal, name="modificar_sucursal"),
+    path('borrar-sucursal/', borrar_sucursal, name="borrar_sucursal"),
     path('borrar-sucursal/', borrar_sucursal, name="borrar_sucursal"),
 ]

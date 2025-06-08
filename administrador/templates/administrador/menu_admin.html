@@ -48,17 +48,16 @@
                                 <a href="{% url 'cargar_empleados' %}" class="btn btn-outline-success btn-lg">
                                     <i class="fas fa-user-plus me-2"></i>Agregar Empleado
                                 </a>
-                                <a href="#" class="btn btn-outline-primary btn-lg disabled">
+                            
+                                <a href="{% url 'modificar_empleados' %}" class="btn btn-outline-primary btn-lg">
                                     <i class="fas fa-user-edit me-2"></i>Modificar Empleado
-                                    <small class="d-block text-muted">Próximamente</small>
                                 </a>
                                 <a href="#" class="btn btn-outline-danger btn-lg disabled">
                                     <i class="fas fa-user-minus me-2"></i>Eliminar Empleado
                                     <small class="d-block text-muted">Próximamente</small>
                                 </a>
-                                <a href="#" class="btn btn-outline-info btn-lg disabled">
-                                    <i class="fas fa-users me-2"></i>Ver Listado de Empleados
-                                    <small class="d-block text-muted">Próximamente</small>
+                                <a href="{% url 'listar_empleados' %}" class="btn btn-outline-info btn-lg">
+                                    <i class="fas fa-users me-2"></i>Ver listado de empleados
                                 </a>
                             </div>
                         </div>
@@ -189,20 +188,7 @@
     }
 }
 
-/* Responsivo para móviles */
-@media (max-width: 768px) {
-    .display-4 {
-        font-size: 2rem;
-    }
-    
-    .card-body {
-        padding: 1.5rem !important;
-    }
-    
-    .btn-lg {
-        font-size: 1rem;
-        padding: 0.75rem 1rem;
-    }
-}
+
+
 </style>
 {% endblock %}

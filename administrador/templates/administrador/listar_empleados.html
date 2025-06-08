@@ -1,0 +1,114 @@
+{% extends 'home/base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow-lg">
+        <div class="card-header text-white" style="background-color: #0e4532;">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="mb-0">Listado de Empleados</h2>
+                <a href="{% url 'cargar_empleados' %}" class="btn btn-light">
+                    <i class="fas fa-user-plus me-2"></i>Agregar Empleado
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            {% if empleados %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>DNI</th>
+                                <th>Nombre</th>
+                                <th>Apellido</th>
+                                <th>Email</th>
+                                <th>Teléfono</th>
+                                <th>Dirección</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for empleado in empleados %}
+                                <tr>
+                                    <td>{{ empleado.dni }}</td>
+                                    <td>{{ empleado.nombre }}</td>
+                                    <td>{{ empleado.apellido }}</td>
+                                    <td>{{ empleado.email }}</td>
+                                    <td>{{ empleado.telefono }}</td>
+                                    <td>{{ empleado.direccion }}</td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="{% url 'modificar_empleados' %}?dni={{ empleado.dni }}" 
+                                               class="btn btn-sm btn-primary">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <!-- Por ahora el botón de eliminar está deshabilitado -->
+                                            <button class="btn btn-sm btn-danger" disabled>
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                {% if is_paginated %}
+                    <nav aria-label="Paginación de empleados" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=1">
+                                        <i class="fas fa-angle-double-left"></i>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">
+                                        <i class="fas fa-angle-left"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
+
+                            <li class="page-item active">
+                                <span class="page-link">
+                                    Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                                </span>
+                            </li>
+
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">
+                                        <i class="fas fa-angle-right"></i>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">
+                                        <i class="fas fa-angle-double-right"></i>
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                {% endif %}
+            {% else %}
+                <div class="alert alert-info">
+                    No hay empleados registrados en el sistema.
+                </div>
+            {% endif %}
+
+            <div class="mt-3">
+                <a href="{% url 'admin_menu' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Volver al Panel
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
