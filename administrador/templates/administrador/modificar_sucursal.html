@@ -2,7 +2,7 @@
 {% block content %}
 <html>
     <h1>Modificar Sucursal</h1>
-    <form method="post" action="{% url 'cargar_sucursal' %}">
+    <form method="post" action="{% url 'modificar_sucursal' %}">
         {% csrf_token %}
         <label for="nombre">Nombre de la Sucursal:</label>
         <input type="text" id="nombre" name="nombre" required>

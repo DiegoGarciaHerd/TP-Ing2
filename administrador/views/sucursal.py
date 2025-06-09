@@ -34,6 +34,23 @@ def cargar_sucursal(request):
 
 @admin_required
 def modificar_sucursal(request):
+    if request == 'POST':
+        nombreSucursal = request.POST.get('nombre')
+        try:
+            sucursal = Sucursal.objects.get(nombre=nombreSucursal)
+
+            if direccion := request.POST.get('direccion'):
+                sucursal.direccion = direccion
+            if telefono := request.POST.get('telefono'):
+                sucursal.telefono = telefono
+
+            sucursal.save()
+            messages.success(request, 'Sucursal modificada con éxito.')
+            return redirect('admin_menu')
+        except Sucursal.DoesNotExist:
+            messages.error(request, "La sucursal no existe.")
+        except Exception as e:
+            messages.error(request, f"Error al modificar la sucursal: {str(e)}")    
 
     return render(request, 'administrador/modificar_sucursal.html')
 
