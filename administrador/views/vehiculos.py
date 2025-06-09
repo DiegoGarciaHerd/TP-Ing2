@@ -68,6 +68,7 @@ def borrar_autos(request):
         patente = request.POST.get('patente')
         
         try:
+            # Verificar si el vehículo tiene reservas activas
             vehiculo = Vehiculo.objects.get(patente=patente)
             vehiculo.disponible = False
             vehiculo.save()

@@ -4,7 +4,7 @@
     <h1>Cargar Sucursal</h1>
     <form method="post" action="{% url 'cargar_sucursal' %}">
         {% csrf_token %}
-        <label for="nombre">Nombre de la Sucursal:</label>
+        <label for="nombre">Nombre de la Sucursal a borrar:</label>
         <input type="text" id="nombre" name="nombre" required>
         <button type="submit">Borrar Sucursal</button>
 </html>

@@ -34,8 +34,20 @@ def cargar_sucursal(request):
 
 @admin_required
 def modificar_sucursal(request):
+
     return render(request, 'administrador/modificar_sucursal.html')
 
 @admin_required
 def borrar_sucursal(request):
+    if request.method == 'POST':
+        try:
+            sucursal = request.POST.get('nombre')
+            sucursal.delete()
+            messages.success(request, 'Sucursal eliminada exitosamente.')
+            return redirect('admin_menu')
+        except Sucursal.DoesNotExist:
+            messages.error(request, "La sucursal no existe o fue borrada previamente.")
+        except Exception as e:
+            messages.error(request, f"Error al eliminar la sucursal: {str(e)}")
+
     return render(request, 'administrador/borrar_sucursal.html')
