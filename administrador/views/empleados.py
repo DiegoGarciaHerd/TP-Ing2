@@ -76,14 +76,15 @@ def cargar_empleados(request):
         # Generar una contraseña para el nuevo empleado
         password = generate_random_password()
 
-        # Validaciones de unicidad (ahora para el modelo Usuario también)
+        # Validaciones de unicidad
         if Empleado.objects.filter(dni=dni).exists():
             messages.error(request, "Ya existe un empleado con ese DNI.")
-            return render(request, 'administrador/cargar_empleados.html', {'request_post': request.POST}) # Puedes pasar los datos POST para rellenar el formulario
+            return render(request, 'administrador/cargar_empleados.html', {'request_post': request.POST})
         
-        if Usuario.objects.filter(email=email).exists():
-            messages.error(request, "Ya existe un usuario con ese Email.")
-            return render(request, 'administrador/cargar_empleados.html', {'request_post': request.POST}) # Puedes pasar los datos POST para rellenar el formulario
+        # Validación de email único en ambos modelos
+        if Usuario.objects.filter(email=email).exists() or Empleado.objects.filter(email=email).exists():
+            messages.error(request, "Ya existe un usuario o empleado con ese email.")
+            return render(request, 'administrador/cargar_empleados.html', {'request_post': request.POST})
 
         try:
             # 1. Crear la cuenta de Usuario
@@ -101,12 +102,12 @@ def cargar_empleados(request):
                 apellido=apellido,
                 dni=dni,
                 email=email,
-                direccion=direccion, # Usar la variable 'direccion' obtenida del POST
+                direccion=direccion,
                 telefono=telefono
             )
             
             # 3. Enviar credenciales por email
-            send_employee_credentials_email(request, email, password, f"{nombre} {apellido}") # <-- PASAR 'request' AQUÍ
+            send_employee_credentials_email(request, email, password, f"{nombre} {apellido}")
 
             messages.success(request, f"Empleado {nombre} {apellido} cargado exitosamente. Credenciales creadas.")
             
@@ -116,7 +117,6 @@ def cargar_empleados(request):
             if 'user' in locals() and user.pk:
                 user.delete()
             messages.error(request, f"Error al cargar el empleado: {e}")
-            # Si hay un error, volvemos a renderizar el formulario con los datos para que no los pierda
             return render(request, 'administrador/cargar_empleados.html', {'request_post': request.POST}) 
             
     # Para el método GET, renderizamos el formulario vacío
@@ -154,15 +154,50 @@ def modificar_empleados(request):
 
     return render(request, 'administrador/modificar_empleados.html', {'form': form})
 
+@admin_required
+def borrar_empleado(request):
+    if request.method == 'POST':
+        dni = request.POST.get('dni')
+        empleado = get_object_or_404(Empleado, dni=dni)
+        empleado.soft_delete()
+        messages.success(request, f"El empleado {empleado.nombre} {empleado.apellido} ha sido dado de baja exitosamente.")
+        return redirect('borrar_empleado')
+    
+    # Para GET, mostrar la lista de empleados
+    mostrar_inactivos = request.GET.get('mostrar_inactivos', False)
+    empleados = Empleado.objects.all()
+    if not mostrar_inactivos:
+        empleados = empleados.filter(activo=True)
+    empleados = empleados.order_by('apellido', 'nombre')
+    
+    context = {
+        'empleados': empleados,
+        'mostrar_inactivos': mostrar_inactivos
+    }
+    return render(request, 'administrador/eliminar_empleado.html', context)
+
 class ListarEmpleadosView(UserPassesTestMixin, ListView):
     model = Empleado
     template_name = 'administrador/listar_empleados.html'
     context_object_name = 'empleados'
-    paginate_by = 10  # Número de empleados por página
-    ordering = ['apellido', 'nombre']  # Ordenar por apellido y nombre
+    paginate_by = 10
+    ordering = ['apellido', 'nombre']
 
     def test_func(self):
         return self.request.user.is_superuser
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        # Por defecto, mostrar solo empleados activos
+        mostrar_inactivos = self.request.GET.get('mostrar_inactivos', False)
+        if not mostrar_inactivos:
+            queryset = queryset.filter(activo=True)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['mostrar_inactivos'] = self.request.GET.get('mostrar_inactivos', False)
+        return context
 
     def handle_no_permission(self):
         messages.error(self.request, "No tienes permisos para acceder a esta página.")
