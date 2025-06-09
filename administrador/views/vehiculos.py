@@ -70,9 +70,15 @@ def borrar_autos(request):
         try:
             # Verificar si el vehículo tiene reservas activas
             vehiculo = Vehiculo.objects.get(patente=patente)
-            vehiculo.disponible = False
-            vehiculo.save()
-            messages.success(request, f"El vehículo {vehiculo.marca} {vehiculo.modelo} ha sido marcado como no disponible y removido del catálogo.")
+            reservas_activas = Reserva.objects.filter(vehiculo=vehiculo, estado__in=['PENDIENTE', 'CONFIRMADA'])
+            if reservas_activas.exists():
+                vehiculo.disponible = False
+                vehiculo.save()
+                messages.success(request, f"El vehículo {vehiculo.marca} {vehiculo.modelo} ha sido marcado como no disponible y removido del catálogo.")
+            else:
+                # Borrar el vehículo
+                vehiculo.delete()
+                messages.success(request, f"Vehículo {patente} borrado exitosamente")
         except Vehiculo.DoesNotExist:
             messages.error(request, "El vehículo a borrar no existe")
         except Exception as e:

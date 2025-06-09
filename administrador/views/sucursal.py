@@ -24,7 +24,7 @@ def cargar_sucursal(request):
                 direccion=direccion,
                 telefono=telefono
             )
-            messages.success(request, 'Sucursal cargada exitosamente.')
+            messages.success(request, 'Sucursal {sucursal.nombre} cargada exitosamente.')
             return redirect('admin_menu')
         except Exception as e:
             messages.error(request, f"Error al cargar la sucursal: {str(e)}")
@@ -40,8 +40,9 @@ def modificar_sucursal(request):
 @admin_required
 def borrar_sucursal(request):
     if request.method == 'POST':
+        nombreSucursal = request.POST.get('nombreChau')
         try:
-            sucursal = request.POST.get('nombre')
+            sucursal = Sucursal.objects.get(nombre=nombreSucursal)
             sucursal.delete()
             messages.success(request, 'Sucursal eliminada exitosamente.')
             return redirect('admin_menu')
@@ -49,5 +50,5 @@ def borrar_sucursal(request):
             messages.error(request, "La sucursal no existe o fue borrada previamente.")
         except Exception as e:
             messages.error(request, f"Error al eliminar la sucursal: {str(e)}")
-
+        return redirect('admin_menu')
     return render(request, 'administrador/borrar_sucursal.html')
