@@ -1,19 +1,197 @@
 {% extends 'home/base.html' %}
-{% block content %}
-<html>
-    <h1>Modificar Sucursal</h1>
-    <form method="post" action="{% url 'cargar_sucursal' %}">
-        {% csrf_token %}
-        <label for="nombre">Nombre de la Sucursal:</label>
-        <input type="text" id="nombre" name="nombre" required>
-        <br>
-        <label for="direccion">Dirección:</label>
-        <input type="text" id="direccion" name="direccion">
-        <br>
-        <label for="telefono">Teléfono:</label>
-        <input type="text" id="telefono" name="telefono">
-        <br>
-        <button type="submit">Cargar Sucursal</button>
-</html>
+{% load static %} {# Asegúrate de que esto esté aquí si usas archivos estáticos propios #}
 
-{%endblock%}
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg border-0">
+                <div class="card-header text-white" style="background-color: #0e4532;">
+                    <h2 class="mb-0"><i class="fas fa-building me-2"></i>Modificar Sucursal</h2>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="POST" id="modificarSucursalForm">
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label for="nombre_sucursal_selector" class="form-label">Seleccionar Sucursal:</label>
+                            <select class="form-select" id="nombre_sucursal_selector" name="nombre_sucursal_selector" required>
+                                <option value="" disabled selected>Seleccione una sucursal</option>
+                                {% for sucursal in sucursales %}
+                                    <option value="{{ sucursal.nombre }}">{{ sucursal.nombre }} - {{ sucursal.direccion }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div id="camposModificables" style="display: none;">
+                            <hr>
+                            <h5 class="mb-3">Datos Modificables</h5>
+
+                            <div class="mb-3">
+                                <label for="id_direccion" class="form-label">Dirección:</label>
+                                <input type="text" class="form-control" id="id_direccion" name="direccion">
+                            </div>
+                            <div class="mb-3">
+                                <label for="id_telefono" class="form-label">Teléfono:</label>
+                                <input type="text" class="form-control" id="id_telefono" name="telefono">
+                            </div>
+
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <button type="button" class="btn btn-secondary me-md-2" id="btnCancelar">
+                                    Cancelar
+                                </button>
+                                <button type="submit" class="btn text-white" style="background-color: #0e4532;" id="btnAceptar">
+                                    Aceptar
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Enlace a Font Awesome para los íconos #}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+{# Tus estilos personalizados #}
+<style>
+/* Estilos adicionales para mejorar el diseño */
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 15px;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1) !important;
+}
+
+.card-header {
+    border-radius: 15px 15px 0 0 !important;
+    border: none;
+    padding: 1.5rem;
+}
+
+.btn {
+    border-radius: 10px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn:hover:not(.disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.btn.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn small {
+    font-size: 0.75rem;
+    font-style: italic;
+}
+
+/* Animación para las tarjetas */
+.card {
+    animation: fadeInUp 0.8s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsivo para móviles */
+@media (max-width: 768px) {
+    .card-body {
+        padding: 1.5rem !important;
+    }
+    
+    .btn-lg {
+        font-size: 1rem;
+        padding: 0.75rem 1rem;
+    }
+}
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const sucursalSelect = document.getElementById('nombre_sucursal_selector');
+        const camposModificables = document.getElementById('camposModificables');
+        const direccionInput = document.getElementById('id_direccion');
+        const telefonoInput = document.getElementById('id_telefono');
+        const btnCancelar = document.getElementById('btnCancelar');
+
+        let datosOriginales = {};
+
+        sucursalSelect.addEventListener('change', function() {
+            const nombreSucursal = this.value;
+            if (nombreSucursal) {
+                // Hacer petición AJAX para obtener los datos de la sucursal
+                // Asegúrate de que esta URL exista en tus urls.py
+                fetch(`/admin-auth/obtener-datos-sucursal/?nombre=${encodeURIComponent(nombreSucursal)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            alert('Error: ' + data.error);
+                            return;
+                        }
+
+                        datosOriginales = {
+                            direccion: data.direccion,
+                            telefono: data.telefono
+                        };
+
+                        direccionInput.value = data.direccion;
+                        telefonoInput.value = data.telefono;
+
+                        camposModificables.style.display = 'block';
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error al cargar los datos de la sucursal');
+                    });
+            } else {
+                camposModificables.style.display = 'none';
+            }
+        });
+
+        // Botón cancelar - restaurar valores originales
+        btnCancelar.addEventListener('click', function() {
+            if (Object.keys(datosOriginales).length > 0) {
+                direccionInput.value = datosOriginales.direccion;
+                telefonoInput.value = datosOriginales.telefono;
+            }
+        });
+
+        // Prevenir que Enter envíe el formulario (para el selector)
+        document.getElementById('modificarSucursalForm').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'BUTTON') {
+                e.preventDefault();
+                return false;
+            }
+        });
+    });
+</script>
+{% endblock %}
