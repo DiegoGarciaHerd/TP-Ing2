@@ -4,12 +4,7 @@
     <div class="card shadow-lg">
         <div class="card-header text-white" style="background-color: #0e4532;">
             <div class="d-flex justify-content-between align-items-center">
-                <h2 class="mb-0">Listado de Empleados</h2>
-                <div>
-                    <a href="{% url 'cargar_empleados' %}" class="btn btn-light">
-                        <i class="fas fa-user-plus me-2"></i>Agregar Empleado
-                    </a>
-                </div>
+                <h2 class="mb-0">Dar de Baja Empleados</h2>
             </div>
         </div>
         <div class="card-body">
@@ -42,7 +37,6 @@
                                 <th>Apellido</th>
                                 <th>Email</th>
                                 <th>Teléfono</th>
-                                <th>Dirección</th>
                                 <th>Estado</th>
                                 <th>Acciones</th>
                             </tr>
@@ -55,7 +49,6 @@
                                     <td>{{ empleado.apellido }}</td>
                                     <td>{{ empleado.email }}</td>
                                     <td>{{ empleado.telefono }}</td>
-                                    <td>{{ empleado.direccion }}</td>
                                     <td>
                                         {% if empleado.activo %}
                                             <span class="badge bg-success">Activo</span>
@@ -66,18 +59,15 @@
                                         {% endif %}
                                     </td>
                                     <td>
-                                        <div class="btn-group" role="group">
-                                            {% if empleado.activo %}
-                                                <a href="{% url 'modificar_empleados' %}?dni={{ empleado.dni }}" 
-                                                   class="btn btn-sm btn-primary">
-                                                    <i class="fas fa-edit"></i>
-                                                </a>
-                                                <a href="{% url 'borrar_empleado' empleado.dni %}" 
-                                                   class="btn btn-sm btn-danger">
-                                                    <i class="fas fa-user-times"></i>
-                                                </a>
-                                            {% endif %}
-                                        </div>
+                                        {% if empleado.activo %}
+                                            <form method="post" action="{% url 'borrar_empleado' %}" class="d-inline" onsubmit="return confirm('¿Estás seguro de que deseas dar de baja a este empleado?');">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="dni" value="{{ empleado.dni }}">
+                                                <button type="submit" class="btn btn-sm btn-danger">
+                                                    <i class="fas fa-user-times"></i> Dar de Baja
+                                                </button>
+                                            </form>
+                                        {% endif %}
                                     </td>
                                 </tr>
                             {% endfor %}

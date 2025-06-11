@@ -52,9 +52,8 @@
                                 <a href="{% url 'modificar_empleados' %}" class="btn btn-outline-primary btn-lg">
                                     <i class="fas fa-user-edit me-2"></i>Modificar Empleado
                                 </a>
-                                <a href="#" class="btn btn-outline-danger btn-lg disabled">
-                                    <i class="fas fa-user-minus me-2"></i>Eliminar Empleado
-                                    <small class="d-block text-muted">Próximamente</small>
+                                <a href="{% url 'borrar_empleado' %}" class="btn btn-outline-danger btn-lg">
+                                    <i class="fas fa-user-minus me-2"></i>Dar de Baja Empleado
                                 </a>
                                 <a href="{% url 'listar_empleados' %}" class="btn btn-outline-info btn-lg">
                                     <i class="fas fa-users me-2"></i>Ver listado de empleados
