@@ -48,7 +48,7 @@ class Reserva(models.Model):
             raise ValidationError({'fecha_devolucion': "La fecha de devolución no puede ser anterior a la fecha de recogida."})
 
         # Validar que el DNI del conductor no esté en uso en otra reserva activa
-        if self.conductor_dni:
+        if self.conductor_dni and self.conductor_dni.strip():  # Verificar que no sea None ni vacío
             reservas_existentes = Reserva.objects.filter(
                 conductor_dni=self.conductor_dni,
                 fecha_recogida__lt=self.fecha_devolucion,

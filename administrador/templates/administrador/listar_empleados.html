@@ -37,14 +37,14 @@
                     <table class="table table-hover">
                         <thead>
                             <tr>
-                                <th>DNI</th>
-                                <th>Nombre</th>
-                                <th>Apellido</th>
-                                <th>Email</th>
-                                <th>Teléfono</th>
-                                <th>Dirección</th>
-                                <th>Estado</th>
-                                <th>Acciones</th>
+                                <th style="width: 10%">DNI</th>
+                                <th style="width: 15%">Nombre</th>
+                                <th style="width: 15%">Apellido</th>
+                                <th style="width: 20%">Email</th>
+                                <th style="width: 10%">Teléfono</th>
+                                <th style="width: 15%">Dirección</th>
+                                <th style="width: 10%">Estado</th>
+                                <th style="width: 15%">Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -66,18 +66,28 @@
                                         {% endif %}
                                     </td>
                                     <td>
-                                        <div class="btn-group" role="group">
-                                            {% if empleado.activo %}
+                                        {% if empleado.activo %}
+                                            <div class="d-flex gap-2 justify-content-center">
                                                 <a href="{% url 'modificar_empleados' %}?dni={{ empleado.dni }}" 
-                                                   class="btn btn-sm btn-primary">
-                                                    <i class="fas fa-edit"></i>
+                                                   class="btn btn-sm btn-primary d-flex align-items-center justify-content-center" 
+                                                   style="min-width: 110px;">
+                                                    <i class="fas fa-edit me-2"></i>
+                                                    <span>Modificar</span>
                                                 </a>
-                                                <a href="{% url 'borrar_empleado' empleado.dni %}" 
-                                                   class="btn btn-sm btn-danger">
-                                                    <i class="fas fa-user-times"></i>
-                                                </a>
-                                            {% endif %}
-                                        </div>
+                                                <form method="post" action="{% url 'borrar_empleado' %}" 
+                                                      class="d-inline" 
+                                                      onsubmit="return confirm('¿Estás seguro de que deseas dar de baja a este empleado?');">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="dni" value="{{ empleado.dni }}">
+                                                    <button type="submit" 
+                                                            class="btn btn-sm btn-danger d-flex align-items-center justify-content-center"
+                                                            style="min-width: 110px;">
+                                                        <i class="fas fa-user-times me-2"></i>
+                                                        <span>Dar de Baja</span>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        {% endif %}
                                     </td>
                                 </tr>
                             {% endfor %}

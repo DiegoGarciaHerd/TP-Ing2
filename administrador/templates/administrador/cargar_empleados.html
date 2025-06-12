@@ -67,14 +67,18 @@
                             </div>
                         </div>
 
-                        {# Campo Sucursal - Asegúrate de que tu modelo Empleado tenga un ForeignKey a Sucursal #}
                         <div class="mb-3">
                             <label for="id_sucursal" class="form-label">Sucursal:</label>
-                            {# Aquí usarías un <select> si tienes sucursales cargadas desde tu base de datos #}
-                            {# Por ahora, un input de texto simple para mantener la estructura anterior #}
-                            <input type="text" class="form-control" id="id_sucursal" name="sucursal" value="{{ request_post.sucursal|default:'' }}" required>
+                            <select class="form-select" id="id_sucursal" name="sucursal" required>
+                                <option value="" disabled selected>Seleccione una sucursal</option>
+                                {% for sucursal in sucursales %}
+                                    <option value="{{ sucursal.id }}" {% if request_post.sucursal == sucursal.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ sucursal.nombre }} - {{ sucursal.direccion }}
+                                    </option>
+                                {% endfor %}
+                            </select>
                             <div class="invalid-feedback">
-                                Por favor, ingresa la sucursal.
+                                Por favor, selecciona una sucursal.
                             </div>
                         </div>
 
