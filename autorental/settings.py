@@ -162,3 +162,7 @@ CACHES = {
         'LOCATION': 'unique-snowflake',
     }
 }
+
+# Maximum upload size settings (10MB)
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10MB in bytes
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10MB in bytes
