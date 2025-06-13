@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'usuarios',
     'home',
     'vehiculos',
+    'core',
     'empleados',
     'sucursales',
     'reservas',

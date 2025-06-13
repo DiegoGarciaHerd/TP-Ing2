@@ -7,6 +7,7 @@ from django.utils import timezone
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.conf import settings
+from decimal import Decimal
 import datetime
 import re
 

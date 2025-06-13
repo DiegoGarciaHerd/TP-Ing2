@@ -12,6 +12,10 @@ from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.conf import settings
 from administrador.decorators import admin_required
+from core.models import AdminBalance
+from decimal import Decimal
+from reservas.models import Reserva
+from django.db.models import Sum
 
 def generate_2fa_code():
     """Genera un código de 6 dígitos numérico"""
@@ -121,4 +125,26 @@ def admin_logout(request):
 
 @admin_required
 def admin_menu(request):
-    return render(request, 'administrador/menu_admin.html') 
+    saldo_admin = Decimal('0.00') # Inicializa con Decimal para consistencia
+    try:
+        admin_balance, created = AdminBalance.objects.get_or_create(pk=1)
+        saldo_admin = admin_balance.saldo
+    except Exception as e:
+        print(f"DEBUG: Error al obtener saldo del administrador: {e}") # Para depuración
+        messages.error(request, f"Error al cargar el saldo del sistema: {e}")
+
+    total_ingresos = Reserva.objects.filter(
+        estado='CONFIRMADA',
+        estado_pago='PAGADO'
+    ).aggregate(total=Sum('costo_total'))['total']
+
+    # Manejar el caso donde no hay reservas que cumplan los criterios
+    if total_ingresos is None:
+        total_ingresos = Decimal('0.00') # Asegura que sea un Decimal para el template
+    # --- FIN DE LA LÓGICA DE INGRESOS ---
+
+    context = {
+        'saldo_admin': saldo_admin,
+        'total_ingresos': total_ingresos,
+    }
+    return render(request, 'administrador/menu_admin.html', context)
