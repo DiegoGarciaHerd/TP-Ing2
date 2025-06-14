@@ -37,7 +37,7 @@ class Vehiculo(models.Model):
         help_text="Precio de alquiler por día."
     )
     def __str__(self):
-        return f"{self.marca} {self.modelo} ({self.patente})"
+        return f"{self.marca} {self.modelo} ({self.patente}) {self.REEMBOLSO_CHOICES}"
 
     class Meta:
         verbose_name_plural = "Vehículos"

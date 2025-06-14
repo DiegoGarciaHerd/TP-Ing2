@@ -23,17 +23,16 @@
 
             <div class="row g-4">
                 <div class="row">
-                   
-                    <div class="col-md-12 mb-4"> {# Cambiado a col-md-12 para ocupar todo el ancho #}
+                    <div class="col-md-12 mb-4">
                         <div class="card text-white bg-success">
-                            <div class="card-body">
+                            <div class="card-body text-center"> {# <-- Agregado 'text-center' aquí #}
                                 <h5 class="card-title">Ingresos Totales por Reservas (Confirmadas y Pagadas)</h5>
                                 <p class="card-text fs-2">${{ total_ingresos|floatformat:2 }}</p>
-                                <p class="card-text"><small>Suma de 'costo_total' de reservas con estado CONFIRMADA y estado_pago PAGADO.</small></p>
                             </div>
                         </div>
                     </div>
                 </div>
+
 
                 <div class="col-lg-6 col-md-6">
                     <div class="card h-100 shadow-lg border-0">

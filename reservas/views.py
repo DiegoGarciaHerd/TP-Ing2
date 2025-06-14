@@ -48,13 +48,11 @@ class VehiculoDetailView(DetailView):
 
 @login_required 
 def crear_reserva(request, vehiculo_id):
-    # --- AÑADIR ESTA VERIFICACIÓN AQUÍ ---
-    if request.user.is_superuser: # O request.user.is_admin si tu modelo Usuario tiene ese campo
+
+    if request.user.is_superuser: 
         messages.error(request, 'Los administradores no pueden realizar reservas de vehículos.')
-        # Puedes redirigir a donde consideres más apropiado para un admin
-        # Por ejemplo, al home del admin, o a la página principal del sitio.
-        return redirect('admin_menu') # O a 'home:home' si prefieres que vayan al home principal
-    # --- FIN DE LA VERIFICACIÓN ---
+        return redirect('admin_menu') 
+
 
     vehiculo = get_object_or_404(Vehiculo, pk=vehiculo_id)
 
@@ -65,7 +63,6 @@ def crear_reserva(request, vehiculo_id):
     if request.method == 'POST':
         form = ReservaForm(request.POST)
         if form.is_valid():
-            # Verificar disponibilidad sin guardar la reserva
             fecha_recogida = form.cleaned_data['fecha_recogida']
             fecha_devolucion = form.cleaned_data['fecha_devolucion']
             conductor_nombre = form.cleaned_data['conductor_nombre']
@@ -83,14 +80,13 @@ def crear_reserva(request, vehiculo_id):
                 messages.error(request, 'El vehículo ya está reservado para el período seleccionado. Por favor, elige otras fechas.')
                 return render(request, 'reservas/crear_reserva.html', {'form': form, 'vehiculo': vehiculo})
 
-            # Calcular el costo total
             dias = (fecha_devolucion - fecha_recogida).days
             if dias > 0:
                 costo_total = dias * vehiculo.precio_por_dia
             else:
-                costo_total = vehiculo.precio_por_dia  # Cobrar por un día si las fechas son iguales
+                costo_total = vehiculo.precio_por_dia  
             
-            # Guardar temporalmente en la sesión
+           
             request.session['reserva_temporal'] = {
                 'vehiculo_id': vehiculo.id,
                 'fecha_recogida': fecha_recogida.isoformat(),
@@ -101,10 +97,9 @@ def crear_reserva(request, vehiculo_id):
                 'conductor_dni': conductor_dni
             }
             
-            # Redirigir al ticket virtual
             return redirect('reservas:ticket_reserva', vehiculo_id=vehiculo.id)
     else:
-        # Inicializar el formulario con las fechas de la URL si están presentes
+
         initial_data = {}
         fecha_retiro = request.GET.get('fecha_retiro')
         fecha_entrega = request.GET.get('fecha_entrega')
@@ -146,8 +141,21 @@ def cancelar_reserva(request, reserva_id):
 
     if reserva.estado in ['PENDIENTE', 'CONFIRMADA'] and reserva.fecha_recogida >= datetime.date.today():
         if request.method == 'POST':
+            costo_original_reserva = reserva.costo_total
             reserva.estado = 'CANCELADA'
             reserva.save()
+            if reserva.monto_a_reembolsar is not None and reserva.monto_a_reembolsar > 0:
+                try:
+                    from core.models import AdminBalance
+                    admin_balance, created = AdminBalance.objects.get_or_create(pk=1)
+                    admin_balance.saldo -= reserva.monto_a_reembolsar # Restar el monto reembolsable
+                    admin_balance.save()
+                    messages.success(request, f'La reserva ha sido cancelada exitosamente y se procesó un reembolso de ${reserva.monto_a_reembolsar:.2f}.')
+                except Exception as e:
+                    messages.error(request, f"La reserva fue cancelada, pero hubo un problema al ajustar el saldo del sistema para el reembolso: {e}")
+            else:
+                 messages.info(request, 'La reserva ha sido cancelada. No aplica reembolso bajo la política actual.')
+
             return redirect('reservas:mis_reservas')
         context = {
             'reserva': reserva,
@@ -362,6 +370,14 @@ def confirmar_reserva(request, vehiculo_id):
         conductor_dni=conductor_dni
     )
     reserva.save()
+
+    try:
+        from core.models import AdminBalance
+        admin_balance, created = AdminBalance.objects.get_or_create(pk=1)
+        admin_balance.saldo += Decimal(str(reserva.costo_total)) # Asegurarse de que sea Decimal
+        admin_balance.save()
+    except Exception as e:
+        messages.warning(request, f"Reserva confirmada, pero hubo un problema actualizando el saldo del sistema: {e}")
     
     # Enviar correo de confirmación
     try:
