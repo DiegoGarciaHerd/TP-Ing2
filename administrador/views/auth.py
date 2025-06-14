@@ -1,4 +1,5 @@
 import random
+import logging
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect
 from django.contrib import messages
@@ -16,6 +17,8 @@ from core.models import AdminBalance
 from decimal import Decimal
 from reservas.models import Reserva
 from django.db.models import Sum, F
+
+logger = logging.getLogger(__name__)
 
 def generate_2fa_code():
     """Genera un código de 6 dígitos numérico"""
@@ -139,6 +142,11 @@ def admin_menu(request):
 
     ).aggregate(total=Sum('costo_total'))['total']
 
+    ingresos_cancelados = Reserva.objects.filter(
+        estado='CANCELADA',
+
+    ).aggregate(total=Sum('costo_total'))['total']
+
 
     reembolsos_cancelados = Reserva.objects.filter(
         estado='CANCELADA',
@@ -147,9 +155,29 @@ def admin_menu(request):
 
   
     ingresos_confirmados = ingresos_confirmados if ingresos_confirmados is not None else Decimal('0.00')
+    ingresos_cancelados = ingresos_cancelados if ingresos_cancelados is not None else Decimal('0.00')
     reembolsos_cancelados = reembolsos_cancelados if reembolsos_cancelados is not None else Decimal('0.00')
+    calculated_total_ingresos = ingresos_confirmados + ingresos_cancelados - reembolsos_cancelados
+   
+    total_ingresos = ingresos_confirmados + ingresos_cancelados - reembolsos_cancelados
+    saldo_admin_to_display = Decimal('0.00')
+    try:
+        admin_balance, created = AdminBalance.objects.get_or_create(pk=1)
 
-    total_ingresos = ingresos_confirmados + reembolsos_cancelados
+        # Solo guardamos si el valor ha cambiado para evitar escrituras innecesarias a la DB
+        if admin_balance.saldo != calculated_total_ingresos:
+            admin_balance.saldo = calculated_total_ingresos
+            admin_balance.save()
+            logger.info(f"ADMIN_MENU: AdminBalance.saldo ACTUALIZADO en DB a: {admin_balance.saldo}")
+        else:
+            logger.info(f"ADMIN_MENU: AdminBalance.saldo ya coincide con total_ingresos. No se actualizó la DB.")
+
+        saldo_admin_to_display = admin_balance.saldo # Este es el valor que se pasará a la plantilla
+        logger.info(f"ADMIN_MENU: Saldo_admin final para el template (desde AdminBalance): {saldo_admin_to_display}")
+
+    except Exception as e:
+        logger.exception("ADMIN_MENU: Error al obtener/actualizar AdminBalance.saldo.")
+        messages.error(request, f"Error al cargar/actualizar el saldo del sistema: {e}")
 
 
     context = {
@@ -157,3 +185,42 @@ def admin_menu(request):
         'total_ingresos': total_ingresos,
     }
     return render(request, 'administrador/menu_admin.html', context)
+
+@admin_required
+def reset_admin_balance(request):
+    if request.method == 'POST':
+        try:
+            logger.info("RESET_BALANCE: Petición POST recibida para resetear el saldo.")
+
+            # Intentamos obtener la instancia de AdminBalance con pk=1
+            # Si no existe, get_or_create la creará (con saldo 0 por defecto)
+            admin_balance, created = AdminBalance.objects.get_or_create(pk=1)
+
+            if created:
+                logger.info("RESET_BALANCE: Se creó una nueva instancia de AdminBalance con pk=1.")
+            else:
+                logger.info(f"RESET_BALANCE: Se obtuvo la instancia existente de AdminBalance (pk=1). Saldo actual ANTES: {admin_balance.saldo}")
+
+            # Guardamos el saldo anterior para mostrarlo en el log
+            old_saldo = admin_balance.saldo
+
+            # Establecemos el saldo a cero
+            admin_balance.saldo = Decimal('0.00')
+
+            # Guardamos los cambios en la base de datos
+            admin_balance.save()
+
+            logger.info(f"RESET_BALANCE: Saldo del administrador actualizado con éxito. Saldo ANTERIOR: {old_saldo}, Saldo NUEVO: {admin_balance.saldo}")
+
+            messages.success(request, "El saldo del administrador ha sido restablecido a cero exitosamente.")
+            return redirect('admin_menu') # Redirige después del éxito
+
+        except Exception as e:
+            # Captura cualquier error inesperado y lo registra con el traceback completo
+            logger.exception("RESET_BALANCE: Ocurrió un error inesperado al intentar restablecer el saldo.")
+            messages.error(request, f"Error al restablecer el saldo del administrador: {e}")
+            return redirect('admin_menu') # Redirige incluso si hay error para mostrar el mensaje
+    else:
+        logger.warning("RESET_BALANCE: Petición GET recibida. Esta acción solo puede ser realizada vía POST.")
+        messages.warning(request, "Esta acción solo puede ser realizada vía POST. Usa el botón en el panel.")
+        return redirect('admin_menu')

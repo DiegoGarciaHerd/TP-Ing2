@@ -140,28 +140,42 @@ def cancelar_reserva(request, reserva_id):
     reserva = get_object_or_404(Reserva, pk=reserva_id, cliente=request.user)
 
     if reserva.estado in ['PENDIENTE', 'CONFIRMADA'] and reserva.fecha_recogida >= datetime.date.today():
+        monto_a_reembolsar_estimado = Decimal('0.00')
+
+        if reserva.costo_total is not None and \
+           hasattr(reserva.vehiculo, 'politica_de_reembolso') and \
+           reserva.vehiculo.politica_de_reembolso is not None:
+            try:
+                politica_porcentaje = Decimal(str(reserva.vehiculo.politica_de_reembolso))
+                monto_a_reembolsar_estimado = (reserva.costo_total * politica_porcentaje) / Decimal('100.00')
+            except (TypeError, ValueError, AttributeError) as e:
+                print(f"Error al calcular el monto de reembolso estimado: {e}")
+                monto_a_reembolsar_estimado = Decimal('0.00')
+
         if request.method == 'POST':
-            costo_original_reserva = reserva.costo_total
             reserva.estado = 'CANCELADA'
-            reserva.save()
+            reserva.save() 
+
             if reserva.monto_a_reembolsar is not None and reserva.monto_a_reembolsar > 0:
                 try:
                     from core.models import AdminBalance
                     admin_balance, created = AdminBalance.objects.get_or_create(pk=1)
-                    admin_balance.saldo -= reserva.monto_a_reembolsar # Restar el monto reembolsable
+                    admin_balance.saldo -= reserva.monto_a_reembolsar
                     admin_balance.save()
                     messages.success(request, f'La reserva ha sido cancelada exitosamente y se procesó un reembolso de ${reserva.monto_a_reembolsar:.2f}.')
                 except Exception as e:
                     messages.error(request, f"La reserva fue cancelada, pero hubo un problema al ajustar el saldo del sistema para el reembolso: {e}")
             else:
-                 messages.info(request, 'La reserva ha sido cancelada. No aplica reembolso bajo la política actual.')
+                messages.info(request, 'La reserva ha sido cancelada. No aplica reembolso bajo la política actual.')
 
             return redirect('reservas:mis_reservas')
-        context = {
-            'reserva': reserva,
-            'today': datetime.date.today()
-        }
-        return render(request, 'reservas/confirmar_cancelacion.html', context)
+        else:
+            context = {
+                'reserva': reserva,
+                'today': datetime.date.today(),
+                'monto_a_reembolsar_estimado': monto_a_reembolsar_estimado,
+            }
+            return render(request, 'reservas/confirmar_cancelacion.html', context)
     else:
         messages.error(request, 'No se puede cancelar esta reserva.')
         return redirect('reservas:mis_reservas')

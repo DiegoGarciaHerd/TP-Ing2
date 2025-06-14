@@ -3,27 +3,47 @@
 {% block title %}Confirmar Cancelación de Reserva{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card shadow-lg">
-            <div class="card-header text-white" style="background-color: #0e4532;">
-                <h2 class="mb-0">Confirmar Cancelación de Reserva</h2>
-            </div>
-            <div class="card-body">
-                <p>¿Estás seguro que deseas cancelar la reserva #{{ reserva.id }}?</p>
-                <p><strong>Vehículo:</strong> {{ reserva.vehiculo.marca }} {{ reserva.vehiculo.modelo }} (Patente: {{ reserva.vehiculo.patente }})</p>
-                <p><strong>Fechas:</strong> {{ reserva.fecha_recogida|date:"d/m/Y" }} a {{ reserva.fecha_devolucion|date:"d/m/Y" }}</p>
-                <p><strong>Costo Total:</strong> ${{ reserva.costo_total|floatformat:2 }}</p>
+<div class="container mt-5"> {# Añadido 'container' para mejor centrado #}
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg">
+                <div class="card-header text-white" style="background-color: #0e4532;">
+                    <h2 class="mb-0">Confirmar Cancelación de Reserva</h2>
+                </div>
+                <div class="card-body">
+                    <p class="lead">Estás a punto de cancelar la siguiente reserva:</p>
+                    <ul class="list-group list-group-flush mb-4">
+                        <li class="list-group-item"><strong>ID de Reserva:</strong> {{ reserva.id }}</li>
+                        <li class="list-group-item"><strong>Vehículo:</strong> {{ reserva.vehiculo.marca }} {{ reserva.vehiculo.modelo }} (Patente: {{ reserva.vehiculo.patente }})</li>
+                        <li class="list-group-item"><strong>Fechas:</strong> Del {{ reserva.fecha_recogida|date:"d/m/Y" }} al {{ reserva.fecha_devolucion|date:"d/m/Y" }}</li>
+                        <li class="list-group-item"><strong>Costo Total Original:</strong> ${{ reserva.costo_total|floatformat:2 }}</li>
+                        <li class="list-group-item">
+                            <strong>Política de Reembolso del Vehículo:</strong> {{ reserva.vehiculo.politica_de_reembolso|floatformat:0 }}%
+                            <br>
+                            <small class="text-muted">Según la política del vehículo, un {{ reserva.vehiculo.politica_de_reembolso|floatformat:0 }}% del costo total será reembolsado si aplica.</small>
+                        </li>
+                        {# --- Campo para mostrar el monto estimado a reembolsar --- #}
+                        <li class="list-group-item bg-light">
+                            <strong>Monto estimado a reembolsar:</strong> <span class="text-success fs-5">${{ monto_a_reembolsar_estimado|floatformat:2 }}</span>
+                            {% if monto_a_reembolsar_estimado == 0 %}
+                                <p class="text-muted mt-2 mb-0"><small>Nota: No se generará un reembolso para esta cancelación según la política actual.</small></p>
+                            {% endif %}
+                        </li>
+                        {# --- Fin del campo de monto --- #}
+                    </ul>
 
-                <form method="post">
-                    {% csrf_token %}
-                    <div class="d-flex gap-2 mt-4">
-                        <button type="submit" class="btn btn-lg btn-danger flex-grow-1">Sí, Cancelar Reserva</button>
-                        <a href="{% url 'reservas:mis_reservas' %}" class="btn btn-lg btn-secondary flex-grow-1">No, Volver</a>
-                    </div>
-                </form>
+                    <p class="mt-4"><strong>¿Estás seguro de que deseas cancelar esta reserva? Esta acción es irreversible.</strong></p>
+
+                    <form method="post" action="{% url 'reservas:cancelar_reserva' reserva.id %}">
+                        {% csrf_token %}
+                        <div class="d-flex gap-2 mt-4">
+                            <button type="submit" class="btn btn-lg btn-danger flex-grow-1">Sí, Cancelar Reserva</button>
+                            <a href="{% url 'reservas:mis_reservas' %}" class="btn btn-lg btn-secondary flex-grow-1">No, Volver</a>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
 </div>
-{% endblock %} 
+{% endblock %}

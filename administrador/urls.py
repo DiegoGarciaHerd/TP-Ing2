@@ -4,6 +4,7 @@ from .views.auth import (
     login_admin_step2,
     admin_menu,
     admin_logout,
+    reset_admin_balance,
 )
 from .views.vehiculos import (
     cargar_autos,
@@ -53,4 +54,6 @@ urlpatterns = [
     path('borrar-sucursal/', borrar_sucursal, name="borrar_sucursal"),
 
     path('obtener-datos-sucursal/', obtener_datos_sucursal, name='obtener_datos_sucursal'), 
+    path('reset-balance/', reset_admin_balance, name='reset_admin_balance'),
+    
 ]
