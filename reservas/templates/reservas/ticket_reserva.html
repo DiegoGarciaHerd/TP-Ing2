@@ -39,6 +39,66 @@
                             </div>
                         </div>
 
+                        <!-- Sección de extras -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 style="color: #0e4532;">Extras Seleccionados</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Extra</th>
+                                                <th class="text-end">Costo</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% if reserva.silla_para_ninos %}
+                                            <tr>
+                                                <td>Silla para niños ($1,000 por día)</td>
+                                                <td class="text-end">${{ reserva.fecha_devolucion|dias_duracion:reserva.fecha_recogida|multiply:1000|floatformat:2 }}</td>
+                                            </tr>
+                                            {% endif %}
+                                            {% if reserva.telepass %}
+                                            <tr>
+                                                <td>TelePase habilitado ($2,000 por día)</td>
+                                                <td class="text-end">${{ reserva.fecha_devolucion|dias_duracion:reserva.fecha_recogida|multiply:2000|floatformat:2 }}</td>
+                                            </tr>
+                                            {% endif %}
+                                            {% if reserva.seguro_por_danos %}
+                                            <tr>
+                                                <td>Seguro por daños (30% del precio base)</td>
+                                                <td class="text-end">${{ reserva.costo_total|multiply:0.3|floatformat:2 }}</td>
+                                            </tr>
+                                            {% endif %}
+                                            {% if reserva.conductor_adicional %}
+                                            <tr>
+                                                <td>Conductor adicional (20% del precio base)</td>
+                                                <td class="text-end">${{ reserva.costo_total|multiply:0.2|floatformat:2 }}</td>
+                                            </tr>
+                                            {% endif %}
+                                            {% if not reserva.silla_para_ninos and not reserva.telepass and not reserva.seguro_por_danos and not reserva.conductor_adicional %}
+                                            <tr>
+                                                <td colspan="2" class="text-center text-muted">No se han seleccionado extras</td>
+                                            </tr>
+                                            {% endif %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if reserva.conductor_adicional %}
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 style="color: #0e4532;">Datos del Conductor Adicional</h5>
+                                <p>
+                                    <strong>Nombre:</strong> {{ reserva.conductor_adicional_nombre }} {{ reserva.conductor_adicional_apellido }}<br>
+                                    <strong>DNI:</strong> {{ reserva.conductor_adicional_dni }}
+                                </p>
+                            </div>
+                        </div>
+                        {% endif %}
+
                         <div class="row mb-4">
                             <div class="col-md-6">
                                 <h5 style="color: #0e4532;">Retiro del Vehículo</h5>
@@ -55,8 +115,29 @@
                         </div>
 
                         <div class="text-center mb-4">
-                            <h4 style="color: #0e4532;">Costo Total</h4>
-                            <h3 class="text-success">${{ reserva.costo_total|floatformat:2 }}</h3>
+                            <h4 style="color: #0e4532;">Resumen de Costos</h4>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <tbody>
+                                        <tr>
+                                            <td><strong>Costo Base:</strong></td>
+                                            <td class="text-end">${{ reserva.costo_total|floatformat:2 }}</td>
+                                        </tr>
+                                        {% if reserva.silla_para_ninos or reserva.telepass or reserva.seguro_por_danos or reserva.conductor_adicional %}
+                                        <tr>
+                                            <td><strong>Total Extras:</strong></td>
+                                            <td class="text-end">
+                                                ${{ reserva.precio_total|subtract:reserva.costo_total|floatformat:2 }}
+                                            </td>
+                                        </tr>
+                                        {% endif %}
+                                        <tr class="table-success">
+                                            <td><strong>Costo Total:</strong></td>
+                                            <td class="text-end"><strong>${{ reserva.precio_total|floatformat:2 }}</strong></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
 
@@ -81,6 +162,9 @@
     .badge {
         font-size: 0.9em;
         padding: 0.5em 1em;
+    }
+    .table-sm td, .table-sm th {
+        padding: 0.5rem;
     }
 </style>
 {% endblock %} 

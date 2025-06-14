@@ -47,6 +47,17 @@ class Reserva(models.Model):
     conductor_apellido = models.CharField(max_length=100, null=True, blank=True)
     conductor_dni = models.CharField(max_length=20, null=True, blank=True, unique=True)
     
+    # Campos para extras
+    silla_para_ninos = models.BooleanField(default=False)
+    telepass = models.BooleanField(default=False)
+    seguro_por_danos = models.BooleanField(default=False)
+    conductor_adicional = models.BooleanField(default=False)
+    
+    # Campos para conductor adicional
+    conductor_adicional_nombre = models.CharField(max_length=100, null=True, blank=True)
+    conductor_adicional_apellido = models.CharField(max_length=100, null=True, blank=True)
+    conductor_adicional_dni = models.CharField(max_length=20, null=True, blank=True, unique=True)
+    
     # Campos de pago
     estado_pago = models.CharField(max_length=20, choices=ESTADO_PAGO_CHOICES, default='PENDIENTE')
     fecha_pago = models.DateTimeField(null=True, blank=True)
@@ -65,14 +76,27 @@ class Reserva(models.Model):
 
 
     def save(self, *args, **kwargs):
-        # Lógica para calcular costo_total (esto ya lo tienes)
+        # Lógica para calcular costo_total base
         if self.fecha_recogida and self.fecha_devolucion and self.vehiculo.precio_por_dia:
             dias = (self.fecha_devolucion - self.fecha_recogida).days
             if dias > 0:
                 self.costo_total = self.vehiculo.precio_por_dia * dias
             else:
                 self.costo_total = self.vehiculo.precio_por_dia
-        self.precio_total = self.costo_total 
+
+        # Calcular extras
+        extras_total = Decimal('0.00')
+        if self.silla_para_ninos:
+            extras_total += Decimal('1000.00') * dias
+        if self.telepass:
+            extras_total += Decimal('2000.00') * dias
+        if self.seguro_por_danos:
+            extras_total += self.costo_total * Decimal('0.30')
+        if self.conductor_adicional:
+            extras_total += self.costo_total * Decimal('0.20')
+
+        # Actualizar precio total incluyendo extras
+        self.precio_total = self.costo_total + extras_total
 
         if self.estado == 'CANCELADA' and self.costo_total is not None:
             if hasattr(self.vehiculo, 'politica_de_reembolso') and self.vehiculo.politica_de_reembolso is not None:
