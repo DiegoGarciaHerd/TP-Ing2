@@ -1,19 +1,143 @@
 {% extends 'home/base.html' %}
-{% block content %}
-<html>
-    <h1>Cargar Sucursal</h1>
-    <form method="post" action="{% url 'cargar_sucursal' %}">
-        {% csrf_token %}
-        <label for="nombre">Nombre de la Sucursal:</label>
-        <input type="text" id="nombre" name="nombre" required>
-        <br>
-        <label for="direccion">Dirección:</label>
-        <input type="text" id="direccion" name="direccion" required>
-        <br>
-        <label for="telefono">Teléfono:</label>
-        <input type="text" id="telefono" name="telefono" required>
-        <br>
-        <button type="submit">Cargar Sucursal</button>
-</html>
+{% load static %} {# Asegúrate de cargar static si vas a usar archivos estáticos personalizados #}
 
-{%endblock%}
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow-lg border-0">
+                <div class="card-header text-white text-center" style="background-color: #0e4532;">
+                    <h4 class="mb-0">
+                        <i class="fas fa-building me-2"></i>Cargar Nueva Sucursal {# Icono de edificio para sucursal #}
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    {# Mensajes de Django, si los hay #}
+                    {% if messages %}
+                        <div class="messages mb-3">
+                            {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    {# Formulario para cargar la sucursal #}
+                    <form method="post" action="{% url 'cargar_sucursal' %}" class="needs-validation" novalidate>
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label for="nombre" class="form-label">Nombre de la Sucursal:</label>
+                            <input type="text" class="form-control" id="nombre" name="nombre" value="{{ request_post.nombre|default:'' }}" required>
+                            <div class="invalid-feedback">
+                                Por favor, ingresa el nombre de la sucursal.
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="direccion" class="form-label">Dirección:</label>
+                            <input type="text" class="form-control" id="direccion" name="direccion" value="{{ request_post.direccion|default:'' }}" required>
+                            <div class="invalid-feedback">
+                                Por favor, ingresa la dirección de la sucursal.
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="telefono" class="form-label">Teléfono:</label>
+                            <input type="text" class="form-control" id="telefono" name="telefono" value="{{ request_post.telefono|default:'' }}" required>
+                            <div class="invalid-feedback">
+                                Por favor, ingresa el teléfono de la sucursal.
+                            </div>
+                        </div>
+                        
+                        {# Botón de submit y botón de volver al panel #}
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-check-circle me-2"></i>Cargar Sucursal
+                            </button>
+                            <a href="{% url 'admin_menu' %}" class="btn btn-secondary btn-lg mt-2">
+                                <i class="fas fa-arrow-left me-2"></i>Volver al Panel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Enlaces a Font Awesome y estilos personalizados #}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<style>
+/* Estilos adicionales para mejorar el diseño (tomados de tu ejemplo) */
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 15px;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1) !important;
+}
+
+.card-header {
+    border-radius: 15px 15px 0 0 !important;
+    border: none;
+    padding: 1.5rem;
+}
+
+.btn {
+    border-radius: 10px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn:hover:not(.disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.btn.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn small {
+    font-size: 0.75rem;
+    font-style: italic;
+}
+
+/* Animación para las tarjetas */
+.card {
+    animation: fadeInUp 0.8s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsivo para móviles */
+@media (max-width: 768px) {
+    .card-body {
+        padding: 1.5rem !important;
+    }
+    
+    .btn-lg {
+        font-size: 1rem;
+        padding: 0.75rem 1rem;
+    }
+}
+</style>
+{% endblock %}
