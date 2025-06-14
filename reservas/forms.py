@@ -2,6 +2,7 @@ from django import forms
 from .models import Reserva
 import datetime
 import re
+from django.db import models
 
 class ReservaForm(forms.ModelForm):
 
@@ -17,15 +18,67 @@ class ReservaForm(forms.ModelForm):
     conductor_apellido = forms.CharField(label="Apellido del Conductor", max_length=100)
     conductor_dni = forms.CharField(label="DNI del Conductor", max_length=20)
 
+    # Campos para extras
+    silla_para_ninos = forms.BooleanField(
+        required=False,
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        label="Silla para niños"
+    )
+    telepass = forms.BooleanField(
+        required=False,
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        label="TelePase habilitado"
+    )
+    seguro_por_danos = forms.BooleanField(
+        required=False,
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        label="Seguro por daños"
+    )
+    conductor_adicional = forms.BooleanField(
+        required=False,
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        label="Conductor adicional"
+    )
+    conductor_adicional_nombre = forms.CharField(
+        label="Nombre del Conductor Adicional",
+        max_length=100,
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    conductor_adicional_apellido = forms.CharField(
+        label="Apellido del Conductor Adicional",
+        max_length=100,
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+    conductor_adicional_dni = forms.CharField(
+        label="DNI del Conductor Adicional",
+        max_length=20,
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'form-control'})
+    )
+
     class Meta:
         model = Reserva
-        fields = ['fecha_recogida', 'fecha_devolucion', 'conductor_nombre', 'conductor_apellido', 'conductor_dni']
+        fields = [
+            'fecha_recogida', 'fecha_devolucion',
+            'conductor_nombre', 'conductor_apellido', 'conductor_dni',
+            'silla_para_ninos', 'telepass', 'seguro_por_danos', 'conductor_adicional',
+            'conductor_adicional_nombre', 'conductor_adicional_apellido', 'conductor_adicional_dni'
+        ]
         labels = {
             'fecha_recogida': 'Fecha de Recogida',
             'fecha_devolucion': 'Fecha de Devolución',
             'conductor_nombre': 'Nombre del Conductor',
             'conductor_apellido': 'Apellido del Conductor',
             'conductor_dni': 'DNI del Conductor',
+            'silla_para_ninos': 'Silla para niños',
+            'telepass': 'TelePase habilitado',
+            'seguro_por_danos': 'Seguro por daños',
+            'conductor_adicional': 'Conductor adicional',
+            'conductor_adicional_nombre': 'Nombre del Conductor Adicional',
+            'conductor_adicional_apellido': 'Apellido del Conductor Adicional',
+            'conductor_adicional_dni': 'DNI del Conductor Adicional',
         }
         help_texts = {
             'fecha_recogida': 'Formato: AAAA-MM-DD',
@@ -37,6 +90,10 @@ class ReservaForm(forms.ModelForm):
         fecha_recogida = cleaned_data.get('fecha_recogida')
         fecha_devolucion = cleaned_data.get('fecha_devolucion')
         dni = cleaned_data.get('conductor_dni')
+        conductor_adicional = cleaned_data.get('conductor_adicional')
+        conductor_adicional_dni = cleaned_data.get('conductor_adicional_dni')
+        conductor_adicional_nombre = cleaned_data.get('conductor_adicional_nombre')
+        conductor_adicional_apellido = cleaned_data.get('conductor_adicional_apellido')
 
         if fecha_recogida and fecha_devolucion:
             if fecha_devolucion < fecha_recogida:
@@ -46,7 +103,6 @@ class ReservaForm(forms.ModelForm):
 
         # Validar que el DNI no esté en otra reserva activa
         if dni and fecha_recogida and fecha_devolucion:
-            from .models import Reserva
             reservas_existentes = Reserva.objects.filter(
                 conductor_dni=dni,
                 fecha_recogida__lt=fecha_devolucion,
@@ -55,6 +111,25 @@ class ReservaForm(forms.ModelForm):
             )
             if reservas_existentes.exists():
                 self.add_error('conductor_dni', "Este DNI ya está asignado a otra reserva activa en las fechas seleccionadas.")
+
+        # Validar conductor adicional
+        if conductor_adicional:
+            if not conductor_adicional_dni or not conductor_adicional_nombre or not conductor_adicional_apellido:
+                self.add_error('conductor_adicional_dni', "Debe completar todos los datos del conductor adicional.")
+
+            if conductor_adicional_dni == dni:
+                self.add_error('conductor_adicional_dni', "El DNI del conductor adicional no puede ser igual al del conductor principal.")
+
+            if conductor_adicional_dni and fecha_recogida and fecha_devolucion:
+                reservas_existentes = Reserva.objects.filter(
+                    (models.Q(conductor_dni=conductor_adicional_dni) | models.Q(conductor_adicional_dni=conductor_adicional_dni)),
+                    fecha_recogida__lt=fecha_devolucion,
+                    fecha_devolucion__gt=fecha_recogida,
+                    estado__in=['PENDIENTE', 'CONFIRMADA']
+                )
+                if reservas_existentes.exists():
+                    self.add_error('conductor_adicional_dni', "El conductor adicional ya tiene una reserva activa en las fechas seleccionadas.")
+
         return cleaned_data
 
 class CrearReservaForm(forms.ModelForm):
@@ -277,4 +352,48 @@ class PagoForm(forms.Form):
                 if not tarjeta_valida:
                     raise forms.ValidationError("Los datos de la tarjeta no coinciden con una tarjeta autorizada o el CVV es incorrecto.")
         
+        return cleaned_data
+
+class ExtrasReservaForm(forms.ModelForm):
+    class Meta:
+        model = Reserva
+        fields = [
+            'silla_para_ninos',
+            'telepass',
+            'seguro_por_danos',
+            'conductor_adicional',
+            'conductor_adicional_nombre',
+            'conductor_adicional_apellido',
+            'conductor_adicional_dni',
+        ]
+        widgets = {
+            'silla_para_ninos': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'telepass': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'seguro_por_danos': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'conductor_adicional': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'conductor_adicional_nombre': forms.TextInput(attrs={'class': 'form-control'}),
+            'conductor_adicional_apellido': forms.TextInput(attrs={'class': 'form-control'}),
+            'conductor_adicional_dni': forms.TextInput(attrs={'class': 'form-control'}),
+        }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        conductor_adicional = cleaned_data.get('conductor_adicional')
+        conductor_adicional_dni = cleaned_data.get('conductor_adicional_dni')
+        conductor_adicional_nombre = cleaned_data.get('conductor_adicional_nombre')
+        conductor_adicional_apellido = cleaned_data.get('conductor_adicional_apellido')
+
+        if conductor_adicional:
+            if not conductor_adicional_dni or not conductor_adicional_nombre or not conductor_adicional_apellido:
+                raise forms.ValidationError("Debe completar todos los datos del conductor adicional.")
+
+            # Verificar que el DNI del conductor adicional no sea igual al del conductor principal
+            if self.instance.conductor_dni == conductor_adicional_dni:
+                raise forms.ValidationError("El DNI del conductor adicional no puede ser igual al del conductor principal.")
+
+            # Verificar que el conductor adicional no tenga otra reserva
+            if Reserva.objects.filter(conductor_dni=conductor_adicional_dni).exclude(id=self.instance.id).exists() or \
+               Reserva.objects.filter(conductor_adicional_dni=conductor_adicional_dni).exclude(id=self.instance.id).exists():
+                raise forms.ValidationError("El conductor adicional ya tiene una reserva asignada.")
+
         return cleaned_data

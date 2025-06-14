@@ -1,5 +1,5 @@
 from django import template
-from datetime import date
+from datetime import date, datetime
 
 register = template.Library()
 
@@ -9,8 +9,26 @@ def split(value, arg):
     return value.split(arg)
 
 @register.filter
+def multiply(value, arg):
+    """Multiplies the value by the argument"""
+    try:
+        return float(value) * float(arg)
+    except (ValueError, TypeError):
+        return ''
+
+@register.filter
 def dias_duracion(fecha_devolucion, fecha_recogida):
-    if isinstance(fecha_devolucion, date) and isinstance(fecha_recogida, date):
-        dias = (fecha_devolucion - fecha_recogida).days
-        return 1 if dias == 0 else dias
-    return 0 
+    """Calcula la duración en días entre dos fechas"""
+    if isinstance(fecha_devolucion, str):
+        fecha_devolucion = datetime.strptime(fecha_devolucion, '%Y-%m-%d')
+    if isinstance(fecha_recogida, str):
+        fecha_recogida = datetime.strptime(fecha_recogida, '%Y-%m-%d')
+    return (fecha_devolucion - fecha_recogida).days
+
+@register.filter
+def subtract(value, arg):
+    """Subtracts the argument from the value"""
+    try:
+        return float(value) - float(arg)
+    except (ValueError, TypeError):
+        return '' 

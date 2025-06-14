@@ -4,34 +4,165 @@
 
 {% block title %}Reservar {{ vehiculo.marca }} {{ vehiculo.modelo }}{% endblock %}
 
+{% block extra_css %}
+<style>
+.conductor-adicional-form {
+    display: none;
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 5px;
+    border: 1px solid #dee2e6;
+    margin-top: 15px;
+}
+.conductor-adicional-form.visible {
+    display: block;
+}
+.extras-section {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+    margin: 20px 0;
+}
+.extras-section h4 {
+    color: #0e4532;
+    margin-bottom: 20px;
+}
+.form-check {
+    margin-bottom: 15px;
+}
+.form-check-label {
+    font-weight: 500;
+}
+.precio-extra {
+    color: #666;
+    font-size: 0.9em;
+}
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container">
+<div class="container mt-4">
     <div class="row justify-content-center">
         <div class="col-md-8">
-            <div class="card shadow-lg">
+            <div class="card shadow">
                 <div class="card-header text-white" style="background-color: #0e4532;">
-                    <h2 class="mb-0">Reservar {{ vehiculo.marca }} {{ vehiculo.modelo }}</h2>
+                    <h3 class="mb-0">Reservar {{ vehiculo.marca }} {{ vehiculo.modelo }}</h3>
                 </div>
                 <div class="card-body">
-                    <p class="lead">Patente: {{ vehiculo.patente }}</p>
-                    <p class="lead">Precio por día: <strong>${{ vehiculo.precio_por_dia|floatformat:2 }}</strong></p>
-                    
-                    <form method="post">
-                        {% csrf_token %}
-                        {% for field in form %}
-                            <div class="form-group mb-3">
-                                {{ field.label_tag }}
-                                {{ field.errors }}
-                                {{ field|add_class:"form-control" }}
-                                {% if field.help_text %}
-                                    <small class="form-text text-muted">{{ field.help_text }}</small>
-                                {% endif %}
+                    <!-- Información del vehículo -->
+                    <div class="mb-4">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="mb-0"><strong>Patente:</strong> {{ vehiculo.patente }}</p>
                             </div>
-                        {% endfor %}
-                        <div class="d-grid gap-2 mt-4">
-                            <button type="submit" class="btn btn-lg text-white" style="background-color: #0e4532;">
-                                Avanzar al checkout
-                            </button>
+                            <div class="col-md-6">
+                                <p class="mb-0"><strong>Precio por día:</strong> ${{ vehiculo.precio_por_dia|floatformat:2 }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form method="post" id="reservaForm">
+                        {% csrf_token %}
+                        
+                        <!-- Sección de datos de la reserva -->
+                        <div class="mb-4">
+                            <h4>Datos de la Reserva</h4>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.fecha_recogida.id_for_label }}" class="form-label">Fecha de Recogida</label>
+                                    {{ form.fecha_recogida.errors }}
+                                    {{ form.fecha_recogida|add_class:"form-control" }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.fecha_devolucion.id_for_label }}" class="form-label">Fecha de Devolución</label>
+                                    {{ form.fecha_devolucion.errors }}
+                                    {{ form.fecha_devolucion|add_class:"form-control" }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sección de datos del conductor principal -->
+                        <div class="mb-4">
+                            <h4>Datos del Conductor Principal</h4>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.conductor_nombre.id_for_label }}" class="form-label">Nombre</label>
+                                    {{ form.conductor_nombre.errors }}
+                                    {{ form.conductor_nombre|add_class:"form-control" }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ form.conductor_apellido.id_for_label }}" class="form-label">Apellido</label>
+                                    {{ form.conductor_apellido.errors }}
+                                    {{ form.conductor_apellido|add_class:"form-control" }}
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="{{ form.conductor_dni.id_for_label }}" class="form-label">DNI</label>
+                                {{ form.conductor_dni.errors }}
+                                {{ form.conductor_dni|add_class:"form-control" }}
+                            </div>
+                        </div>
+
+                        <!-- Sección de extras -->
+                        <div class="extras-section">
+                            <h4>Extras Disponibles</h4>
+                            
+                            <div class="form-check mb-3">
+                                {{ form.silla_para_ninos }}
+                                <label class="form-check-label" for="{{ form.silla_para_ninos.id_for_label }}">
+                                    {{ form.silla_para_ninos.label }}
+                                    <span class="precio-extra">- $1,000 por día</span>
+                                </label>
+                            </div>
+
+                            <div class="form-check mb-3">
+                                {{ form.telepass }}
+                                <label class="form-check-label" for="{{ form.telepass.id_for_label }}">
+                                    {{ form.telepass.label }}
+                                    <span class="precio-extra">- $2,000 por día</span>
+                                </label>
+                            </div>
+
+                            <div class="form-check mb-3">
+                                {{ form.seguro_por_danos }}
+                                <label class="form-check-label" for="{{ form.seguro_por_danos.id_for_label }}">
+                                    {{ form.seguro_por_danos.label }}
+                                    <span class="precio-extra">- 30% del precio base total de la reserva</span>
+                                </label>
+                            </div>
+
+                            <div class="form-check mb-3">
+                                {{ form.conductor_adicional }}
+                                <label class="form-check-label" for="{{ form.conductor_adicional.id_for_label }}">
+                                    {{ form.conductor_adicional.label }}
+                                    <span class="precio-extra">- 20% del precio base</span>
+                                </label>
+                            </div>
+
+                            <!-- Formulario del conductor adicional -->
+                            <div id="conductor_adicional_form" class="conductor-adicional-form">
+                                <h5 class="mb-3">Datos del Conductor Adicional</h5>
+                                <div class="form-group mb-3">
+                                    <label for="{{ form.conductor_adicional_nombre.id_for_label }}" class="form-label">Nombre</label>
+                                    {{ form.conductor_adicional_nombre.errors }}
+                                    {{ form.conductor_adicional_nombre|add_class:"form-control" }}
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label for="{{ form.conductor_adicional_apellido.id_for_label }}" class="form-label">Apellido</label>
+                                    {{ form.conductor_adicional_apellido.errors }}
+                                    {{ form.conductor_adicional_apellido|add_class:"form-control" }}
+                                </div>
+                                <div class="form-group mb-3">
+                                    <label for="{{ form.conductor_adicional_dni.id_for_label }}" class="form-label">DNI</label>
+                                    {{ form.conductor_adicional_dni.errors }}
+                                    {{ form.conductor_adicional_dni|add_class:"form-control" }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">Continuar con la Reserva</button>
+                            <a href="{% url 'sucursales:vehiculo_detail' vehiculo.id %}" class="btn btn-secondary">Cancelar</a>
                         </div>
                     </form>
                 </div>
@@ -39,4 +170,36 @@
         </div>
     </div>
 </div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const conductorAdicionalCheckbox = document.getElementById('{{ form.conductor_adicional.id_for_label }}');
+    const conductorAdicionalForm = document.getElementById('conductor_adicional_form');
+    const camposAdicionales = conductorAdicionalForm.querySelectorAll('input');
+
+    // Función para mostrar/ocultar el formulario y manejar los campos
+    function toggleConductorAdicionalForm() {
+        const isChecked = conductorAdicionalCheckbox.checked;
+        
+        // Mostrar/ocultar el formulario
+        conductorAdicionalForm.style.display = isChecked ? 'block' : 'none';
+        
+        // Habilitar/deshabilitar y limpiar los campos
+        camposAdicionales.forEach(campo => {
+            campo.disabled = !isChecked;
+            if (!isChecked) {
+                campo.value = '';
+            }
+        });
+    }
+
+    // Ejecutar al cargar la página
+    toggleConductorAdicionalForm();
+
+    // Ejecutar cuando cambie el checkbox
+    conductorAdicionalCheckbox.addEventListener('change', toggleConductorAdicionalForm);
+});
+</script>
+{% endblock %}
 {% endblock %}

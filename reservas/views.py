@@ -14,7 +14,7 @@ import re
 from .models import Reserva
 from sucursales.models import Sucursal 
 from vehiculos.models import Vehiculo
-from .forms import ReservaForm, PagoForm
+from .forms import ReservaForm, PagoForm, ExtrasReservaForm
 from .utils import procesar_pago_tarjeta
 
 
@@ -48,11 +48,9 @@ class VehiculoDetailView(DetailView):
 
 @login_required 
 def crear_reserva(request, vehiculo_id):
-
     if request.user.is_superuser: 
         messages.error(request, 'Los administradores no pueden realizar reservas de vehículos.')
         return redirect('admin_menu') 
-
 
     vehiculo = get_object_or_404(Vehiculo, pk=vehiculo_id)
 
@@ -69,6 +67,15 @@ def crear_reserva(request, vehiculo_id):
             conductor_apellido = form.cleaned_data['conductor_apellido']
             conductor_dni = form.cleaned_data['conductor_dni']
 
+            # Obtener los extras seleccionados
+            silla_para_ninos = form.cleaned_data.get('silla_para_ninos', False)
+            telepass = form.cleaned_data.get('telepass', False)
+            seguro_por_danos = form.cleaned_data.get('seguro_por_danos', False)
+            conductor_adicional = form.cleaned_data.get('conductor_adicional', False)
+            conductor_adicional_nombre = form.cleaned_data.get('conductor_adicional_nombre', '')
+            conductor_adicional_apellido = form.cleaned_data.get('conductor_adicional_apellido', '')
+            conductor_adicional_dni = form.cleaned_data.get('conductor_adicional_dni', '')
+
             reservas_existentes = Reserva.objects.filter(
                 vehiculo=vehiculo,
                 fecha_recogida__lt=fecha_devolucion, 
@@ -82,24 +89,44 @@ def crear_reserva(request, vehiculo_id):
 
             dias = (fecha_devolucion - fecha_recogida).days
             if dias > 0:
-                costo_total = dias * vehiculo.precio_por_dia
+                costo_total = Decimal(str(vehiculo.precio_por_dia)) * Decimal(str(dias))
             else:
-                costo_total = vehiculo.precio_por_dia  
+                costo_total = Decimal(str(vehiculo.precio_por_dia))
             
-           
+            # Calcular el costo total incluyendo extras
+            extras_total = Decimal('0.00')
+            if silla_para_ninos:
+                extras_total += Decimal('1000.00') * Decimal(str(dias))
+            if telepass:
+                extras_total += Decimal('2000.00') * Decimal(str(dias))
+            if seguro_por_danos:
+                extras_total += costo_total * Decimal('0.30')
+            if conductor_adicional:
+                extras_total += costo_total * Decimal('0.20')
+            
+            precio_total = costo_total + extras_total
+            
             request.session['reserva_temporal'] = {
                 'vehiculo_id': vehiculo.id,
                 'fecha_recogida': fecha_recogida.isoformat(),
                 'fecha_devolucion': fecha_devolucion.isoformat(),
-                'costo_total': float(costo_total),
+                'costo_total': float(costo_total),  # Convertir a float para la sesión
+                'precio_total': float(precio_total),  # Convertir a float para la sesión
                 'conductor_nombre': conductor_nombre,
                 'conductor_apellido': conductor_apellido,
-                'conductor_dni': conductor_dni
+                'conductor_dni': conductor_dni,
+                # Guardar los extras seleccionados
+                'silla_para_ninos': silla_para_ninos,
+                'telepass': telepass,
+                'seguro_por_danos': seguro_por_danos,
+                'conductor_adicional': conductor_adicional,
+                'conductor_adicional_nombre': conductor_adicional_nombre,
+                'conductor_adicional_apellido': conductor_adicional_apellido,
+                'conductor_adicional_dni': conductor_adicional_dni
             }
             
             return redirect('reservas:ticket_reserva', vehiculo_id=vehiculo.id)
     else:
-
         initial_data = {}
         fecha_retiro = request.GET.get('fecha_retiro')
         fecha_entrega = request.GET.get('fecha_entrega')
@@ -195,12 +222,35 @@ def ticket_reserva(request, vehiculo_id):
         vehiculo=vehiculo,
         fecha_recogida=datetime.datetime.fromisoformat(reserva_temporal['fecha_recogida']).date(),
         fecha_devolucion=datetime.datetime.fromisoformat(reserva_temporal['fecha_devolucion']).date(),
-        costo_total=reserva_temporal['costo_total'],
+        costo_total=Decimal(str(reserva_temporal['costo_total'])),  # Convertir a Decimal
         estado='PENDIENTE',
         conductor_nombre=reserva_temporal.get('conductor_nombre', ''),
         conductor_apellido=reserva_temporal.get('conductor_apellido', ''),
-        conductor_dni=reserva_temporal.get('conductor_dni', '')
+        conductor_dni=reserva_temporal.get('conductor_dni', ''),
+        # Agregar los extras seleccionados
+        silla_para_ninos=reserva_temporal.get('silla_para_ninos', False),
+        telepass=reserva_temporal.get('telepass', False),
+        seguro_por_danos=reserva_temporal.get('seguro_por_danos', False),
+        conductor_adicional=reserva_temporal.get('conductor_adicional', False),
+        conductor_adicional_nombre=reserva_temporal.get('conductor_adicional_nombre', ''),
+        conductor_adicional_apellido=reserva_temporal.get('conductor_adicional_apellido', ''),
+        conductor_adicional_dni=reserva_temporal.get('conductor_adicional_dni', '')
     )
+    
+    # Calcular el precio total incluyendo extras
+    dias = (reserva.fecha_devolucion - reserva.fecha_recogida).days
+    extras_total = Decimal('0.00')
+    
+    if reserva.silla_para_ninos:
+        extras_total += Decimal('1000.00') * Decimal(str(dias))
+    if reserva.telepass:
+        extras_total += Decimal('2000.00') * Decimal(str(dias))
+    if reserva.seguro_por_danos:
+        extras_total += reserva.costo_total * Decimal('0.30')
+    if reserva.conductor_adicional:
+        extras_total += reserva.costo_total * Decimal('0.20')
+    
+    reserva.precio_total = reserva.costo_total + extras_total
     
     return render(request, 'reservas/ticket_reserva.html', {'reserva': reserva, 'vehiculo': vehiculo})
 
@@ -365,13 +415,14 @@ def confirmar_reserva(request, vehiculo_id):
         messages.error(request, 'El vehículo ya no está disponible para las fechas seleccionadas.')
         return redirect('home:home')
     
-    # Crear y guardar la reserva con información de pago
+    # Crear y guardar la reserva con información de pago y extras
     reserva = Reserva(
         cliente=request.user,
         vehiculo=vehiculo,
         fecha_recogida=fecha_recogida,
         fecha_devolucion=fecha_devolucion,
         costo_total=reserva_temporal['costo_total'],
+        precio_total=reserva_temporal['precio_total'],
         estado='CONFIRMADA',
         # Información de pago
         estado_pago='PAGADO',
@@ -381,14 +432,22 @@ def confirmar_reserva(request, vehiculo_id):
         # Datos del conductor
         conductor_nombre=conductor_nombre,
         conductor_apellido=conductor_apellido,
-        conductor_dni=conductor_dni
+        conductor_dni=conductor_dni,
+        # Extras seleccionados
+        silla_para_ninos=reserva_temporal.get('silla_para_ninos', False),
+        telepass=reserva_temporal.get('telepass', False),
+        seguro_por_danos=reserva_temporal.get('seguro_por_danos', False),
+        conductor_adicional=reserva_temporal.get('conductor_adicional', False),
+        conductor_adicional_nombre=reserva_temporal.get('conductor_adicional_nombre', ''),
+        conductor_adicional_apellido=reserva_temporal.get('conductor_adicional_apellido', ''),
+        conductor_adicional_dni=reserva_temporal.get('conductor_adicional_dni', '')
     )
     reserva.save()
 
     try:
         from core.models import AdminBalance
         admin_balance, created = AdminBalance.objects.get_or_create(pk=1)
-        admin_balance.saldo += Decimal(str(reserva.costo_total)) # Asegurarse de que sea Decimal
+        admin_balance.saldo += Decimal(str(reserva.precio_total))  # Usar precio_total en lugar de costo_total
         admin_balance.save()
     except Exception as e:
         messages.warning(request, f"Reserva confirmada, pero hubo un problema actualizando el saldo del sistema: {e}")
@@ -448,7 +507,7 @@ def confirmar_reserva(request, vehiculo_id):
         - Tarjeta: ****{reserva.ultimos_4_digitos_tarjeta}
         - Fecha de Pago: {reserva.fecha_pago.strftime('%d/%m/%Y %H:%M')}
         
-        Costo Total: ${reserva.costo_total:.2f}
+        Costo Total: ${reserva.precio_total:.2f}
         
         Este correo sirve como comprobante de tu reserva. Por favor, guárdalo para tus registros.
         Si tienes alguna pregunta, no dudes en contactarnos.
@@ -474,14 +533,13 @@ def confirmar_reserva(request, vehiculo_id):
         messages.warning(request, f'La reserva se ha confirmado, pero hubo un problema al enviar el correo de confirmación: {str(e)}')
     
     # Limpiar la sesión
-    del request.session['reserva_temporal']
-    del request.session['pago_procesado']
-    
-    # Mostrar página de confirmación exitosa directamente
-    return render(request, 'reservas/reserva_confirmada.html', {
-        'reserva': reserva,
-        'vehiculo': vehiculo
-    })
+    if 'reserva_temporal' in request.session:
+        del request.session['reserva_temporal']
+    if 'pago_procesado' in request.session:
+        del request.session['pago_procesado']
+
+    messages.success(request, '¡Reserva confirmada exitosamente!')
+    return redirect('reservas:detalle_reserva', reserva_id=reserva.id)
 
 @login_required
 def seleccionar_metodo_pago(request, vehiculo_id):
@@ -503,44 +561,27 @@ def seleccionar_metodo_pago(request, vehiculo_id):
     })()
     
     if request.method == 'POST':
-        # Obtener el CVV del formulario
-        cvv = request.POST.get('cvv')
-        print(f"CVV recibido: {cvv}")  # Debug log
-        
-        if not cvv:
-            messages.error(request, 'El CVV es requerido.')
-            return render(request, 'reservas/seleccionar_metodo_pago.html', {
-                'reserva': reserva,
-                'vehiculo': vehiculo,
-                'tarjeta_guardada': request.user.tarjeta_guardada
-            })
-            
         try:
             tarjeta_guardada = request.user.tarjeta_guardada
-            ultimos_4_digitos = tarjeta_guardada.ultimos_4_digitos
+            cvv = request.POST.get('cvv')
             
-            # Tarjetas permitidas con sus CVV específicos y últimos 4 dígitos
+            # Tarjetas permitidas con sus CVV específicos
             tarjetas_permitidas = {
-                '1645': '789',  # Para 4517660196851645
-                '7961': '345'   # Para 5258556802017961
+                '4517660196851645': '789',
+                '5258556802017961': '345'
             }
             
-            print(f"Últimos 4 dígitos de la tarjeta: {ultimos_4_digitos}")  # Debug log
-            print(f"CVV esperado para la tarjeta: {tarjetas_permitidas.get(ultimos_4_digitos)}")  # Debug log
+            ultimos_4_digitos = tarjeta_guardada.ultimos_4_digitos
             
             if ultimos_4_digitos in tarjetas_permitidas:
                 if cvv != tarjetas_permitidas[ultimos_4_digitos]:
-                    print(f"CVV incorrecto. Recibido: {cvv}, Esperado: {tarjetas_permitidas[ultimos_4_digitos]}")  # Debug log
                     messages.error(request, 'CVV incorrecto para esta tarjeta.')
                     return render(request, 'reservas/seleccionar_metodo_pago.html', {
                         'reserva': reserva,
                         'vehiculo': vehiculo,
                         'tarjeta_guardada': tarjeta_guardada
                     })
-                else:
-                    print("CVV correcto, procediendo con el pago")  # Debug log
             else:
-                print(f"Tarjeta no autorizada: {ultimos_4_digitos}")  # Debug log
                 messages.error(request, 'Tarjeta no autorizada.')
                 return render(request, 'reservas/seleccionar_metodo_pago.html', {
                     'reserva': reserva,
@@ -559,11 +600,9 @@ def seleccionar_metodo_pago(request, vehiculo_id):
                 'monto': float(reserva_temporal['costo_total'])
             }
             
-            messages.success(request, '¡Pago procesado exitosamente con tu tarjeta guardada!')
             return redirect('reservas:confirmar_reserva', vehiculo_id=vehiculo.id)
             
         except Exception as e:
-            print(f"Error en el procesamiento del pago: {str(e)}")  # Debug log
             messages.error(request, 'Error al procesar el pago. Por favor, intenta nuevamente.')
             return render(request, 'reservas/seleccionar_metodo_pago.html', {
                 'reserva': reserva,
@@ -584,3 +623,26 @@ def seleccionar_metodo_pago(request, vehiculo_id):
         'vehiculo': vehiculo,
         'tarjeta_guardada': tarjeta_guardada
     })
+
+@login_required
+def actualizar_extras(request, reserva_id):
+    reserva = get_object_or_404(Reserva, id=reserva_id, cliente=request.user)
+    
+    if reserva.estado != 'PENDIENTE':
+        messages.error(request, "Solo se pueden modificar los extras de reservas pendientes.")
+        return redirect('reservas:detalle_reserva', reserva_id=reserva.id)
+    
+    if request.method == 'POST':
+        form = ExtrasReservaForm(request.POST, instance=reserva)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Los extras han sido actualizados correctamente.")
+            return redirect('reservas:detalle_reserva', reserva_id=reserva.id)
+        else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{error}")
+    else:
+        form = ExtrasReservaForm(instance=reserva)
+    
+    return redirect('reservas:detalle_reserva', reserva_id=reserva.id)

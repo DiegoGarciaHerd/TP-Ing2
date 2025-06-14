@@ -10,6 +10,7 @@ urlpatterns = [
     path('pagar/<int:vehiculo_id>/', views.procesar_pago, name='procesar_pago'),
     path('confirmar/<int:vehiculo_id>/', views.confirmar_reserva, name='confirmar_reserva'),
     path('mis_reservas/', views.mis_reservas, name='mis_reservas'),
-    path('mis_reservas/<int:reserva_id>/', views.detalle_reserva, name='detalle_reserva'),
-    path('cancelar/<int:reserva_id>/', views.cancelar_reserva, name='cancelar_reserva'),
+    path('reserva/<int:reserva_id>/', views.detalle_reserva, name='detalle_reserva'),
+    path('reserva/<int:reserva_id>/cancelar/', views.cancelar_reserva, name='cancelar_reserva'),
+    path('reserva/<int:reserva_id>/actualizar-extras/', views.actualizar_extras, name='actualizar_extras'),
 ]
