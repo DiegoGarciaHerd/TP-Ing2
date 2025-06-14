@@ -1,5 +1,6 @@
 from django.db import models
 from sucursales.models import Sucursal
+from decimal import Decimal
 
 class Vehiculo(models.Model):
     TIPO_CHOICES = [
@@ -29,9 +30,14 @@ class Vehiculo(models.Model):
         choices=REEMBOLSO_CHOICES,
         default='0'
     )
-
+    precio_por_dia = models.DecimalField(
+        max_digits=10,        # Ej. hasta $9,999,999.99
+        decimal_places=2,     # Dos decimales para los centavos
+        default=Decimal('0.00'), # Valor por defecto
+        help_text="Precio de alquiler por día."
+    )
     def __str__(self):
-        return f"{self.marca} {self.modelo} ({self.patente})"
+        return f"{self.marca} {self.modelo} ({self.patente}) {self.REEMBOLSO_CHOICES}"
 
     class Meta:
         verbose_name_plural = "Vehículos"

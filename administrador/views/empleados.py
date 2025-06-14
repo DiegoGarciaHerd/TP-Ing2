@@ -14,6 +14,7 @@ from django.http import JsonResponse
 from ..forms import ModificarEmpleadoForm
 from django.views.generic import ListView
 from django.contrib.auth.mixins import UserPassesTestMixin
+from sucursales.models import Sucursal
 
 Usuario = get_user_model() 
 
@@ -65,13 +66,15 @@ def send_employee_credentials_email(request, user_email, password, employee_name
 
 @admin_required
 def cargar_empleados(request):
+    sucursales = Sucursal.objects.all().order_by('nombre')
     if request.method == 'POST':
         nombre = request.POST.get('nombre')
         apellido = request.POST.get('apellido')
         dni = request.POST.get('dni')
         email = request.POST.get('email')
         telefono = request.POST.get('telefono')
-        direccion = request.POST.get('direccion') 
+        direccion = request.POST.get('direccion')
+        sucursal_id = request.POST.get('sucursal')
 
         # Generar una contraseña para el nuevo empleado
         password = generate_random_password()
@@ -79,14 +82,23 @@ def cargar_empleados(request):
         # Validaciones de unicidad
         if Empleado.objects.filter(dni=dni).exists():
             messages.error(request, "Ya existe un empleado con ese DNI.")
-            return render(request, 'administrador/cargar_empleados.html', {'request_post': request.POST})
+            return render(request, 'administrador/cargar_empleados.html', {
+                'request_post': request.POST,
+                'sucursales': sucursales
+            })
         
         # Validación de email único en ambos modelos
         if Usuario.objects.filter(email=email).exists() or Empleado.objects.filter(email=email).exists():
             messages.error(request, "Ya existe un usuario o empleado con ese email.")
-            return render(request, 'administrador/cargar_empleados.html', {'request_post': request.POST})
+            return render(request, 'administrador/cargar_empleados.html', {
+                'request_post': request.POST,
+                'sucursales': sucursales
+            })
 
         try:
+            # Obtener la sucursal
+            sucursal = get_object_or_404(Sucursal, id=sucursal_id) if sucursal_id else None
+
             # 1. Crear la cuenta de Usuario
             user = Usuario.objects.create_user(
                 email=email,
@@ -103,7 +115,8 @@ def cargar_empleados(request):
                 dni=dni,
                 email=email,
                 direccion=direccion,
-                telefono=telefono
+                telefono=telefono,
+                sucursal=sucursal
             )
             
             # 3. Enviar credenciales por email
@@ -117,10 +130,13 @@ def cargar_empleados(request):
             if 'user' in locals() and user.pk:
                 user.delete()
             messages.error(request, f"Error al cargar el empleado: {e}")
-            return render(request, 'administrador/cargar_empleados.html', {'request_post': request.POST}) 
+            return render(request, 'administrador/cargar_empleados.html', {
+                'request_post': request.POST,
+                'sucursales': sucursales
+            }) 
             
     # Para el método GET, renderizamos el formulario vacío
-    return render(request, 'administrador/cargar_empleados.html')
+    return render(request, 'administrador/cargar_empleados.html', {'sucursales': sucursales})
 
 @admin_required
 def modificar_empleados(request):

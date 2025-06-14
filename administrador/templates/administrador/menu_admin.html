@@ -1,4 +1,6 @@
 {% extends 'home/base.html' %}
+{% load static %} {# Asegúrate de tener esto si usas archivos estáticos propios #}
+
 {% block content %}
 <div class="container mt-4">
     <div class="row justify-content-center">
@@ -9,7 +11,29 @@
                 <hr class="mx-auto" style="width: 100px; height: 3px; background-color: #0e4532; border: none;">
             </div>
 
+            {# Mensajes de Django (éxito, error, etc.) #}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
             <div class="row g-4">
+                <div class="row">
+                    <div class="col-md-12 mb-4">
+                        <div class="card text-white bg-success">
+                            <div class="card-body text-center"> {# <-- Agregado 'text-center' aquí #}
+                                <h5 class="card-title">Ingresos Totales por Reservas (Confirmadas y Pagadas)</h5>
+                                <p class="card-text fs-2">${{ total_ingresos|floatformat:2 }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
                 <div class="col-lg-6 col-md-6">
                     <div class="card h-100 shadow-lg border-0">
                         <div class="card-header text-white text-center" style="background-color: #0e4532;">
@@ -48,7 +72,6 @@
                                 <a href="{% url 'cargar_empleados' %}" class="btn btn-outline-success btn-lg">
                                     <i class="fas fa-user-plus me-2"></i>Agregar Empleado
                                 </a>
-                            
                                 <a href="{% url 'modificar_empleados' %}" class="btn btn-outline-primary btn-lg">
                                     <i class="fas fa-user-edit me-2"></i>Modificar Empleado
                                 </a>
@@ -105,8 +128,12 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> {# End row g-4 #}
+
             <div class="text-center mt-5">
+                <a href="{% url 'admin_logout' %}" class="btn btn-dark btn-lg shadow-sm">
+                    <i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión
+                </a>
             </div>
         </div>
     </div>
@@ -186,8 +213,5 @@
         transform: translateY(0);
     }
 }
-
-
-
 </style>
 {% endblock %}

@@ -2,6 +2,7 @@ from django.db import models
 from django.conf import settings 
 from vehiculos.models import Vehiculo
 import datetime
+from decimal import Decimal
 
 class Reserva(models.Model):
     ESTADO_RESERVA_CHOICES = (
@@ -12,11 +13,11 @@ class Reserva(models.Model):
     )
 
     ESTADO_PAGO_CHOICES = (
-        ('PENDIENTE', 'Pendiente'),
-        ('PROCESANDO', 'Procesando'),
-        ('PAGADO', 'Pagado'),
-        ('FALLIDO', 'Fallido'),
-        ('REEMBOLSADO', 'Reembolsado'),
+    ('PENDIENTE', 'Pendiente'),
+    ('PROCESANDO', 'Procesando'),
+    ('PAGADO', 'Pagado'),
+    ('FALLIDO', 'Fallido'),
+    ('REEMBOLSADO', 'Reembolsado'),
     )
 
     cliente = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='reservas')
@@ -26,8 +27,22 @@ class Reserva(models.Model):
     costo_total = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     estado = models.CharField(max_length=20, choices=ESTADO_RESERVA_CHOICES, default='PENDIENTE')
     fecha_creacion = models.DateTimeField(auto_now_add=True)
-    
-    # Campos del conductor
+    precio_total = models.DecimalField(
+        max_digits=10,        
+        decimal_places=2,     
+        default=Decimal('0.00'),
+        help_text="Precio total de la reserva."
+    )
+    monto_a_reembolsar = models.DecimalField(
+    max_digits=10,
+    decimal_places=2,
+    default=Decimal('0.00'),
+    blank=True,
+    null=True,
+    help_text="Monto calculado a reembolsar en caso de cancelación."
+    )
+
+        # Campos del conductor
     conductor_nombre = models.CharField(max_length=100, null=True, blank=True)
     conductor_apellido = models.CharField(max_length=100, null=True, blank=True)
     conductor_dni = models.CharField(max_length=20, null=True, blank=True, unique=True)
@@ -39,6 +54,7 @@ class Reserva(models.Model):
     ultimos_4_digitos_tarjeta = models.CharField(max_length=4, null=True, blank=True)
 
     def clean(self):
+
         if self.fecha_recogida and self.fecha_recogida < datetime.date.today():
             from django.core.exceptions import ValidationError
             raise ValidationError({'fecha_recogida': "La fecha de recogida no puede ser anterior a la fecha actual."})
@@ -47,32 +63,28 @@ class Reserva(models.Model):
             from django.core.exceptions import ValidationError
             raise ValidationError({'fecha_devolucion': "La fecha de devolución no puede ser anterior a la fecha de recogida."})
 
-        # Validar que el DNI del conductor no esté en uso en otra reserva activa
-        if self.conductor_dni:
-            reservas_existentes = Reserva.objects.filter(
-                conductor_dni=self.conductor_dni,
-                fecha_recogida__lt=self.fecha_devolucion,
-                fecha_devolucion__gt=self.fecha_recogida,
-                estado__in=['PENDIENTE', 'CONFIRMADA']
-            ).exclude(id=self.id)  # Excluir la reserva actual en caso de actualización
-
-            if reservas_existentes.exists():
-                raise ValidationError({
-                    'conductor_dni': "Este DNI ya está asignado a otra reserva activa en las fechas seleccionadas."
-                })
 
     def save(self, *args, **kwargs):
+        # Lógica para calcular costo_total (esto ya lo tienes)
         if self.fecha_recogida and self.fecha_devolucion and self.vehiculo.precio_por_dia:
             dias = (self.fecha_devolucion - self.fecha_recogida).days
             if dias > 0:
                 self.costo_total = self.vehiculo.precio_por_dia * dias
             else:
                 self.costo_total = self.vehiculo.precio_por_dia
+        self.precio_total = self.costo_total 
+
+        if self.estado == 'CANCELADA' and self.costo_total is not None:
+            if hasattr(self.vehiculo, 'politica_de_reembolso') and self.vehiculo.politica_de_reembolso is not None:
+                politica_porcentaje = Decimal(str(self.vehiculo.politica_de_reembolso))
+                self.monto_a_reembolsar = (self.costo_total * politica_porcentaje) / Decimal('100.00')
+            else:
+                self.monto_a_reembolsar = Decimal('0.00')
+        elif self.estado != 'CANCELADA':
+            self.monto_a_reembolsar = Decimal('0.00')
+
         super().save(*args, **kwargs)
 
-    @property
-    def esta_pagado(self):
-        return self.estado_pago == 'PAGADO'
 
     def __str__(self):
         return f"Reserva {self.id} de {self.cliente.get_full_name() or self.cliente.email} para {self.vehiculo}"
