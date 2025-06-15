@@ -1,7 +1,7 @@
 from django.shortcuts import render
 
 # Create your views here.
-def menu_empleados(request):
+def menu_empleado(request):
     return render(request, 'empleados/menu_empleados.html')
 
 def login_empleado(request):
