@@ -35,6 +35,16 @@ def validar_reserva(usuario, vehiculo, conductor_dni, fecha_inicio, fecha_fin):
 
     return True, None
 
+def calcular_costo_base(vehiculo, fecha_recogida, fecha_devolucion):
+    """
+    Calcula el costo base de una reserva (sin adicionales).
+    """
+    dias = (fecha_devolucion - fecha_recogida).days
+    if dias > 0:
+        return dias * vehiculo.precio_por_dia
+    else:
+        return vehiculo.precio_por_dia
+
 def calcular_costo_total(vehiculo, fecha_recogida, fecha_devolucion):
     """
     Calcula el costo total de una reserva.
