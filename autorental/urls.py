@@ -27,7 +27,8 @@ urlpatterns = [
     path('admin-auth/', include('administrador.urls')),
     path('reservas/', include('reservas.urls')),
     path('sucursales/', include('sucursales.urls')),
-    path('empleados/', include('empleados.urls'))
+    path('empleados/', include('empleados.urls')),
+    path('empleados/', include('empleados.urls', namespace='empleados')),
 ] 
 
 if settings.DEBUG:

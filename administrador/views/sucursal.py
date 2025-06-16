@@ -1,12 +1,14 @@
 # D:\Tp IS2\TP-Ing2\administrador\views\sucursal.py
 import random
 import string
-from django.shortcuts import render, redirect, get_object_or_404 # Agregado get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from administrador.decorators import admin_required
 from django.conf import settings
 from sucursales.models import Sucursal
-from django.http import JsonResponse # Agregado para la respuesta AJAX
+from django.http import JsonResponse
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.utils import timezone # Importa timezone
 
 @admin_required
 def cargar_sucursal(request):
@@ -25,7 +27,6 @@ def cargar_sucursal(request):
                 direccion=direccion,
                 telefono=telefono
             )
-            # Corregido el mensaje f-string para que muestre el nombre de la sucursal
             messages.success(request, f'Sucursal {sucursal.nombre} cargada exitosamente.')
             return redirect('admin_menu')
         except Exception as e:
@@ -33,7 +34,6 @@ def cargar_sucursal(request):
             return render(request, 'administrador/cargar_sucursal.html')
 
     return render(request, 'administrador/cargar_sucursal.html')
-
 
 @admin_required
 def modificar_sucursal(request):
@@ -73,8 +73,6 @@ def modificar_sucursal(request):
     # Renderizar la plantilla por primera vez (método GET) o si hay errores
     return render(request, 'administrador/modificar_sucursal.html', {'sucursales': sucursales})
 
-
-
 @admin_required
 def obtener_datos_sucursal(request):
     """
@@ -96,19 +94,42 @@ def obtener_datos_sucursal(request):
             return JsonResponse({'error': str(e)}, status=500)
     return JsonResponse({'error': 'Parámetro de nombre de sucursal no proporcionado'}, status=400)
 
-
 @admin_required
 def borrar_sucursal(request):
     if request.method == 'POST':
-        nombreSucursal = request.POST.get('nombreChau')
+        nombre_sucursal = request.POST.get('nombre') # Obtiene el nombre desde el formulario
         try:
-            sucursal = Sucursal.objects.get(nombre=nombreSucursal)
-            sucursal.delete()
-            messages.success(request, 'Sucursal eliminada exitosamente.')
-            return redirect('admin_menu')
-        except Sucursal.DoesNotExist:
-            messages.error(request, "La sucursal no existe o fue borrada previamente.")
+            sucursal = get_object_or_404(Sucursal, nombre=nombre_sucursal)
+            sucursal.soft_delete()  # Usa el método soft_delete
+            messages.success(request, f"La sucursal '{sucursal.nombre}' ha sido dada de baja exitosamente.")
         except Exception as e:
-            messages.error(request, f"Error al eliminar la sucursal: {str(e)}")
-        return redirect('admin_menu')
-    return render(request, 'administrador/borrar_sucursal.html')
+            messages.error(request, f"Error al dar de baja la sucursal: {str(e)}")
+        return redirect('listado_sucursales') # Redirige al listado
+    return redirect('listado_sucursales') # Si no es POST, redirige también
+
+@admin_required
+def listado_sucursales(request):
+    mostrar_inactivas = request.GET.get('mostrar_inactivas') == 'on'
+
+    if mostrar_inactivas:
+        sucursales_list = Sucursal.objects.all().order_by('nombre')
+    else:
+        sucursales_list = Sucursal.objects.filter(activo=True).order_by('nombre')
+
+    paginator = Paginator(sucursales_list, 10) # 10 sucursales por página
+    page = request.GET.get('page')
+
+    try:
+        sucursales = paginator.page(page)
+    except PageNotAnInteger:
+        sucursales = paginator.page(1)
+    except EmptyPage:
+        sucursales = paginator.page(paginator.num_pages)
+
+    context = {
+        'sucursales': sucursales,
+        'is_paginated': sucursales.has_other_pages,
+        'page_obj': sucursales,
+        'mostrar_inactivas': mostrar_inactivas,
+    }
+    return render(request, 'administrador/listado_sucursales.html', context)

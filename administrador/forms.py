@@ -3,7 +3,9 @@ from empleados.models import Empleado
 
 class ModificarEmpleadoForm(forms.ModelForm):
     dni = forms.ModelChoiceField(
-        queryset=Empleado.objects.all(),
+        # --- CAMBIO AQUÍ ---
+        queryset=Empleado.objects.filter(activo=True).order_by('apellido', 'nombre'), # Filtrar por activo=True
+        # -------------------
         empty_label="Seleccione un empleado",
         to_field_name="dni",
         widget=forms.Select(attrs={'class': 'form-select'}),
@@ -42,4 +44,4 @@ class ModificarEmpleadoForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Personalizar el queryset para mostrar nombre y apellido en el select
-        self.fields['dni'].label_from_instance = lambda obj: f"{obj.nombre} {obj.apellido} ({obj.dni})" 
+        self.fields['dni'].label_from_instance = lambda obj: f"{obj.nombre} {obj.apellido} ({obj.dni})"
