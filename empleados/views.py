@@ -1,6 +1,8 @@
+from pyexpat.errors import messages
 from django.core.exceptions import ValidationError
 from django.shortcuts import render
 from vehiculos.models import Vehiculo
+from django.contrib import messages
 
 # Create your views here.
 def menu_empleado(request):
