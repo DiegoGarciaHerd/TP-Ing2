@@ -1,5 +1,6 @@
 # ... (tus importaciones existentes)
 from django.contrib import messages
+from django.contrib.auth import authenticate, login
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from vehiculos.models import Vehiculo
@@ -44,5 +45,15 @@ def reserva_empleado(request):
 
 
 def login_empleado(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        usuario = authenticate(request, username=username, password=password)
+        if usuario is not None:
+            login(request, usuario)
+            messages.success(request, "Inicio de sesión exitoso.")
+            return redirect('empleados:menu_empleado')
+        else:
+            messages.error(request, "Credenciales inválidas. Por favor, inténtalo de nuevo.")
 
     return render(request, 'empleados/login_empleado.html')
