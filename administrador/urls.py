@@ -25,7 +25,8 @@ from .views.sucursal import (
     cargar_sucursal,
     modificar_sucursal,
     borrar_sucursal,
-    obtener_datos_sucursal
+    obtener_datos_sucursal,
+    listado_sucursales,
 )
 
 urlpatterns = [
@@ -52,6 +53,7 @@ urlpatterns = [
     path('cargar-sucursal/', cargar_sucursal, name="cargar_sucursal"),
     path('modificar-sucursal/', modificar_sucursal, name="modificar_sucursal"),
     path('borrar-sucursal/', borrar_sucursal, name="borrar_sucursal"),
+    path('listado_sucursales/', listado_sucursales, name="listado_sucursales"),
 
     path('obtener-datos-sucursal/', obtener_datos_sucursal, name='obtener_datos_sucursal'), 
     path('reset-balance/', reset_admin_balance, name='reset_admin_balance'),

@@ -76,10 +76,8 @@ def cargar_empleados(request):
         direccion = request.POST.get('direccion')
         sucursal_id = request.POST.get('sucursal')
 
-        # Generar una contraseña para el nuevo empleado
         password = generate_random_password()
 
-        # Validaciones de unicidad
         if Empleado.objects.filter(dni=dni).exists():
             messages.error(request, "Ya existe un empleado con ese DNI.")
             return render(request, 'administrador/cargar_empleados.html', {
@@ -87,7 +85,6 @@ def cargar_empleados(request):
                 'sucursales': sucursales
             })
         
-        # Validación de email único en ambos modelos
         if Usuario.objects.filter(email=email).exists() or Empleado.objects.filter(email=email).exists():
             messages.error(request, "Ya existe un usuario o empleado con ese email.")
             return render(request, 'administrador/cargar_empleados.html', {
@@ -96,7 +93,6 @@ def cargar_empleados(request):
             })
 
         try:
-            # Obtener la sucursal
             sucursal = get_object_or_404(Sucursal, id=sucursal_id) if sucursal_id else None
 
             # 1. Crear la cuenta de Usuario
@@ -105,6 +101,9 @@ def cargar_empleados(request):
                 password=password,
                 first_name=nombre,
                 last_name=apellido,
+                # --- ¡AQUÍ ESTÁ EL CAMBIO! ---
+                is_staff=True, # <--- Establece is_staff en True para empleados
+                # -----------------------------
             )
             
             # 2. Crear el perfil de Empleado y asociarlo al Usuario
@@ -135,7 +134,6 @@ def cargar_empleados(request):
                 'sucursales': sucursales
             }) 
             
-    # Para el método GET, renderizamos el formulario vacío
     return render(request, 'administrador/cargar_empleados.html', {'sucursales': sucursales})
 
 @admin_required

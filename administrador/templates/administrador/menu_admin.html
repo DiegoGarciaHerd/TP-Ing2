@@ -118,11 +118,11 @@
                                     <i class="fas fa-edit me-2"></i>Modificar Sucursal
                                 </a>
                                 <a href="{% url 'borrar_sucursal' %}" class="btn btn-outline-danger btn-lg">
-                                    <i class="fas fa-trash-alt me-2"></i>Eliminar Sucursal
+                                    <i class="fas fa-times-circle me-2"></i>Dar de Baja Sucursal {# Cambié el ícono para ser más coherente con "Dar de Baja" #}
                                 </a>
-                                <a href="#" class="btn btn-outline-info btn-lg disabled">
-                                    <i class="fas fa-info-circle me-2"></i>Ver Información de Sucursales
-                                    <small class="d-block text-muted">Próximamente</small>
+                                {# CAMBIO AQUÍ #}
+                                <a href="{% url 'listado_sucursales' %}" class="btn btn-outline-info btn-lg">
+                                    <i class="fas fa-building me-2"></i>Ver listado de Sucursales {# Cambié el ícono y el texto para que coincida más #}
                                 </a>
                             </div>
                         </div>
