@@ -15,13 +15,15 @@ def buscar_cliente(request):
     return render(request, 'empleados/buscar_cliente.html')
 
 def modificar_vehiculo(request):
+    vehiculos = Vehiculo.objects.all().order_by('patente')
+
     if request.method == 'POST':
         patente = request.POST.get('patente')
         try:
            vehiculo = Vehiculo.objects.get(patente=patente)
            
            if kilometraje := request.POST.get('kilometraje'):
-               vehiculo.kilometraje = int(kilometraje)
+               vehiculo.kilometraje = kilometraje
            if disponibilidad := request.POST.get('disponibilidad'):
                vehiculo.disponible = disponibilidad
 
@@ -30,7 +32,7 @@ def modificar_vehiculo(request):
         except Exception as e:
             messages.error(request, "Ocurrió un error al buscar el vehículo: " + str(e))        
 
-    return render(request, 'empleados/modificar_vehiculo.html')
+    return render(request, 'empleados/modificar_vehiculo.html', {'vehiculos': vehiculos})
 
 def reserva_empleado(request):
     return render(request, 'empleados/reserva_empleado.html')
