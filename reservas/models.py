@@ -24,15 +24,28 @@ class Reserva(models.Model):
     vehiculo = models.ForeignKey(Vehiculo, on_delete=models.CASCADE, related_name='reservas')
     fecha_recogida = models.DateField()
     fecha_devolucion = models.DateField()
-    costo_total = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    costo_total = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2, 
+        null=True,
+        blank=True,
+        help_text="Costo total de la reserva incluyendo adicionales."
+    )
+    costo_base = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2, 
+        null=True,
+        blank=True,
+        help_text="Costo base de la reserva sin adicionales."
+    )
+    monto_adicional = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2, 
+        default=Decimal('0.00'),
+        help_text="Monto total de los adicionales."
+    )
     estado = models.CharField(max_length=20, choices=ESTADO_RESERVA_CHOICES, default='PENDIENTE')
     fecha_creacion = models.DateTimeField(auto_now_add=True)
-    precio_total = models.DecimalField(
-        max_digits=10,        
-        decimal_places=2,     
-        default=Decimal('0.00'),
-        help_text="Precio total de la reserva."
-    )
     monto_a_reembolsar = models.DecimalField(
     max_digits=10,
     decimal_places=2,
@@ -76,13 +89,13 @@ class Reserva(models.Model):
 
 
     def save(self, *args, **kwargs):
-        # Lógica para calcular costo_total base
+        # Lógica para calcular costo_base
         if self.fecha_recogida and self.fecha_devolucion and self.vehiculo.precio_por_dia:
             dias = (self.fecha_devolucion - self.fecha_recogida).days
             if dias > 0:
-                self.costo_total = self.vehiculo.precio_por_dia * dias
+                self.costo_base = self.vehiculo.precio_por_dia * dias
             else:
-                self.costo_total = self.vehiculo.precio_por_dia
+                self.costo_base = self.vehiculo.precio_por_dia
 
         # Calcular extras
         extras_total = Decimal('0.00')
@@ -91,12 +104,13 @@ class Reserva(models.Model):
         if self.telepass:
             extras_total += Decimal('2000.00') * dias
         if self.seguro_por_danos:
-            extras_total += self.costo_total * Decimal('0.30')
+            extras_total += self.costo_base * Decimal('0.30')
         if self.conductor_adicional:
-            extras_total += self.costo_total * Decimal('0.20')
+            extras_total += self.costo_base * Decimal('0.20')
 
-        # Actualizar precio total incluyendo extras
-        self.precio_total = self.costo_total + extras_total
+        # Actualizar monto_adicional y costo_total
+        self.monto_adicional = extras_total
+        self.costo_total = self.costo_base + extras_total
 
         if self.estado == 'CANCELADA' and self.costo_total is not None:
             if hasattr(self.vehiculo, 'politica_de_reembolso') and self.vehiculo.politica_de_reembolso is not None:

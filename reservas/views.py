@@ -89,9 +89,9 @@ def crear_reserva(request, vehiculo_id):
 
             dias = (fecha_devolucion - fecha_recogida).days
             if dias > 0:
-                costo_total = Decimal(str(vehiculo.precio_por_dia)) * Decimal(str(dias))
+                costo_base = Decimal(str(vehiculo.precio_por_dia)) * Decimal(str(dias))
             else:
-                costo_total = Decimal(str(vehiculo.precio_por_dia))
+                costo_base = Decimal(str(vehiculo.precio_por_dia))
             
             # Calcular el costo total incluyendo extras
             extras_total = Decimal('0.00')
@@ -100,18 +100,19 @@ def crear_reserva(request, vehiculo_id):
             if telepass:
                 extras_total += Decimal('2000.00') * Decimal(str(dias))
             if seguro_por_danos:
-                extras_total += costo_total * Decimal('0.30')
+                extras_total += costo_base * Decimal('0.30')
             if conductor_adicional:
-                extras_total += costo_total * Decimal('0.20')
+                extras_total += costo_base * Decimal('0.20')
             
-            precio_total = costo_total + extras_total
+            costo_total = costo_base + extras_total
             
             request.session['reserva_temporal'] = {
                 'vehiculo_id': vehiculo.id,
                 'fecha_recogida': fecha_recogida.isoformat(),
                 'fecha_devolucion': fecha_devolucion.isoformat(),
+                'costo_base': float(costo_base),  # Convertir a float para la sesión
+                'monto_adicional': float(extras_total),  # Convertir a float para la sesión
                 'costo_total': float(costo_total),  # Convertir a float para la sesión
-                'precio_total': float(precio_total),  # Convertir a float para la sesión
                 'conductor_nombre': conductor_nombre,
                 'conductor_apellido': conductor_apellido,
                 'conductor_dni': conductor_dni,
@@ -222,6 +223,8 @@ def ticket_reserva(request, vehiculo_id):
         vehiculo=vehiculo,
         fecha_recogida=datetime.datetime.fromisoformat(reserva_temporal['fecha_recogida']).date(),
         fecha_devolucion=datetime.datetime.fromisoformat(reserva_temporal['fecha_devolucion']).date(),
+        costo_base=Decimal(str(reserva_temporal['costo_base'])),  # Convertir a Decimal
+        monto_adicional=Decimal(str(reserva_temporal['monto_adicional'])),  # Convertir a Decimal
         costo_total=Decimal(str(reserva_temporal['costo_total'])),  # Convertir a Decimal
         estado='PENDIENTE',
         conductor_nombre=reserva_temporal.get('conductor_nombre', ''),
@@ -236,21 +239,6 @@ def ticket_reserva(request, vehiculo_id):
         conductor_adicional_apellido=reserva_temporal.get('conductor_adicional_apellido', ''),
         conductor_adicional_dni=reserva_temporal.get('conductor_adicional_dni', '')
     )
-    
-    # Calcular el precio total incluyendo extras
-    dias = (reserva.fecha_devolucion - reserva.fecha_recogida).days
-    extras_total = Decimal('0.00')
-    
-    if reserva.silla_para_ninos:
-        extras_total += Decimal('1000.00') * Decimal(str(dias))
-    if reserva.telepass:
-        extras_total += Decimal('2000.00') * Decimal(str(dias))
-    if reserva.seguro_por_danos:
-        extras_total += reserva.costo_total * Decimal('0.30')
-    if reserva.conductor_adicional:
-        extras_total += reserva.costo_total * Decimal('0.20')
-    
-    reserva.precio_total = reserva.costo_total + extras_total
     
     return render(request, 'reservas/ticket_reserva.html', {'reserva': reserva, 'vehiculo': vehiculo})
 
@@ -421,8 +409,9 @@ def confirmar_reserva(request, vehiculo_id):
         vehiculo=vehiculo,
         fecha_recogida=fecha_recogida,
         fecha_devolucion=fecha_devolucion,
+        costo_base=reserva_temporal['costo_base'],
+        monto_adicional=reserva_temporal['monto_adicional'],
         costo_total=reserva_temporal['costo_total'],
-        precio_total=reserva_temporal['precio_total'],
         estado='CONFIRMADA',
         # Información de pago
         estado_pago='PAGADO',
@@ -447,7 +436,7 @@ def confirmar_reserva(request, vehiculo_id):
     try:
         from core.models import AdminBalance
         admin_balance, created = AdminBalance.objects.get_or_create(pk=1)
-        admin_balance.saldo += Decimal(str(reserva.precio_total))  # Usar precio_total en lugar de costo_total
+        admin_balance.saldo += Decimal(str(reserva.costo_total))  
         admin_balance.save()
     except Exception as e:
         messages.warning(request, f"Reserva confirmada, pero hubo un problema actualizando el saldo del sistema: {e}")
@@ -507,7 +496,7 @@ def confirmar_reserva(request, vehiculo_id):
         - Tarjeta: ****{reserva.ultimos_4_digitos_tarjeta}
         - Fecha de Pago: {reserva.fecha_pago.strftime('%d/%m/%Y %H:%M')}
         
-        Costo Total: ${reserva.precio_total:.2f}
+        Costo Total: ${reserva.costo_total:.2f}
         
         Este correo sirve como comprobante de tu reserva. Por favor, guárdalo para tus registros.
         Si tienes alguna pregunta, no dudes en contactarnos.
