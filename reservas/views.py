@@ -56,7 +56,7 @@ def crear_reserva(request, vehiculo_id):
 
     if not vehiculo.disponible:
         messages.error(request, 'Este vehículo no está disponible para reserva en este momento.')
-        return redirect('reservas:vehiculo_detail', pk=vehiculo.id) 
+        return redirect('sucursales:vehiculo_detail', pk=vehiculo.id)
 
     if request.method == 'POST':
         form = ReservaForm(request.POST)
@@ -127,6 +127,11 @@ def crear_reserva(request, vehiculo_id):
             }
             
             return redirect('reservas:ticket_reserva', vehiculo_id=vehiculo.id)
+        else:
+            # Si el formulario no es válido, mostrar los errores
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{form.fields[field].label}: {error}")
     else:
         initial_data = {}
         fecha_retiro = request.GET.get('fecha_retiro')
@@ -426,11 +431,15 @@ def confirmar_reserva(request, vehiculo_id):
         silla_para_ninos=reserva_temporal.get('silla_para_ninos', False),
         telepass=reserva_temporal.get('telepass', False),
         seguro_por_danos=reserva_temporal.get('seguro_por_danos', False),
-        conductor_adicional=reserva_temporal.get('conductor_adicional', False),
-        conductor_adicional_nombre=reserva_temporal.get('conductor_adicional_nombre', ''),
-        conductor_adicional_apellido=reserva_temporal.get('conductor_adicional_apellido', ''),
-        conductor_adicional_dni=reserva_temporal.get('conductor_adicional_dni', '')
+        conductor_adicional=reserva_temporal.get('conductor_adicional', False)
     )
+
+    # Solo agregar datos del conductor adicional si se seleccionó esa opción
+    if reserva_temporal.get('conductor_adicional', False):
+        reserva.conductor_adicional_nombre = reserva_temporal.get('conductor_adicional_nombre', '')
+        reserva.conductor_adicional_apellido = reserva_temporal.get('conductor_adicional_apellido', '')
+        reserva.conductor_adicional_dni = reserva_temporal.get('conductor_adicional_dni', '')
+
     reserva.save()
 
     try:
