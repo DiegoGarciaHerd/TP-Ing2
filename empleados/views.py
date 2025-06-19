@@ -79,11 +79,11 @@ def modificar_autos(request):
                 
             vehiculo.save()
             messages.success(request, "Auto modificado exitosamente")
-            return redirect('admin_menu')
+            return redirect('empleados:menu_empleado')
             
         except Vehiculo.DoesNotExist:
             messages.error(request, "El auto a modificar no existe")
         except Exception as e:
             messages.error(request, f"Error al modificar el auto: {e}")
     
-    return render(request, 'administrador/modificar_autos.html', {'vehiculos': vehiculos})
+    return render(request, 'empleados/modificar_autos.html', {'vehiculos': vehiculos})
