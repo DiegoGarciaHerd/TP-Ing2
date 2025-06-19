@@ -37,34 +37,16 @@
                             
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label for="precio" class="form-label">Precio por Día:</label>
-                                    <input type="text" class="form-control" id="precio" name="precio">
+                                    <label for="kilometraje" class="form-label">Kilometraje:</label>
+                                    <input type="text" class="form-control" id="kilometraje" name="kilometraje">
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    <label for="politica_reembolso" class="form-label">Política de Reembolso:</label>
-                                    <select class="form-select" id="politica_reembolso" name="politica_reembolso">
-                                        <option value="0">0% - No se realizan reembolsos</option>
-                                        <option value="20">20% - Reembolso del 20% en ARS de la reserva</option>
-                                        <option value="100">100% - Reembolso del 100% en ARS de la reserva</option>
+                                    <label for="disponible" class="form-label">Disponibilidad:</label>
+                                    <select class="form-control" id="disponible" name="disponible">
+                                        <option value="" selected disabled>Seleccione una opción</option>
+                                        <option value="True">Disponible</option>
+                                        <option value="False">No Disponible</option>
                                     </select>
-                                </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="foto" class="form-label">Foto del Vehículo:</label>
-                                <input type="file" class="form-control" id="foto" name="foto" accept="image/*">
-                                <input type="hidden" id="foto_base64" name="foto_base64">
-                                
-                                <!-- Preview de la imagen actual -->
-                                <div id="previewContainer" class="mt-2" style="display: none;">
-                                    <p class="text-muted">Imagen actual:</p>
-                                    <img id="previewImage" class="img-fluid rounded" style="max-height: 200px;">
-                                </div>
-                                
-                                <!-- Preview de la nueva imagen -->
-                                <div id="newPreviewContainer" class="mt-2" style="display: none;">
-                                    <p class="text-muted">Nueva imagen:</p>
-                                    <img id="newPreviewImage" class="img-fluid rounded" style="max-height: 200px;">
                                 </div>
                             </div>
 

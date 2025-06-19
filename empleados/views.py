@@ -1,5 +1,6 @@
 # ... (tus importaciones existentes)
 from django.contrib import messages
+from django.contrib.auth import authenticate, login
 from django.shortcuts import render, redirect
 from django.urls import reverse
 from vehiculos.models import Vehiculo
@@ -17,20 +18,18 @@ def buscar_cliente(request):
 
 @empleado_required
 def modificar_vehiculo(request):
+    vehiculos = Vehiculo.objects.all().order_by('patente')
+
     if request.method == 'POST':
         patente = request.POST.get('patente')
         try:
-            vehiculo = Vehiculo.objects.get(patente=patente)
-            
-            if kilometraje := request.POST.get('kilometraje'):
-                vehiculo.kilometraje = int(kilometraje)
-            if disponibilidad := request.POST.get('disponibilidad'):
-                vehiculo.disponible = disponibilidad == 'True' # Asegúrate de que esto se guarde como booleano
-            
-            vehiculo.save() # Guardar los cambios en el vehículo
-            messages.success(request, "Vehículo actualizado exitosamente.")
-            # Puedes redirigir o recargar la página para mostrar el éxito
-            return redirect(reverse('empleados:modificar_vehiculo')) # Redirige para evitar reenvío de formulario
+           vehiculo = Vehiculo.objects.get(patente=patente)
+           
+           if kilometraje := request.POST.get('kilometraje'):
+               vehiculo.kilometraje = int(kilometraje)
+           if disponibilidad := request.POST.get('disponibilidad'):
+               vehiculo.disponible = disponibilidad
+
         except Vehiculo.DoesNotExist:
             messages.error(request, "El vehículo no existe.")
         except ValueError:
@@ -38,7 +37,7 @@ def modificar_vehiculo(request):
         except Exception as e:
             messages.error(request, "Ocurrió un error al modificar el vehículo: " + str(e))     
 
-    return render(request, 'empleados/modificar_vehiculo.html')
+    return render(request, 'empleados/modificar_vehiculo.html', {'vehiculos': vehiculos})
 
 @empleado_required
 def reserva_empleado(request):
@@ -46,6 +45,17 @@ def reserva_empleado(request):
 
 
 def login_empleado(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        usuario = authenticate(request, username=username, password=password)
+        if usuario is not None:
+            login(request, usuario)
+            messages.success(request, "Inicio de sesión exitoso.")
+            return redirect('empleados:menu_empleado')
+        else:
+            messages.error(request, "Credenciales inválidas. Por favor, inténtalo de nuevo.")
+
     return render(request, 'empleados/login_empleado.html')
 
 
@@ -69,11 +79,11 @@ def modificar_autos(request):
                 
             vehiculo.save()
             messages.success(request, "Auto modificado exitosamente")
-            return redirect('admin_menu')
+            return redirect('empleados:menu_empleado')
             
         except Vehiculo.DoesNotExist:
             messages.error(request, "El auto a modificar no existe")
         except Exception as e:
             messages.error(request, f"Error al modificar el auto: {e}")
     
-    return render(request, 'administrador/modificar_autos.html', {'vehiculos': vehiculos})
+    return render(request, 'empleados/modificar_autos.html', {'vehiculos': vehiculos})

@@ -36,6 +36,7 @@ class Vehiculo(models.Model):
         default=Decimal('0.00'), # Valor por defecto
         help_text="Precio de alquiler por día."
     )
+    kilometraje = models.PositiveIntegerField(default=0, help_text='Kilometraje del vehículo')
     def __str__(self):
         return f"{self.marca} {self.modelo} ({self.patente}) {self.REEMBOLSO_CHOICES}"
 
