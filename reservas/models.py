@@ -69,7 +69,7 @@ class Reserva(models.Model):
     # Campos para conductor adicional
     conductor_adicional_nombre = models.CharField(max_length=100, null=True, blank=True)
     conductor_adicional_apellido = models.CharField(max_length=100, null=True, blank=True)
-    conductor_adicional_dni = models.CharField(max_length=20, null=True, blank=True, unique=True)
+    conductor_adicional_dni = models.CharField(max_length=20, null=True, blank=True)
     
     # Campos de pago
     estado_pago = models.CharField(max_length=20, choices=ESTADO_PAGO_CHOICES, default='PENDIENTE')
@@ -78,7 +78,6 @@ class Reserva(models.Model):
     ultimos_4_digitos_tarjeta = models.CharField(max_length=4, null=True, blank=True)
 
     def clean(self):
-
         if self.fecha_recogida and self.fecha_recogida < datetime.date.today():
             from django.core.exceptions import ValidationError
             raise ValidationError({'fecha_recogida': "La fecha de recogida no puede ser anterior a la fecha actual."})
@@ -87,6 +86,18 @@ class Reserva(models.Model):
             from django.core.exceptions import ValidationError
             raise ValidationError({'fecha_devolucion': "La fecha de devolución no puede ser anterior a la fecha de recogida."})
 
+        # Validar que el conductor adicional no esté en otra reserva en el mismo período
+        if self.conductor_adicional and self.conductor_adicional_dni:
+            reservas_solapadas = Reserva.objects.filter(
+                conductor_adicional_dni=self.conductor_adicional_dni,
+                fecha_recogida__lt=self.fecha_devolucion,
+                fecha_devolucion__gt=self.fecha_recogida,
+                estado__in=['PENDIENTE', 'CONFIRMADA']
+            )
+            if self.pk:  # Si es una actualización, excluir la reserva actual
+                reservas_solapadas = reservas_solapadas.exclude(pk=self.pk)
+            if reservas_solapadas.exists():
+                raise ValidationError({'conductor_adicional_dni': "Ya existe una reserva con este conductor adicional en el período seleccionado."})
 
     def save(self, *args, **kwargs):
         # Lógica para calcular costo_base

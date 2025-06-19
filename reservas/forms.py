@@ -112,7 +112,7 @@ class ReservaForm(forms.ModelForm):
             if reservas_existentes.exists():
                 self.add_error('conductor_dni', "Este DNI ya está asignado a otra reserva activa en las fechas seleccionadas.")
 
-        # Validar conductor adicional
+        # Validar conductor adicional solo si se ha seleccionado la opción
         if conductor_adicional:
             if not conductor_adicional_dni or not conductor_adicional_nombre or not conductor_adicional_apellido:
                 self.add_error('conductor_adicional_dni', "Debe completar todos los datos del conductor adicional.")
@@ -129,6 +129,11 @@ class ReservaForm(forms.ModelForm):
                 )
                 if reservas_existentes.exists():
                     self.add_error('conductor_adicional_dni', "El conductor adicional ya tiene una reserva activa en las fechas seleccionadas.")
+        else:
+            # Si no se seleccionó conductor adicional, limpiar los campos relacionados
+            cleaned_data['conductor_adicional_dni'] = ''
+            cleaned_data['conductor_adicional_nombre'] = ''
+            cleaned_data['conductor_adicional_apellido'] = ''
 
         return cleaned_data
 

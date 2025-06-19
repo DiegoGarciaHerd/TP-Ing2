@@ -49,6 +49,23 @@
                     <h3 class="mb-0">Reservar {{ vehiculo.marca }} {{ vehiculo.modelo }}</h3>
                 </div>
                 <div class="card-body">
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
                     <!-- Información del vehículo -->
                     <div class="mb-4">
                         <div class="row">

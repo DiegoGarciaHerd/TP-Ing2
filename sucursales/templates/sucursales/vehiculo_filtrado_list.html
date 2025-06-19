@@ -79,10 +79,10 @@
                                 <p class="card-text">
                                     <strong>${{ vehiculo.precio_por_dia|floatformat:2 }}</strong> por día
                                 </p>
-                                <a href="{% url 'detalle_vehiculo' vehiculo.id %}" 
+                                <a href="{% url 'reservas:crear_reserva' vehiculo.id %}" 
                                    class="btn text-white w-100" 
                                    style="background-color: #0e4532;">
-                                    Ver Detalles y Reservar
+                                    Reservar Ahora
                                 </a>
                             </div>
                         </div>
