@@ -57,3 +57,33 @@ def login_empleado(request):
             messages.error(request, "Credenciales inválidas. Por favor, inténtalo de nuevo.")
 
     return render(request, 'empleados/login_empleado.html')
+
+
+@empleado_required
+def modificar_autos(request):
+    # Obtener todos los vehículos para el selector
+    vehiculos = Vehiculo.objects.all().order_by('patente')
+    
+    if request.method == 'POST':
+        patente = request.POST.get('patente')
+        try:
+            vehiculo = Vehiculo.objects.get(patente=patente)
+            
+            # Actualizar campos si se proporcionaron
+            if precio := request.POST.get('precio'):
+                vehiculo.precio_por_dia = precio
+            if foto := request.POST.get('foto_base64'):
+                vehiculo.foto_base64 = foto
+            if (politica_reembolso := request.POST.get('politica_reembolso')):
+                vehiculo.politica_de_reembolso = politica_reembolso
+                
+            vehiculo.save()
+            messages.success(request, "Auto modificado exitosamente")
+            return redirect('admin_menu')
+            
+        except Vehiculo.DoesNotExist:
+            messages.error(request, "El auto a modificar no existe")
+        except Exception as e:
+            messages.error(request, f"Error al modificar el auto: {e}")
+    
+    return render(request, 'administrador/modificar_autos.html', {'vehiculos': vehiculos})
