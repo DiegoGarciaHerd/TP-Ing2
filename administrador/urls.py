@@ -29,6 +29,8 @@ from .views.sucursal import (
     listado_sucursales,
 )
 
+from .views import reservas
+
 urlpatterns = [
     path('', admin_menu, name='admin_menu'),  
     path('login/', admin_login, name='admin_login_step1'),  
@@ -57,5 +59,6 @@ urlpatterns = [
 
     path('obtener-datos-sucursal/', obtener_datos_sucursal, name='obtener_datos_sucursal'), 
     path('reset-balance/', reset_admin_balance, name='reset_admin_balance'),
+    path('detalle-ingresos-reservas/', reservas.detalle_ingresos_reservas, name='detalle_ingresos_reservas'),
     
 ]
