@@ -3,6 +3,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from cryptography.fernet import Fernet
 from django.conf import settings
+from core.models import EncryptionKey
 import os
 
 
@@ -84,22 +85,26 @@ class TarjetaGuardada(models.Model):
     def __str__(self):
         return f"Tarjeta **** **** **** {self.ultimos_4_digitos} de {self.usuario.get_full_name()}"
     
+    @staticmethod
+    def get_encryption_key():
+        """Obtiene o crea la clave de encriptación"""
+        key_obj = EncryptionKey.objects.first()
+        if not key_obj:
+            key = Fernet.generate_key()
+            key_obj = EncryptionKey.objects.create(key=key)
+        return key_obj.key
+    
     def save(self, *args, **kwargs):
-        # Si no existe la clave de encriptación, generarla
-        if not hasattr(settings, 'ENCRYPTION_KEY'):
-            # En producción, esto debería estar en variables de entorno
-            settings.ENCRYPTION_KEY = Fernet.generate_key()
-        
+        # Asegurarse de que exista una clave de encriptación
+        self.get_encryption_key()
         super().save(*args, **kwargs)
     
     @classmethod
     def crear_tarjeta(cls, usuario, numero_tarjeta, nombre_titular, mes_vencimiento, ano_vencimiento):
         """Crea una nueva tarjeta guardada encriptando el número"""
-        # Generar clave de encriptación si no existe
-        if not hasattr(settings, 'ENCRYPTION_KEY'):
-            settings.ENCRYPTION_KEY = Fernet.generate_key()
-        
-        cipher = Fernet(settings.ENCRYPTION_KEY)
+        # Obtener la clave de encriptación
+        key = cls.get_encryption_key()
+        cipher = Fernet(key)
         numero_encriptado = cipher.encrypt(numero_tarjeta.encode()).decode()
         
         # Eliminar tarjeta anterior si existe
@@ -117,10 +122,8 @@ class TarjetaGuardada(models.Model):
     
     def obtener_numero_desencriptado(self):
         """Desencripta y retorna el número de tarjeta"""
-        if not hasattr(settings, 'ENCRYPTION_KEY'):
-            raise ValueError("No se encontró la clave de encriptación")
-        
-        cipher = Fernet(settings.ENCRYPTION_KEY)
+        key = self.get_encryption_key()
+        cipher = Fernet(key)
         return cipher.decrypt(self.numero_encriptado.encode()).decode()
     
     @property

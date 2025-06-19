@@ -563,16 +563,14 @@ def seleccionar_metodo_pago(request, vehiculo_id):
             tarjeta_guardada = request.user.tarjeta_guardada
             cvv = request.POST.get('cvv')
             
-            # Tarjetas permitidas con sus CVV específicos
+            # Mapeo de últimos 4 dígitos a CVV permitidos
             tarjetas_permitidas = {
-                '4517660196851645': '789',
-                '5258556802017961': '345'
+                '1645': '789',  # Para 4517660196851645
+                '7961': '345'   # Para 5258556802017961
             }
             
-            ultimos_4_digitos = tarjeta_guardada.ultimos_4_digitos
-            
-            if ultimos_4_digitos in tarjetas_permitidas:
-                if cvv != tarjetas_permitidas[ultimos_4_digitos]:
+            if tarjeta_guardada.ultimos_4_digitos in tarjetas_permitidas:
+                if cvv != tarjetas_permitidas[tarjeta_guardada.ultimos_4_digitos]:
                     messages.error(request, 'CVV incorrecto para esta tarjeta.')
                     return render(request, 'reservas/seleccionar_metodo_pago.html', {
                         'reserva': reserva,
