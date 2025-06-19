@@ -12,7 +12,7 @@ def split(value, arg):
 def multiply(value, arg):
     """Multiplies the value by the argument"""
     try:
-        return float(value) * float(arg)
+        return round(float(value) * float(arg))
     except (ValueError, TypeError):
         return ''
 
@@ -29,6 +29,24 @@ def dias_duracion(fecha_devolucion, fecha_recogida):
 def subtract(value, arg):
     """Subtracts the argument from the value"""
     try:
-        return float(value) - float(arg)
+        return round(float(value) - float(arg))
     except (ValueError, TypeError):
-        return '' 
+        return value
+
+@register.filter
+def div(value, arg):
+    """Divides the value by the argument"""
+    try:
+        if float(arg) == 0:
+            return 0
+        return round(float(value) / float(arg))
+    except (ValueError, TypeError):
+        return 0
+
+@register.filter
+def add(value, arg):
+    """Adds the argument to the value"""
+    try:
+        return round(float(value) + float(arg))
+    except (ValueError, TypeError):
+        return value 

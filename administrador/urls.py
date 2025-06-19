@@ -60,5 +60,6 @@ urlpatterns = [
     path('obtener-datos-sucursal/', obtener_datos_sucursal, name='obtener_datos_sucursal'), 
     path('reset-balance/', reset_admin_balance, name='reset_admin_balance'),
     path('detalle-ingresos-reservas/', reservas.detalle_ingresos_reservas, name='detalle_ingresos_reservas'),
+    path('estadisticas-adicionales/', reservas.estadisticas_adicionales, name='estadisticas_adicionales'),
     
 ]
