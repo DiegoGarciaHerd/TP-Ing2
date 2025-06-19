@@ -1,27 +1,132 @@
 {% extends 'home/base.html' %}
-{% block content %}
-<html>
-    <head>
-        <h1>Bienvenido al menú de Empleados</h1>
-    </head>
-    
-    <div>
-        <ul class="nav">
-            <li><a href="">Vehículos</a>
-                <ul>
-                    <li><a href="#">Modificar Vehículo</a></li>
-                </ul>
-            </li>
+{% load static %}
 
-            <li><a href="">Reservas</a>
-                <ul>
-                    <li><a href="#">Realizar Reserva</a></li>
-                    <li><a href="#">Terminar Reserva</a></li>
-                    <li><a href="#">Buscar Cliente</a></li>
-                    <li><a href="#">Completar pago</a></li>
-                </ul>
-            </li>
-        </ul>
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-12">
+            <div class="text-center mb-5">
+                <h1 class="display-4 fw-bold" style="color: #0e4532;">Menú de Empleados</h1>
+                <p class="lead text-muted">Gestione vehículos y reservas desde este panel</p>
+                <hr class="mx-auto" style="width: 100px; height: 3px; background-color: #0e4532; border: none;">
+            </div>
+
+            <div class="row g-4">
+                <!-- Gestión de Vehículos -->
+                <div class="col-lg-6 col-md-6">
+                    <div class="card h-100 shadow-lg border-0">
+                        <div class="card-header text-white text-center" style="background-color: #0e4532;">
+                            <h4 class="mb-0">
+                                <i class="fas fa-car me-2"></i>Gestión de Vehículos
+                            </h4>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="d-grid gap-3">
+                                <a href="#" class="btn btn-outline-primary btn-lg">
+                                    <i class="fas fa-edit me-2"></i>Modificar Vehículo
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gestión de Reservas -->
+                <div class="col-lg-6 col-md-6">
+                    <div class="card h-100 shadow-lg border-0">
+                        <div class="card-header text-white text-center" style="background-color: #0e4532;">
+                            <h4 class="mb-0">
+                                <i class="fas fa-calendar-alt me-2"></i>Gestión de Reservas
+                            </h4>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="d-grid gap-3">
+                                <a href="#" class="btn btn-outline-success btn-lg">
+                                    <i class="fas fa-plus-circle me-2"></i>Realizar Reserva
+                                </a>
+                                <a href="#" class="btn btn-outline-warning btn-lg">
+                                    <i class="fas fa-flag-checkered me-2"></i>Terminar Reserva
+                                </a>
+                                <a href="#" class="btn btn-outline-info btn-lg">
+                                    <i class="fas fa-search me-2"></i>Buscar Cliente
+                                </a>
+                                <a href="#" class="btn btn-outline-danger btn-lg">
+                                    <i class="fas fa-credit-card me-2"></i>Completar Pago
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-5">
+                <a href="{% url 'admin_logout' %}" class="btn btn-dark btn-lg shadow-sm">
+                    <i class="fas fa-sign-out-alt me-2"></i>Cerrar Sesión
+                </a>
+            </div>
+        </div>
     </div>
-</html>
-{%endblock%}
+</div>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<style>
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 15px;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1) !important;
+}
+
+.card-header {
+    border-radius: 15px 15px 0 0 !important;
+    border: none;
+    padding: 1.5rem;
+}
+
+.btn {
+    border-radius: 10px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn:hover:not(.disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.display-4 {
+    animation: fadeInDown 1s ease-out;
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.card {
+    animation: fadeInUp 0.8s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+</style>
+{% endblock %}
