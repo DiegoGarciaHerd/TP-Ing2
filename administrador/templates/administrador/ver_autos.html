@@ -62,7 +62,9 @@
                                         <strong>Año:</strong> {{ vehiculo.año }}<br>
                                         <strong>Precio por día:</strong> ${{ vehiculo.precio_por_dia|floatformat:2 }}<br>
                                         <strong>Sucursal:</strong> {{ vehiculo.sucursal_actual.nombre }}<br>
+                                        <strong>Kilometraje:</strong> {{ vehiculo.kilometraje }}<br>
                                         <strong>Estado:</strong> 
+
                                         {% if vehiculo.disponible %}
                                             <span class="text-success">Disponible</span>
                                         {% else %}

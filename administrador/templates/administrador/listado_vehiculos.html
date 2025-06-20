@@ -53,6 +53,7 @@
                             <th>Patente</th>
                             <th>Sucursal</th>
                             <th>Estado</th>
+                            <th>Kilometraje</th>
                             <th>Precio/día</th>
                             <th>Reservas Activas</th>
                             <th>Acciones</th>
@@ -81,6 +82,7 @@
                                     {% if vehiculo.disponible %}Disponible{% else %}No disponible{% endif %}
                                 </span>
                             </td>
+                            <td>${{ vehiculo.kilometraje }}</td>
                             <td>${{ vehiculo.precio_por_dia }}</td>
                             <td>{{ vehiculo.reservas_activas_count }}</td>
                             <td>

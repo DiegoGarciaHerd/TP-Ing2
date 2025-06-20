@@ -9,6 +9,7 @@ class Reserva(models.Model):
         ('PENDIENTE', 'Pendiente'),
         ('CONFIRMADA', 'Confirmada'),
         ('CANCELADA', 'Cancelada'),
+        ('RETIRADO', 'Retirado'),
         ('FINALIZADA', 'Finalizada'),
     )
 
