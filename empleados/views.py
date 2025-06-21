@@ -136,7 +136,7 @@ def listar_retiros_pendientes(request):
     return render(request, 'empleados/listar_retiros_pendientes.html', context) 
 
 
-@empleado_required # Aplicamos tu decorador de empleado
+@empleado_required
 def confirmar_retiro_auto(request, reserva_id):
     if request.method == 'POST':
         reserva = get_object_or_404(Reserva, id=reserva_id)
@@ -163,7 +163,7 @@ def confirmar_retiro_auto(request, reserva_id):
                 reserva.save()
 
                 vehiculo = reserva.vehiculo
-                vehiculo.disponible = False # Marcar como no disponible al ser retirado
+                #vehiculo.disponible = False # Marcar como no disponible al ser retirado
                 vehiculo.save()
 
             messages.success(request, f"Retiro del auto {vehiculo.patente} para la reserva {reserva.id} confirmado exitosamente.")

@@ -43,7 +43,8 @@
                                     <td>{{ reserva.fecha_fin|date:"d/m/Y" }}</td>
                                     <td><span class="badge bg-warning text-dark">{{ reserva.estado }}</span></td>
                                     <td class="text-center">
-                                        <form action="{% url 'confirmar_retiro_auto' reserva.id %}" method="post" class="d-inline">
+                                        <form action="{% url 'empleados:confirmar_retiro_auto' reserva.id %}" method="post" class="d-inline">
+                                            {# ^^^^^^^^^^^^^^^^^^^^^^^^^ ¡CAMBIO AQUÍ! #}
                                             {% csrf_token %}
                                             <button type="submit" class="btn btn-success btn-sm" 
                                                     onclick="return confirm('¿Está seguro de confirmar el retiro del vehículo {{ reserva.vehiculo.patente }} para el cliente {{ reserva.cliente.user.first_name }} {{ reserva.cliente.user.last_name }}?');">
