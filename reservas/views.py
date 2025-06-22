@@ -80,7 +80,7 @@ def crear_reserva(request, vehiculo_id):
                 vehiculo=vehiculo,
                 fecha_recogida__lt=fecha_devolucion, 
                 fecha_devolucion__gt=fecha_recogida, 
-                estado__in=['PENDIENTE', 'CONFIRMADA'] 
+                estado__in=['PENDIENTE', 'CONFIRMADA','RETIRADO'] 
             )
 
             if reservas_existentes.exists():

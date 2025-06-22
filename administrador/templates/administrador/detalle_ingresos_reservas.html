@@ -127,8 +127,7 @@
                                     <td>${{ reserva.costo_base|floatformat:2 }}</td> {# Asumiendo que tienes un campo costo_base #}
                                     <td>${{ reserva.costo_adicionales|floatformat:2 }}</td> {# Asumiendo un campo para adicionales #}
                                     <td>${{ reserva.costo_total|floatformat:2 }}</td> 
-                                    <td><span class="badge bg-{{ reserva.estado|lower|cut:' ' }}">{{ reserva.estado }}</span></td> {# Aquí necesitas un filtro o lógica en la vista para el color del badge #}
-                                </tr>
+                                    <td><span class="badge bg-dark">{{ reserva.estado }}</span></td>
                             {% endfor %}
                         </tbody>
                     </table>
