@@ -1,4 +1,3 @@
-
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.shortcuts import render, redirect, get_object_or_404
@@ -10,6 +9,7 @@ from django.utils import timezone # ¡Asegúrate de importar timezone!
 from django.db import transaction
 from django.http import JsonResponse
 from decimal import Decimal 
+from usuarios.models import Usuario
 
 @empleado_required # Aplica el decorador aquí
 def menu_empleado(request):
@@ -18,7 +18,54 @@ def menu_empleado(request):
 # Las otras vistas de empleado también deberían ser protegidas
 @empleado_required
 def buscar_cliente(request):
-    return render(request, 'empleados/buscar_cliente.html')
+    cliente = None
+    reservas = None
+    error_message = None
+    
+    if request.method == 'POST':
+        dni = request.POST.get('dni', '').strip()
+        
+        if not dni:
+            messages.error(request, "Por favor, ingrese un DNI válido.")
+        else:
+            try:
+                # Buscar cliente por DNI
+                cliente = Usuario.objects.get(DNI=dni, rol='CLIENTE')
+                
+                # Obtener todas las reservas del cliente ordenadas por fecha de creación (más recientes primero)
+                reservas = Reserva.objects.filter(cliente=cliente).order_by('-fecha_creacion')
+                
+                # Categorizar reservas por estado
+                reservas_pendientes = reservas.filter(estado__in=['PENDIENTE', 'CONFIRMADA'])
+                reservas_en_curso = reservas.filter(estado='RETIRADO')
+                reservas_finalizadas = reservas.filter(estado='FINALIZADA')
+                reservas_canceladas = reservas.filter(estado='CANCELADA')
+                
+                context = {
+                    'cliente': cliente,
+                    'reservas': reservas,
+                    'reservas_pendientes': reservas_pendientes,
+                    'reservas_en_curso': reservas_en_curso,
+                    'reservas_finalizadas': reservas_finalizadas,
+                    'reservas_canceladas': reservas_canceladas,
+                    'total_reservas': reservas.count(),
+                    'dni_buscado': dni,
+                }
+                
+                messages.success(request, f"Cliente encontrado: {cliente.get_full_name()}")
+                return render(request, 'empleados/buscar_cliente.html', context)
+                
+            except Usuario.DoesNotExist:
+                messages.error(request, f"No se encontró ningún cliente con el DNI: {dni}")
+            except Exception as e:
+                messages.error(request, f"Error al buscar el cliente: {str(e)}")
+    
+    # Si es GET o no se encontró cliente
+    return render(request, 'empleados/buscar_cliente.html', {
+        'cliente': cliente,
+        'reservas': reservas,
+        'error_message': error_message
+    })
 
 @empleado_required
 def reserva_empleado(request):
