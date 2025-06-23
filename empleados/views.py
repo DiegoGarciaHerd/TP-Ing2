@@ -51,19 +51,7 @@ def modificar_autos(request):
         patente = request.POST.get('patente')
         try:
             vehiculo = Vehiculo.objects.get(patente=patente)
-            
-            # Actualizar campos si se proporcionaron
-<<<<<<< HEAD
-            if kilometraje := request.POST.get('kilometraje'):
-                vehiculo.kilometraje = kilometraje
-            if (disponibilidad := request.POST.get('disponibilidad')):
-                vehiculo.disponibilidad = disponibilidad
-                
-            vehiculo.save()
-            messages.success(request, "Auto modificado exitosamente")
-            return redirect('empleados:menu_empleado')
-=======
-            # Estos campos ya estaban siendo actualizados
+
             if precio := request.POST.get('precio'):
                 # Es crucial convertir a Decimal para el campo DecimalField
                 vehiculo.precio_por_dia = Decimal(precio) 
@@ -93,7 +81,6 @@ def modificar_autos(request):
             vehiculo.save() # Guarda todos los cambios en la base de datos
             messages.success(request, "Auto modificado exitosamente.")
             return redirect('empleados:menu_empleado') # Redirige al menú del empleado
->>>>>>> bcae0356ddb8b54f5401a20ebc5be74012233a10
             
         except Vehiculo.DoesNotExist:
             messages.error(request, "El auto a modificar no existe.")
