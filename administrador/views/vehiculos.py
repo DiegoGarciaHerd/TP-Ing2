@@ -24,6 +24,7 @@ def cargar_autos(request):
             foto_base64 = request.POST.get('foto_base64')
             politica_reembolso = request.POST.get('politica_reembolso')
             sucursal_actual_id = request.POST.get('sucursal')
+            kilometraje = request.POST.get('kilometraje', 0)  # Valor por defecto si no se proporciona
 
             # Validaciones
             if not all([marca, modelo, año, patente, tipo, capacidad, precio_por_dia, foto_base64, politica_reembolso, sucursal_actual_id]):
@@ -44,7 +45,8 @@ def cargar_autos(request):
                 disponible=True,
                 sucursal_actual_id=sucursal_actual_id,  # TODO: Permitir seleccionar sucursal
                 foto_base64=foto_base64,
-                politica_de_reembolso=politica_reembolso
+                politica_de_reembolso=politica_reembolso,
+                kilometraje=int(kilometraje) if kilometraje.isdigit() else 0,  # Validar que sea un número
             )
             
             messages.success(request, f"Vehículo {vehiculo.marca} {vehiculo.modelo} cargado exitosamente")

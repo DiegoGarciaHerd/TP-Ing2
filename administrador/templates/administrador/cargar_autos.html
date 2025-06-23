@@ -70,14 +70,21 @@
                             </div>
                         </div>
 
-                        <div class="col-md-6 mb-3">
-                            <label for="sucursal" class="form-label">Política de Reembolso:</label>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="kilometraje" class="form-label">Kilometraje:</label>
+                                <input type="number" class="form-control" id="kilometraje" name="kilometraje" step="0.01" min="0">
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                            <label for="sucursal" class="form-label">Sucursal:</label>
                             <select class="form-select" id="sucursal" name="sucursal" required>
                                 <option value="" disabled selected>Seleccione una Sucursal</option>
                                 {% for sucursal in sucursales %}
                                     <option value="{{ sucursal.id }}">{{ sucursal.nombre }}</option>
                                 {% endfor %}
                             </select>
+                        </div>
                         </div>
 
                         <div class="mb-3">
