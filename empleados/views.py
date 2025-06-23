@@ -17,29 +17,6 @@ def buscar_cliente(request):
     return render(request, 'empleados/buscar_cliente.html')
 
 @empleado_required
-def modificar_vehiculo(request):
-    vehiculos = Vehiculo.objects.all().order_by('patente')
-
-    if request.method == 'POST':
-        patente = request.POST.get('patente')
-        try:
-           vehiculo = Vehiculo.objects.get(patente=patente)
-           
-           if kilometraje := request.POST.get('kilometraje'):
-               vehiculo.kilometraje = int(kilometraje)
-           if disponibilidad := request.POST.get('disponibilidad'):
-               vehiculo.disponible = disponibilidad
-
-        except Vehiculo.DoesNotExist:
-            messages.error(request, "El vehículo no existe.")
-        except ValueError:
-            messages.error(request, "Kilometraje debe ser un número válido.")
-        except Exception as e:
-            messages.error(request, "Ocurrió un error al modificar el vehículo: " + str(e))     
-
-    return render(request, 'empleados/modificar_vehiculo.html', {'vehiculos': vehiculos})
-
-@empleado_required
 def reserva_empleado(request):
     return render(request, 'empleados/reserva_empleado.html')
 
@@ -58,8 +35,6 @@ def login_empleado(request):
 
     return render(request, 'empleados/login_empleado.html')
 
-
-@empleado_required
 def modificar_autos(request):
     # Obtener todos los vehículos para el selector
     vehiculos = Vehiculo.objects.all().order_by('patente')
@@ -70,12 +45,10 @@ def modificar_autos(request):
             vehiculo = Vehiculo.objects.get(patente=patente)
             
             # Actualizar campos si se proporcionaron
-            if precio := request.POST.get('precio'):
-                vehiculo.precio_por_dia = precio
-            if foto := request.POST.get('foto_base64'):
-                vehiculo.foto_base64 = foto
-            if (politica_reembolso := request.POST.get('politica_reembolso')):
-                vehiculo.politica_de_reembolso = politica_reembolso
+            if kilometraje := request.POST.get('kilometraje'):
+                vehiculo.kilometraje = kilometraje
+            if (disponibilidad := request.POST.get('disponibilidad')):
+                vehiculo.disponibilidad = disponibilidad
                 
             vehiculo.save()
             messages.success(request, "Auto modificado exitosamente")
