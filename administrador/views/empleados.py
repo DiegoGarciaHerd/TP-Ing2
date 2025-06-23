@@ -75,7 +75,7 @@ def cargar_empleados(request):
         telefono = request.POST.get('telefono')
         direccion = request.POST.get('direccion')
         sucursal_id = request.POST.get('sucursal')
-
+        activo=True
         password = generate_random_password()
 
         if Empleado.objects.filter(dni=dni).exists():

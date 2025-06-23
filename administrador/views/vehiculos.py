@@ -128,6 +128,7 @@ def obtener_datos_vehiculo(request):
                 'politica_de_reembolso': vehiculo.politica_de_reembolso,
                 'foto_base64': vehiculo.foto_base64,
                 'sucursal': vehiculo.sucursal_actual.nombre,
+                'kilometraje': vehiculo.kilometraje,
                 'disponible': vehiculo.disponible
             }
             return JsonResponse(data)

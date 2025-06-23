@@ -1,0 +1,215 @@
+{% extends 'home/base.html' %}
+{% load static %}
+{% load reserva_filters %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow-lg">
+        <div class="card-header text-white" style="background-color: #0e4532;">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="mb-0">
+                    <i class="fas fa-chart-pie me-2"></i>Estadísticas de Adicionales
+                </h2>
+                <a href="{% url 'admin_menu' %}" class="btn btn-outline-light">
+                    <i class="fas fa-arrow-left me-2"></i>Volver al Panel
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <!-- Filtros -->
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-filter me-2"></i>Filtros
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="GET" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="fecha_inicio" class="form-label">Fecha Inicio</label>
+                            <input type="date" class="form-control" id="fecha_inicio" name="fecha_inicio" 
+                                   value="{{ filtros.fecha_inicio }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="fecha_fin" class="form-label">Fecha Fin</label>
+                            <input type="date" class="form-control" id="fecha_fin" name="fecha_fin" 
+                                   value="{{ filtros.fecha_fin }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="estado" class="form-label">Estado de Reserva</label>
+                            <select class="form-select" id="estado" name="estado">
+                                <option value="TODOS" {% if filtros.estado == 'TODOS' or not filtros.estado %}selected{% endif %}>
+                                    Todos los Estados
+                                </option>
+                                {% for estado_code, estado_nombre in estados_disponibles %}
+                                    <option value="{{ estado_code }}" {% if filtros.estado == estado_code %}selected{% endif %}>
+                                        {{ estado_nombre }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <div class="d-grid gap-2 w-100">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-search me-2"></i>Filtrar
+                                </button>
+                                <a href="{% url 'estadisticas_adicionales' %}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-times me-2"></i>Limpiar
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Resumen General -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card text-white bg-primary">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Total Reservas</h5>
+                            <p class="card-text fs-2">{{ total_reservas }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-success">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Con Adicionales</h5>
+                            <p class="card-text fs-2">{{ reservas_con_adicionales }}</p>
+                            <small>{{ porcentaje_con_adicionales }}% del total</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-info">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Sin Adicionales</h5>
+                            <p class="card-text fs-2">{{ total_reservas|subtract:reservas_con_adicionales }}</p>
+                            <small>{{ 100|subtract:porcentaje_con_adicionales }}% del total</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-warning">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">Ingresos Adicionales</h5>
+                            <p class="card-text fs-2">${{ total_ingresos_adicionales|floatformat:0 }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estadísticas por Adicional -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">
+                                <i class="fas fa-list me-2"></i>Estadísticas por Tipo de Adicional
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>Adicional</th>
+                                            <th class="text-center">Cantidad Seleccionada</th>
+                                            <th class="text-center">Porcentaje</th>
+                                            <th class="text-center">Ingresos Generados</th>
+                                            <th class="text-center">Promedio por Reserva</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for key, stats in estadisticas.items %}
+                                            <tr>
+                                                <td>
+                                                    <strong>{{ stats.nombre }}</strong>
+                                                </td>
+                                                <td class="text-center">
+                                                    <span class="badge bg-primary fs-6">{{ stats.cantidad }}</span>
+                                                </td>
+                                                <td class="text-center">
+                                                    <div class="progress" style="height: 25px;">
+                                                        <div class="progress-bar bg-success" role="progressbar" 
+                                                             data-width="{{ stats.porcentaje }}">
+                                                            {{ stats.porcentaje }}%
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td class="text-center">
+                                                    <span class="text-success fw-bold">${{ stats.ingresos|floatformat:2 }}</span>
+                                                </td>
+                                                <td class="text-center">
+                                                    {% if stats.cantidad > 0 %}
+                                                        ${{ stats.promedio|floatformat:2 }}
+                                                    {% else %}
+                                                        $0.00
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.progress {
+    background-color: #e9ecef;
+    border-radius: 0.375rem;
+}
+
+.progress-bar {
+    transition: width 0.6s ease;
+}
+
+.card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1) !important;
+}
+
+.badge {
+    font-size: 0.875rem;
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+}
+
+.alert {
+    border-radius: 0.5rem;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Aplicar anchos a las barras de progreso
+    document.querySelectorAll('[data-width]').forEach(function(element) {
+        const width = Math.round(parseFloat(element.getAttribute('data-width')));
+        element.style.width = width + '%';
+    });
+});
+</script>
+{% endblock %} 
