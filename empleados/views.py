@@ -4,18 +4,19 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from vehiculos.models import Vehiculo
 from .decorators import empleado_required 
-from reservas.models import Reserva # ¡Asegúrate de importar el modelo Reserva!
-from django.utils import timezone # ¡Asegúrate de importar timezone!
+from reservas.models import Reserva 
+from django.utils import timezone 
 from django.db import transaction
 from django.http import JsonResponse
 from decimal import Decimal 
 from usuarios.models import Usuario
 
-@empleado_required # Aplica el decorador aquí
+
+@empleado_required 
 def menu_empleado(request):
     return render(request, 'empleados/menu_empleado.html')
 
-# Las otras vistas de empleado también deberían ser protegidas
+
 @empleado_required
 def buscar_cliente(request):
     cliente = None
@@ -221,3 +222,52 @@ def obtener_datos_vehiculo_ajax(request):
         logger = logging.getLogger(__name__)
         logger.error(f"Error al obtener datos del vehículo {patente}: {e}")
         return JsonResponse({'error': 'Error interno del servidor'}, status=500) # Internal Server Error
+
+
+
+@empleado_required
+def listar_devoluciones_pendientes(request):
+    hoy = timezone.localdate()
+    
+
+    devoluciones_pendientes = Reserva.objects.filter(
+        estado='RETIRADO', 
+        fecha_devolucion__lte=hoy
+    ).order_by('fecha_devolucion', 'fecha_recogida') # Ordenar para mejor visualización
+
+    context = {
+        'devoluciones_pendientes': devoluciones_pendientes,
+        'hoy': hoy,
+    }
+    return render(request, 'empleados/listar_devoluciones_pendientes.html', context)
+
+@empleado_required
+def confirmar_devolucion_auto(request, reserva_id):
+    reserva = get_object_or_404(Reserva, id=reserva_id)
+
+    if request.method == 'POST':
+        # Validación de estado: Asegurarse de que solo se pueda confirmar una reserva que fue retirada
+        if reserva.estado != 'RETIRADO':
+            messages.error(request, f"La reserva {reserva.id} no puede ser confirmada como devuelta. Su estado actual es '{reserva.estado}'.")
+            return redirect('empleados:listar_devoluciones_pendientes')
+        
+        try:
+            # Actualizar estado de la reserva
+            reserva.estado = 'FINALIZADA' # O el estado que designes para "devuelto"
+            reserva.save()
+
+            # Actualizar estado del vehículo
+            vehiculo = reserva.vehiculo
+            vehiculo.estado = 'DISPONIBLE' # O 'EN_REVISION'/'EN_MANTENIMIENTO' si se necesita inspección post-devolución
+            vehiculo.save()
+
+            messages.success(request, f"Devolución del vehículo {vehiculo.marca} {vehiculo.modelo} ({vehiculo.patente}) para la reserva {reserva.id} confirmada exitosamente.")
+            return redirect('empleados:listar_devoluciones_pendientes')
+
+        except Exception as e:
+            messages.error(request, f"Error al confirmar la devolución de la reserva {reserva.id}: {e}")
+            return redirect('empleados:listar_devoluciones_pendientes')
+    
+    # Si la petición no es POST, redirigir o mostrar un mensaje de error
+    messages.error(request, "Método no permitido para esta acción.")
+    return redirect('empleados:listar_devoluciones_pendientes')

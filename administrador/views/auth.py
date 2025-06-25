@@ -16,7 +16,7 @@ from administrador.decorators import admin_required
 from core.models import AdminBalance
 from decimal import Decimal
 from reservas.models import Reserva
-from django.db.models import Sum, F
+from django.db.models import Sum, F,Q
 
 logger = logging.getLogger(__name__)
 
@@ -138,8 +138,7 @@ def admin_menu(request):
 
 
     ingresos_confirmados = Reserva.objects.filter(
-        estado='CONFIRMADA',
-
+        Q(estado='CONFIRMADA') | Q(estado='RETIRADO') | Q(estado='FINALIZADA')
     ).aggregate(total=Sum('costo_total'))['total']
 
     ingresos_cancelados = Reserva.objects.filter(
@@ -192,8 +191,6 @@ def reset_admin_balance(request):
         try:
             logger.info("RESET_BALANCE: Petición POST recibida para resetear el saldo.")
 
-            # Intentamos obtener la instancia de AdminBalance con pk=1
-            # Si no existe, get_or_create la creará (con saldo 0 por defecto)
             admin_balance, created = AdminBalance.objects.get_or_create(pk=1)
 
             if created:
@@ -201,13 +198,10 @@ def reset_admin_balance(request):
             else:
                 logger.info(f"RESET_BALANCE: Se obtuvo la instancia existente de AdminBalance (pk=1). Saldo actual ANTES: {admin_balance.saldo}")
 
-            # Guardamos el saldo anterior para mostrarlo en el log
             old_saldo = admin_balance.saldo
 
-            # Establecemos el saldo a cero
             admin_balance.saldo = Decimal('0.00')
 
-            # Guardamos los cambios en la base de datos
             admin_balance.save()
 
             logger.info(f"RESET_BALANCE: Saldo del administrador actualizado con éxito. Saldo ANTERIOR: {old_saldo}, Saldo NUEVO: {admin_balance.saldo}")
