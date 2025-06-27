@@ -30,6 +30,7 @@ from .views.sucursal import (
 )
 
 from .views import reservas
+from .views.estadisticas_autos import estadisticas_autos
 
 urlpatterns = [
     path('', admin_menu, name='admin_menu'),  
@@ -61,5 +62,6 @@ urlpatterns = [
     path('reset-balance/', reset_admin_balance, name='reset_admin_balance'),
     path('detalle-ingresos-reservas/', reservas.detalle_ingresos_reservas, name='detalle_ingresos_reservas'),
     path('estadisticas-adicionales/', reservas.estadisticas_adicionales, name='estadisticas_adicionales'),
+    path('estadisticas-autos/', estadisticas_autos, name='estadisticas_autos'),
     
 ]
