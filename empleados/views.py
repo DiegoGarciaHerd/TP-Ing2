@@ -251,23 +251,37 @@ def confirmar_devolucion_auto(request, reserva_id):
             messages.error(request, f"La reserva {reserva.id} no puede ser confirmada como devuelta. Su estado actual es '{reserva.estado}'.")
             return redirect('empleados:listar_devoluciones_pendientes')
         
+        # Obtener y validar el kilometraje
+        kilometraje_str = request.POST.get('kilometraje')
+        if not kilometraje_str:
+            messages.error(request, "Por favor, ingrese el kilometraje actual del vehículo.")
+            return redirect('empleados:listar_devoluciones_pendientes') # Puedes redirigir a una página de detalle de reserva si existe
+
         try:
-            # Actualizar estado de la reserva
-            reserva.estado = 'FINALIZADA' # O el estado que designes para "devuelto"
-            reserva.save()
+            nuevo_kilometraje = int(kilometraje_str)
+            if nuevo_kilometraje < reserva.vehiculo.kilometraje:
+                messages.error(request, f"El kilometraje ingresado ({nuevo_kilometraje} km) no puede ser menor que el kilometraje actual del vehículo ({reserva.vehiculo.kilometraje} km).")
+                return redirect('empleados:listar_devoluciones_pendientes')
+        except ValueError:
+            messages.error(request, "El kilometraje debe ser un número válido.")
+            return redirect('empleados:listar_devoluciones_pendientes')
+            
+        try:
+            with transaction.atomic():
+                reserva.estado = 'FINALIZADA' # O el estado que designes para "devuelto"
+                reserva.save()
 
-            # Actualizar estado del vehículo
-            vehiculo = reserva.vehiculo
-            vehiculo.estado = 'DISPONIBLE' # O 'EN_REVISION'/'EN_MANTENIMIENTO' si se necesita inspección post-devolución
-            vehiculo.save()
+                vehiculo = reserva.vehiculo
+                vehiculo.kilometraje = nuevo_kilometraje 
+                vehiculo.estado = 'DISPONIBLE' 
+                vehiculo.save()
 
-            messages.success(request, f"Devolución del vehículo {vehiculo.marca} {vehiculo.modelo} ({vehiculo.patente}) para la reserva {reserva.id} confirmada exitosamente.")
+            messages.success(request, f"Devolución del vehículo {vehiculo.marca} {vehiculo.modelo} ({vehiculo.patente}) para la reserva {reserva.id} confirmada exitosamente. Kilometraje actualizado a {nuevo_kilometraje} km.")
             return redirect('empleados:listar_devoluciones_pendientes')
 
         except Exception as e:
             messages.error(request, f"Error al confirmar la devolución de la reserva {reserva.id}: {e}")
             return redirect('empleados:listar_devoluciones_pendientes')
     
-    # Si la petición no es POST, redirigir o mostrar un mensaje de error
     messages.error(request, "Método no permitido para esta acción.")
     return redirect('empleados:listar_devoluciones_pendientes')

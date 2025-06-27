@@ -28,19 +28,30 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for reserva in devoluciones_pendientes %}
+                           {% for reserva in devoluciones_pendientes %}
                                 <tr>
                                     <td>{{ reserva.id }}</td>
                                     <td>{{ reserva.cliente.user.first_name }} {{ reserva.cliente.user.last_name }}</td>
                                     <td>{{ reserva.vehiculo.marca }} {{ reserva.vehiculo.modelo }} ({{ reserva.vehiculo.patente }})</td>
-                                    <td>{{ reserva.fecha_recogida|date:"d/m/Y" }}</td> {# Posiblemente fecha_recogida para "inicio" #}
-                                    <td>{{ reserva.fecha_devolucion|date:"d/m/Y" }}</td> {# <--- CAMBIO AQUÍ #}
+                                    <td>{{ reserva.fecha_recogida|date:"d/m/Y" }}</td>
+                                    <td>{{ reserva.fecha_devolucion|date:"d/m/Y" }}</td>
                                     <td><span class="badge bg-primary text-white">{{ reserva.estado }}</span></td>
                                     <td class="text-center">
                                         <form action="{% url 'empleados:confirmar_devolucion_auto' reserva.id %}" method="post" class="d-inline">
                                             {% csrf_token %}
-                                            <button type="submit" class="btn btn-success btn-sm" 
-                                                    onclick="return confirm('¿Está seguro de confirmar la devolución del vehículo {{ reserva.vehiculo.patente }} por el cliente {{ reserva.cliente.user.first_name }} {{ reserva.cliente.user.last_name }}?');">
+                                            <div class="input-group mb-2"> {# Agrega un grupo de entrada para mejor estilo #}
+                                                <span class="input-group-text"><i class="fas fa-road"></i> KM</span> {# Icono y etiqueta #}
+                                                <input type="number" 
+                                                    name="kilometraje" 
+                                                    class="form-control form-control-sm" 
+                                                    placeholder="Nuevo KM" 
+                                                    required 
+                                                    min="{{ reserva.vehiculo.kilometraje }}" {# Valida que no sea menor al actual #}
+                                                    value="{{ reserva.vehiculo.kilometraje }}" {# Opcional: precarga con el KM actual #}
+                                                >
+                                            </div>
+                                            <button type="submit" class="btn btn-success btn-sm mt-1" 
+                                                    onclick="return confirm('¿Está seguro de confirmar la devolución y actualizar el kilometraje del vehículo {{ reserva.vehiculo.patente }}?');">
                                                 <i class="fas fa-check-circle me-1"></i> Confirmar Devolución
                                             </button>
                                         </form>
