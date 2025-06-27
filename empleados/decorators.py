@@ -33,7 +33,7 @@ def empleado_required(view_func):
             print(f"DEBUG DECORADOR - User: {request.user.username}, is_staff: {request.user.is_staff}")
         else:
             messages.error(request, "Debes iniciar sesión para acceder a esta sección.")
-            return redirect(reverse('empleados:login_empleado')) 
+            return redirect(reverse('login')) 
         
         try:
             # Primero, asegurate de que el atributo empleado_profile exista antes de intentar acceder a él
@@ -47,13 +47,13 @@ def empleado_required(view_func):
                 else:
                     print(f"DEBUG DECORADOR - Permiso DENEGADO por is_staff o activo false para {request.user.username}.")
                     messages.error(request, "No tienes permisos de empleado para acceder a esta sección.")
-                    return redirect(reverse('empleados:login_empleado'))
+                    return redirect(reverse('login'))
             else:
                 print(f"DEBUG DECORADOR - Usuario {request.user.username} NO tiene un empleado_profile asociado.")
                 messages.error(request, "No tienes permisos de empleado para acceder a esta sección.")
-                return redirect(reverse('empleados:login_empleado'))
+                return redirect(reverse('login'))
         except Exception as e:
             print(f"DEBUG DECORADOR - ¡Excepción INESPERADA en decorador!: {e}")
             messages.error(request, "Ocurrió un error de permisos. Por favor, inténtalo de nuevo.")
-            return redirect(reverse('empleados:login_empleado'))
+            return redirect(reverse('login'))
     return wrapper

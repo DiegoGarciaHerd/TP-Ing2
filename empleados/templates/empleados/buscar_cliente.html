@@ -263,10 +263,10 @@
                     {% csrf_token %}
                     <input 
                         type="text" 
-                        name="dni" 
+                        name="dni_o_email" 
                         class="search-input" 
-                        placeholder="Ingrese el DNI del cliente..."
-                        value="{{ dni_buscado|default:'' }}"
+                        placeholder="Ingrese el DNI o Email del cliente..."
+                        value="{{ dni_o_email_buscado|default:'' }}"
                         required
                     >
                     <button type="submit" class="search-btn">

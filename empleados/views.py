@@ -24,19 +24,19 @@ def buscar_cliente(request):
     error_message = None
     
     if request.method == 'POST':
-        dni = request.POST.get('dni', '').strip()
+        dni_o_email = request.POST.get('dni_o_email', '').strip()
         
-        if not dni:
-            messages.error(request, "Por favor, ingrese un DNI válido.")
+        if not dni_o_email:
+            messages.error(request, "Por favor, ingrese un DNI o Email válido.")
         else:
             try:
-                # Buscar cliente por DNI
-                cliente = Usuario.objects.get(DNI=dni, rol='CLIENTE')
+                # Buscar por DNI si es numérico, sino por email
+                if dni_o_email.isdigit():
+                    cliente = Usuario.objects.get(DNI=dni_o_email, rol='CLIENTE')
+                else:
+                    cliente = Usuario.objects.get(email__iexact=dni_o_email, rol='CLIENTE')
                 
-                # Obtener todas las reservas del cliente ordenadas por fecha de creación (más recientes primero)
                 reservas = Reserva.objects.filter(cliente=cliente).order_by('-fecha_creacion')
-                
-                # Categorizar reservas por estado
                 reservas_pendientes = reservas.filter(estado__in=['PENDIENTE', 'CONFIRMADA'])
                 reservas_en_curso = reservas.filter(estado='RETIRADO')
                 reservas_finalizadas = reservas.filter(estado='FINALIZADA')
@@ -50,18 +50,17 @@ def buscar_cliente(request):
                     'reservas_finalizadas': reservas_finalizadas,
                     'reservas_canceladas': reservas_canceladas,
                     'total_reservas': reservas.count(),
-                    'dni_buscado': dni,
+                    'dni_o_email_buscado': dni_o_email,
                 }
                 
                 messages.success(request, f"Cliente encontrado: {cliente.get_full_name()}")
                 return render(request, 'empleados/buscar_cliente.html', context)
                 
             except Usuario.DoesNotExist:
-                messages.error(request, f"No se encontró ningún cliente con el DNI: {dni}")
+                messages.error(request, f"No se encontró ningún cliente con el dato ingresado: {dni_o_email}")
             except Exception as e:
                 messages.error(request, f"Error al buscar el cliente: {str(e)}")
     
-    # Si es GET o no se encontró cliente
     return render(request, 'empleados/buscar_cliente.html', {
         'cliente': cliente,
         'reservas': reservas,
@@ -72,24 +71,6 @@ def buscar_cliente(request):
 def reserva_empleado(request):
     return render(request, 'empleados/reserva_empleado.html')
 
-
-def login_empleado(request):
-    if request.method == 'POST':
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        usuario = authenticate(request, username=username, password=password)
-        if usuario is not None:
-            if hasattr(usuario, 'is_staff') and usuario.is_staff: 
-                login(request, usuario)
-                messages.success(request, "Inicio de sesión exitoso.")
-                return redirect('empleados:menu_empleado')
-            else:
-                messages.error(request, "Tus credenciales no tienen permisos de empleado.")
-                return redirect('empleados:login_empleado') 
-        else:
-            messages.error(request, "Credenciales inválidas. Por favor, inténtalo de nuevo.")
-
-    return render(request, 'empleados/login_empleado.html')
 
 def modificar_autos(request):
     # Obtener todos los vehículos para el selector
