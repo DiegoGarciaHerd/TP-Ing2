@@ -22,14 +22,17 @@ from .utils import procesar_pago_tarjeta
 
 class VehiculoListView(ListView):
     model = Vehiculo
-    template_name = 'sucursales/vehiculo_list.html' 
+    template_name = 'sucursales/vehiculo_list.html'
     context_object_name = 'vehiculos'
 
     def get_queryset(self):
         sucursal_id = self.kwargs.get('sucursal_id')
+        queryset = Vehiculo.objects.filter(estado='DISPONIBLE')  # Solo vehículos disponibles
+        
         if sucursal_id:
-            return Vehiculo.objects.filter(sucursal_actual_id=sucursal_id, disponible=True)
-        return Vehiculo.objects.filter(disponible=True)
+            queryset = queryset.filter(sucursal_actual_id=sucursal_id)
+            
+        return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -37,12 +40,6 @@ class VehiculoListView(ListView):
         if sucursal_id:
             context['sucursal'] = get_object_or_404(Sucursal, pk=sucursal_id)
         return context
-
-
-class VehiculoDetailView(DetailView):
-    model = Vehiculo
-    template_name = 'sucursales/vehiculo_detail.html' 
-    context_object_name = 'vehiculo'
 
 
 
@@ -54,7 +51,7 @@ def crear_reserva(request, vehiculo_id):
 
     vehiculo = get_object_or_404(Vehiculo, pk=vehiculo_id)
 
-    if vehiculo.estado == 'EN_MANTENIMIENTO':
+    if vehiculo.estado != 'DISPONIBLE':
         messages.error(request, 'Este vehículo no está disponible para reserva en este momento.')
         return redirect('sucursales:vehiculo_detail', pk=vehiculo.id)
 

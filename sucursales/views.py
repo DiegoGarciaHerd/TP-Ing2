@@ -20,8 +20,8 @@ class VehiculoListView(ListView):
     def get_queryset(self):
         sucursal_id = self.kwargs.get('sucursal_id')
         if sucursal_id:
-            return Vehiculo.objects.filter(sucursal_actual_id=sucursal_id, disponible=True)
-        return Vehiculo.objects.filter(disponible=True)
+            return Vehiculo.objects.filter(sucursal_actual_id=sucursal_id, estado='DISPONIBLE')
+        return Vehiculo.objects.filter(estado='DISPONIBLE')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -41,7 +41,7 @@ class VehiculoFiltradoListView(ListView):
     context_object_name = 'vehiculos'
 
     def get_queryset(self):
-        queryset = Vehiculo.objects.filter(disponible=True)
+        queryset = Vehiculo.objects.filter(estado='DISPONIBLE')
         
         # Obtener parámetros de filtrado
         categoria = self.request.GET.get('categoria')
@@ -60,7 +60,7 @@ class VehiculoFiltradoListView(ListView):
         # Obtener todas las categorías disponibles
         context['categorias'] = dict(Vehiculo.TIPO_CHOICES)
         # Obtener todas las capacidades disponibles
-        context['capacidades'] = Vehiculo.objects.filter(disponible=True).values_list('capacidad', flat=True).distinct().order_by('capacidad')
+        context['capacidades'] = Vehiculo.objects.filter(estado='DISPONIBLE').values_list('capacidad', flat=True).distinct().order_by('capacidad')
         # Mantener los valores de los filtros en el contexto
         context['categoria_seleccionada'] = self.request.GET.get('categoria', '')
         context['capacidad_seleccionada'] = self.request.GET.get('capacidad', '')

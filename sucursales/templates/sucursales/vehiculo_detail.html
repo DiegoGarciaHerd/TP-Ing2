@@ -40,10 +40,12 @@
                         <p><strong>Precio por día:</strong> ${{ vehiculo.precio_por_dia|floatformat:2 }}</p>
                         <p><strong>Ubicación:</strong> {{ vehiculo.sucursal_actual.nombre }} ({{ vehiculo.sucursal_actual.direccion }})</p>
                         <p><strong>Estado:</strong>
-                            {% if vehiculo.estado=='DISPONIBLE' %}
+                            {% if vehiculo.estado == 'DISPONIBLE' %}
                                 <span class="text-success">Disponible</span>
+                            {% elif vehiculo.estado == 'EN_MANTENIMIENTO' %}
+                                <span class="text-warning">En Mantenimiento</span>
                             {% else %}
-                                <span class="text-danger">No Disponible</span>
+                                <span class="text-secondary">Dado de Baja</span>
                             {% endif %}
                         </p>
                     </div>
@@ -74,12 +76,15 @@
                         <form method="POST" action="{% url 'toggle_disponibilidad' vehiculo.id %}" class="d-inline">
                             {% csrf_token %}
                             <button type="submit" class="btn {% if vehiculo.disponible %}btn-danger{% else %}btn-success{% endif %}">
-                                {% if vehiculo.disponible %}
-                                    <i class="fas fa-ban"></i> Dar de baja
+                            <p><strong>Estado:</strong>
+                                {% if vehiculo.estado == 'DISPONIBLE' %}
+                                    <span class="text-success">Disponible</span>
+                                {% elif vehiculo.estado == 'EN_MANTENIMIENTO' %}
+                                    <span class="text-warning">En Mantenimiento</span>
                                 {% else %}
-                                    <i class="fas fa-check"></i> Dar de alta
+                                    <span class="text-secondary">Dado de Baja</span>
                                 {% endif %}
-                            </button>
+                            </p>
                         </form>
                     </div>
                 {% else %}
