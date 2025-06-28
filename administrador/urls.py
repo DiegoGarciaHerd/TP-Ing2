@@ -10,9 +10,10 @@ from .views.vehiculos import (
     cargar_autos,
     modificar_autos,
     borrar_autos,
-    ver_autos,
+    #ver_autos,
     obtener_datos_vehiculo,
-    toggle_disponibilidad
+    #toggle_disponibilidad,
+    gestionar_vehiculos
 )
 from .views.empleados import (
     cargar_empleados, 
@@ -42,9 +43,9 @@ urlpatterns = [
     path('carga-autos/', cargar_autos, name="cargar_autos"),
     path('modificar-autos/', modificar_autos, name="modificar_autos"),
     path('borrar-autos/', borrar_autos, name="borrar_autos"),
-    path('ver-autos/', ver_autos, name="ver_autos"),
+    #path('ver-autos/', ver_autos, name="ver_autos"),
     path('obtener-datos-vehiculo/', obtener_datos_vehiculo, name="obtener_datos_vehiculo"),
-    path('ver-autos/<int:vehiculo_id>/toggle-disponibilidad/', toggle_disponibilidad, name="toggle_disponibilidad"),
+    #path('ver-autos/<int:vehiculo_id>/toggle-disponibilidad/', toggle_disponibilidad, name="toggle_disponibilidad"),
     
     # URLs de Empleados
     path('cargar-empleados/', cargar_empleados, name="cargar_empleados"),
@@ -63,5 +64,6 @@ urlpatterns = [
     path('detalle-ingresos-reservas/', reservas.detalle_ingresos_reservas, name='detalle_ingresos_reservas'),
     path('estadisticas-adicionales/', reservas.estadisticas_adicionales, name='estadisticas_adicionales'),
     path('estadisticas-autos/', estadisticas_autos, name='estadisticas_autos'),
+    path('gestion-vehiculos/', gestionar_vehiculos, name='gestionar_vehiculos'),
     
 ]

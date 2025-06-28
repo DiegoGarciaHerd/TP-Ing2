@@ -54,7 +54,7 @@ def crear_reserva(request, vehiculo_id):
 
     vehiculo = get_object_or_404(Vehiculo, pk=vehiculo_id)
 
-    if not vehiculo.disponible:
+    if vehiculo.estado == 'EN_MANTENIMIENTO':
         messages.error(request, 'Este vehículo no está disponible para reserva en este momento.')
         return redirect('sucursales:vehiculo_detail', pk=vehiculo.id)
 

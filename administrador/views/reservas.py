@@ -147,14 +147,10 @@ def estadisticas_adicionales(request):
     # Calcular porcentajes e ingresos
     if total_reservas > 0:
         for key in estadisticas:
-            # Asegúrate de usar Decimal para la división para evitar problemas de precisión con floats
             estadisticas[key]['porcentaje'] = round((estadisticas[key]['cantidad'] / Decimal(total_reservas)) * 100)
     
-    # Calcular ingresos por adicional
+
     for reserva in queryset:
-        # Asegúrate de que fecha_devolucion y fecha_recogida sean objetos date o datetime
-        # Asumiendo que quieres el número de días que duró la reserva para el cálculo diario de adicionales
-        # Si estas fechas son de tipo DateTimeField, necesitarás .date()
         dias = (reserva.fecha_devolucion - reserva.fecha_recogida).days
         if dias <= 0: # Si la reserva dura 0 o menos días (ej. mismo día de recogida y devolución), cuenta como 1 día
             dias = 1

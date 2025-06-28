@@ -40,7 +40,7 @@
                         <p><strong>Precio por día:</strong> ${{ vehiculo.precio_por_dia|floatformat:2 }}</p>
                         <p><strong>Ubicación:</strong> {{ vehiculo.sucursal_actual.nombre }} ({{ vehiculo.sucursal_actual.direccion }})</p>
                         <p><strong>Estado:</strong>
-                            {% if vehiculo.disponible %}
+                            {% if vehiculo.estado=='DISPONIBLE' %}
                                 <span class="text-success">Disponible</span>
                             {% else %}
                                 <span class="text-danger">No Disponible</span>

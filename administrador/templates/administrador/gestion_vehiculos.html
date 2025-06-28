@@ -1,0 +1,72 @@
+{% extends 'home/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Gestión de Estados de Vehículos</h2>
+    
+    <!-- Filtro por estado -->
+    <div class="mb-3">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <select name="estado" class="form-select" onchange="this.form.submit()">
+                    <option value="">Todos los estados</option>
+                    {% for valor, etiqueta in estados %}
+                    <option value="{{ valor }}" {% if valor == estado_filtro %}selected{% endif %}>
+                        {{ etiqueta }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </form>
+    </div>
+
+    <!-- Tabla de vehículos -->
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Patente</th>
+                    <th>Marca/Modelo</th>
+                    <th>Año</th>
+                    <th>Estado Actual</th>
+                    <th>Cambiar Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for vehiculo in vehiculos %}
+                <tr>
+                    <td>{{ vehiculo.patente }}</td>
+                    <td>{{ vehiculo.marca }} {{ vehiculo.modelo }}</td>
+                    <td>{{ vehiculo.año }}</td>
+                    <td>
+                        <span class="badge 
+                            {% if vehiculo.estado == 'DISPONIBLE' %}bg-success
+                            {% elif vehiculo.estado == 'EN_MANTENIMIENTO' %}bg-warning text-dark
+                            {% else %}bg-secondary{% endif %}">
+                            {{ vehiculo.get_estado_display }}
+                        </span>
+                    </td>
+                    <td>
+                        <form method="post" style="display: inline;">
+                            {% csrf_token %}
+                            <input type="hidden" name="vehiculo_id" value="{{ vehiculo.id }}">
+                            <select name="nuevo_estado" class="form-select form-select-sm" onchange="this.form.submit()">
+                                {% for valor, etiqueta in estados %}
+                                <option value="{{ valor }}" {% if valor == vehiculo.estado %}selected{% endif %}>
+                                    {{ etiqueta }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center">No hay vehículos registrados</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -10,6 +10,7 @@ from django.db import transaction
 from django.http import JsonResponse
 from decimal import Decimal 
 from usuarios.models import Usuario
+from vehiculos.forms import VehiculoEmpleadoForm
 
 
 @empleado_required 
@@ -72,53 +73,55 @@ def reserva_empleado(request):
     return render(request, 'empleados/reserva_empleado.html')
 
 
+@empleado_required
 def modificar_autos(request):
-    # Obtener todos los vehículos para el selector
-    vehiculos = Vehiculo.objects.all().order_by('patente')
+    # Obtener todos los vehículos (excluyendo los dados de baja)
+    vehiculos = Vehiculo.objects.exclude(estado='BAJA').order_by('patente')
     
     if request.method == 'POST':
         patente = request.POST.get('patente')
+        if not patente:
+            messages.error(request, "Debes seleccionar un vehículo")
+            return render(request, 'empleados/modificar_autos.html', {'vehiculos': vehiculos})
+        
         try:
             vehiculo = Vehiculo.objects.get(patente=patente)
-
-            if precio := request.POST.get('precio'):
-                # Es crucial convertir a Decimal para el campo DecimalField
-                vehiculo.precio_por_dia = Decimal(precio) 
-            if foto := request.POST.get('foto_base64'):
-                vehiculo.foto_base64 = foto
-            if (politica_reembolso := request.POST.get('politica_reembolso')):
-                vehiculo.politica_de_reembolso = politica_reembolso
             
-            # --- ¡Añade estas líneas para guardar kilometraje y disponibilidad! ---
-            if kilometraje_str := request.POST.get('kilometraje'):
-                try:
-                    vehiculo.kilometraje = int(kilometraje_str)
-                except ValueError:
-                    messages.error(request, "El kilometraje debe ser un número válido.")
-                    # Si hay un error, no guardamos y volvemos a renderizar
-                    return render(request, 'empleados/modificar_autos.html', {'vehiculos': vehiculos})
-
-            disponibilidad_str = request.POST.get('disponible') # El nombre en HTML es 'disponible'
-            if disponibilidad_str is not None: # Verifica si se envió el campo
-                if disponibilidad_str == 'True':
-                    vehiculo.disponible = True
-                elif disponibilidad_str == 'False':
-                    vehiculo.disponible = False
-                # No necesitamos un 'else' si el HTML garantiza que solo serán 'True' o 'False'
-            # --- Fin de las adiciones ---
+            # Actualizar campos
+            if 'kilometraje' in request.POST:
+                vehiculo.kilometraje = int(request.POST['kilometraje'])
             
-            vehiculo.save() # Guarda todos los cambios en la base de datos
-            messages.success(request, "Auto modificado exitosamente.")
-            return redirect('empleados:menu_empleado') # Redirige al menú del empleado
+            if 'estado' in request.POST:
+                vehiculo.estado = request.POST['estado']
+            
+            if 'precio' in request.POST:
+                vehiculo.precio_por_dia = Decimal(request.POST['precio'])
+            
+            if 'politica_reembolso' in request.POST:
+                vehiculo.politica_de_reembolso = request.POST['politica_reembolso']
+            
+            # Manejo de imagen
+            if 'foto' in request.FILES:
+                # Procesar imagen y convertir a base64 si es necesario
+                imagen = request.FILES['foto']
+                vehiculo.foto_base64 = imagen.read().decode('latin1')  # Ajusta según tu implementación
+            
+            vehiculo.save()
+            messages.success(request, "Vehículo modificado exitosamente")
+            return redirect('empleados:modificar_autos')
             
         except Vehiculo.DoesNotExist:
-            messages.error(request, "El auto a modificar no existe.")
+            messages.error(request, "El vehículo seleccionado no existe")
+        except ValueError as e:
+            messages.error(request, f"Datos inválidos: {str(e)}")
         except Exception as e:
-            # Captura cualquier otro error inesperado y lo muestra
-            messages.error(request, f"Error al modificar el auto: {e}")
-            
-    # Si es un GET request o si hubo un error y se debe volver a renderizar el formulario
-    return render(request, 'empleados/modificar_autos.html', {'vehiculos': vehiculos})
+            messages.error(request, f"Error al modificar el vehículo: {str(e)}")
+    
+    # Renderizar el formulario (para GET o si hay errores)
+    return render(request, 'empleados/modificar_autos.html', {
+        'vehiculos': vehiculos,
+        'form': request.POST if request.method == 'POST' else None
+    })
 
 
 @empleado_required # Aplicamos tu decorador de empleado
@@ -165,7 +168,6 @@ def confirmar_retiro_auto(request, reserva_id):
                 reserva.save()
 
                 vehiculo = reserva.vehiculo
-                #vehiculo.disponible = False # Marcar como no disponible al ser retirado
                 vehiculo.save()
 
             messages.success(request, f"Retiro del auto {vehiculo.patente} para la reserva {reserva.id} confirmado exitosamente.")
@@ -175,35 +177,38 @@ def confirmar_retiro_auto(request, reserva_id):
     return render(request, 'empleados/listar_retiros_pendientes.html') 
 
 
-@empleado_required # ¡Protege también este endpoint!
+@empleado_required
 def obtener_datos_vehiculo_ajax(request):
     patente = request.GET.get('patente')
     if not patente:
-        return JsonResponse({'error': 'Patente no proporcionada'}, status=400) # Bad Request
+        return JsonResponse({'error': 'Patente no proporcionada'}, status=400)  # Bad Request
 
     try:
         vehiculo = Vehiculo.objects.get(patente=patente)
+        
+        # Verificar que el vehículo no esté dado de baja
+        if vehiculo.estado == 'BAJA':
+            return JsonResponse({'error': 'No se puede modificar un vehículo dado de baja'}, status=403)  # Forbidden
         
         # Prepara los datos para enviar de vuelta
         data = {
             'marca': vehiculo.marca,
             'modelo': vehiculo.modelo,
             'kilometraje': vehiculo.kilometraje,
-            'precio_por_dia': str(vehiculo.precio_por_dia), # Convierte Decimal a string
-            'disponible': vehiculo.disponible,
-            'politica_de_reembolso': str(vehiculo.politica_de_reembolso), # Convierte Decimal a string
-            'foto_base64': vehiculo.foto_base64 # Asumiendo que esto es una cadena base64 o se puede enviar directamente
+            'precio_por_dia': str(vehiculo.precio_por_dia),  # Convierte Decimal a string
+            'estado': vehiculo.estado,  # Cambiamos 'disponible' por 'estado'
+            'politica_de_reembolso': vehiculo.politica_de_reembolso,  # Ya es string en el modelo
+            'foto_base64': vehiculo.foto_base64 or ''  # Asegura que no sea None
         }
         return JsonResponse(data)
     except Vehiculo.DoesNotExist:
-        return JsonResponse({'error': 'Vehículo no encontrado'}, status=404) # Not Found
+        return JsonResponse({'error': 'Vehículo no encontrado'}, status=404)  # Not Found
     except Exception as e:
         # Registra el error para depuración en el servidor
         import logging
         logger = logging.getLogger(__name__)
         logger.error(f"Error al obtener datos del vehículo {patente}: {e}")
-        return JsonResponse({'error': 'Error interno del servidor'}, status=500) # Internal Server Error
-
+        return JsonResponse({'error': 'Error interno del servidor'}, status=500)  # Internal Server Error
 
 
 @empleado_required
@@ -213,7 +218,7 @@ def listar_devoluciones_pendientes(request):
 
     devoluciones_pendientes = Reserva.objects.filter(
         estado='RETIRADO', 
-        fecha_devolucion__lte=hoy
+        #fecha_devolucion__lte=hoy
     ).order_by('fecha_devolucion', 'fecha_recogida') # Ordenar para mejor visualización
 
     context = {
@@ -249,9 +254,8 @@ def confirmar_devolucion_auto(request, reserva_id):
             
         try:
             with transaction.atomic():
-                reserva.estado = 'FINALIZADA' # O el estado que designes para "devuelto"
+                reserva.estado = 'FINALIZADA' 
                 reserva.save()
-
                 vehiculo = reserva.vehiculo
                 vehiculo.kilometraje = nuevo_kilometraje 
                 vehiculo.estado = 'DISPONIBLE' 

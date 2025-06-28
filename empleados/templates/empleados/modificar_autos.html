@@ -25,7 +25,9 @@
                             <select class="form-select" id="patente" name="patente" required>
                                 <option value="" disabled selected>Seleccione un vehículo</option>
                                 {% for vehiculo in vehiculos %}
-                                    <option value="{{ vehiculo.patente }}">{{ vehiculo.patente }} - {{ vehiculo.marca }} {{ vehiculo.modelo }}</option>
+                                    {% if vehiculo.estado != 'BAJA' %}  {# Excluye vehículos dados de baja #}
+                                        <option value="{{ vehiculo.patente }}">{{ vehiculo.patente }} - {{ vehiculo.marca }} {{ vehiculo.modelo }} ({{ vehiculo.get_estado_display }})</option>
+                                    {% endif %}
                                 {% endfor %}
                             </select>
                         </div>
@@ -38,15 +40,52 @@
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label for="kilometraje" class="form-label">Kilometraje:</label>
-                                    <input type="text" class="form-control" id="kilometraje" name="kilometraje">
+                                    <input type="number" min="0" class="form-control" id="kilometraje" name="kilometraje">
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    <label for="disponible" class="form-label">Disponibilidad:</label>
-                                    <select class="form-control" id="disponible" name="disponible">
-                                        <option value="" selected disabled>Seleccione una opción</option>
-                                        <option value="True">Disponible</option>
-                                        <option value="False">No Disponible</option>
+                                    <label for="estado" class="form-label">Estado:</label>
+                                    <select class="form-control" id="estado" name="estado" required>
+                                        <option value="DISPONIBLE">Disponible</option>
+                                        <option value="EN_MANTENIMIENTO">En mantenimiento</option>
                                     </select>
+                                </div>
+                            </div>
+
+                            <!-- Campos adicionales que ya tenías -->
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="precio" class="form-label">Precio por día:</label>
+                                    <input type="number" step="0.01" min="0" class="form-control" id="precio" name="precio">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="politica_reembolso" class="form-label">Política de reembolso:</label>
+                                    <select class="form-control" id="politica_reembolso" name="politica_reembolso">
+                                        <option value="0">0%</option>
+                                        <option value="20">20%</option>
+                                        <option value="100">100%</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="foto" class="form-label">Nueva foto del vehículo:</label>
+                                <input type="file" class="form-control" id="foto" name="foto" accept="image/*">
+                                <small class="form-text text-muted">Subir nueva imagen (opcional)</small>
+                            </div>
+
+                            <!-- Vista previa de la imagen actual -->
+                            <div id="previewContainer" style="display: none; margin-bottom: 20px;">
+                                <label class="form-label">Imagen actual:</label>
+                                <div>
+                                    <img id="previewImage" src="" class="img-thumbnail" style="max-height: 200px;">
+                                </div>
+                            </div>
+
+                            <!-- Vista previa de la nueva imagen -->
+                            <div id="newPreviewContainer" style="display: none; margin-bottom: 20px;">
+                                <label class="form-label">Nueva imagen:</label>
+                                <div>
+                                    <img id="newPreviewImage" src="#" class="img-thumbnail" style="max-height: 200px;">
                                 </div>
                             </div>
 
@@ -70,25 +109,25 @@
     document.addEventListener('DOMContentLoaded', function() {
         const patenteSelect = document.getElementById('patente');
         const camposModificables = document.getElementById('camposModificables');
-        const kilometrajeInput = document.getElementById('kilometraje'); // Añade esta línea
-        const disponibleSelect = document.getElementById('disponible'); // Añade esta línea
-
-        // IMPORTANTE: La plantilla proporcionada tenía precioInput, politicaSelect, fotoInput, etc.,
-        // pero el HTML para camposModificables solo muestra kilometraje y disponibilidad.
-        // Asumo que quieres modificar kilometraje y disponible por ahora.
-        // Si necesitas modificar precio, política o foto, deberás agregar esos campos de entrada a tu HTML.
-        // Para el HTML proporcionado, solo actualizaré para kilometraje y disponible.
+        const kilometrajeInput = document.getElementById('kilometraje');
+        const estadoSelect = document.getElementById('estado');
+        const precioInput = document.getElementById('precio');
+        const politicaSelect = document.getElementById('politica_reembolso');
+        const fotoInput = document.getElementById('foto');
+        const previewImage = document.getElementById('previewImage');
+        const previewContainer = document.getElementById('previewContainer');
+        const newPreviewImage = document.getElementById('newPreviewImage');
+        const newPreviewContainer = document.getElementById('newPreviewContainer');
 
         let datosOriginales = {};
 
+        // Manejar cambio de patente
         patenteSelect.addEventListener('change', function() {
             const patente = this.value;
             if (patente) {
-                // --- CAMBIO IMPORTANTE AQUÍ: Usar la URL con el namespace ---
                 fetch(`{% url 'empleados:obtener_datos_vehiculo_ajax' %}?patente=${patente}`)
                     .then(response => {
                         if (!response.ok) {
-                            // Verifica errores HTTP (ej. 400, 404, 500)
                             throw new Error(`Error HTTP! estado: ${response.status}`);
                         }
                         return response.json();
@@ -96,89 +135,82 @@
                     .then(data => {
                         if (data.error) {
                             alert('Error: ' + data.error);
-                            camposModificables.style.display = 'none'; // Oculta campos en caso de error
+                            camposModificables.style.display = 'none';
                             return;
                         }
                         
-                        // Guarda datos originales (solo si tienes los campos en HTML)
+                        // Guardar datos originales
                         datosOriginales = {
                             kilometraje: data.kilometraje,
-                            disponible: data.disponible,
-                            // Si agregas precio, politica, foto_base64 en HTML:
-                            // precio_por_dia: data.precio_por_dia,
-                            // politica_de_reembolso: data.politica_de_reembolso,
-                            // foto_base64: data.foto_base64
+                            estado: data.estado,
+                            precio_por_dia: data.precio_por_dia,
+                            politica_de_reembolso: data.politica_de_reembolso,
+                            foto_base64: data.foto_base64
                         };
                         
-                        // Llena los campos con los datos actuales
+                        // Llenar campos con datos actuales
                         kilometrajeInput.value = data.kilometraje;
-                        disponibleSelect.value = String(data.disponible); // Asegúrate de que el booleano se convierta a "True" o "False" string
+                        estadoSelect.value = data.estado === 'BAJA' ? 'DISPONIBLE' : data.estado;
+                        precioInput.value = data.precio_por_dia;
+                        politicaSelect.value = data.politica_de_reembolso;
 
-                        // --- Si tienes campos para precio, política, foto en tu HTML: ---
-                        // const precioInput = document.getElementById('precio'); // Descomentar si existe en HTML
-                        // const politicaSelect = document.getElementById('politica_reembolso'); // Descomentar si existe en HTML
-                        // const fotoBase64Input = document.getElementById('foto_base64'); // Descomentar si existe en HTML
-                        // const previewImage = document.getElementById('previewImage'); // Descomentar si existe en HTML
-                        // const previewContainer = document.getElementById('previewContainer'); // Descomentar si existe en HTML
-                        // const newPreviewContainer = document.getElementById('newPreviewContainer'); // Descomentar si existe en HTML
-                        // const fotoInput = document.getElementById('foto'); // Descomentar si existe en HTML
-
-
-                        // if (precioInput) precioInput.value = data.precio_por_dia;
-                        // if (politicaSelect) politicaSelect.value = data.politica_de_reembolso;
-                        // if (fotoBase64Input) fotoBase64Input.value = data.foto_base64;
-
-                        // Muestra la imagen actual (si la tienes en HTML)
-                        // if (data.foto_base64 && previewImage && previewContainer) {
-                        //     previewImage.src = 'data:image/jpeg;base64,' + data.foto_base64;
-                        //     previewContainer.style.display = 'block';
-                        // } else if (previewContainer) {
-                        //     previewContainer.style.display = 'none';
-                        // }
+                        // Manejar imagen actual
+                        if (data.foto_base64) {
+                            previewImage.src = 'data:image/jpeg;base64,' + data.foto_base64;
+                            previewContainer.style.display = 'block';
+                        } else {
+                            previewContainer.style.display = 'none';
+                        }
                         
-                        // Oculta la vista previa de la nueva imagen (si la tienes en HTML)
-                        // if (newPreviewContainer) newPreviewContainer.style.display = 'none';
-                        
-                        // Muestra los campos modificables
+                        // Mostrar campos modificables
                         camposModificables.style.display = 'block';
                     })
                     .catch(error => {
                         console.error('Error en fetch:', error);
                         alert('Error al cargar los datos del vehículo. Por favor, intente de nuevo.');
-                        camposModificables.style.display = 'none'; // Oculta campos en caso de error
+                        camposModificables.style.display = 'none';
                     });
             } else {
                 camposModificables.style.display = 'none';
             }
         });
         
-        // ... (el resto de tu JavaScript para fotoInput, btnCancelar, etc. permanece igual) ...
-
+        // Vista previa de nueva imagen
+        fotoInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    newPreviewImage.src = e.target.result;
+                    newPreviewContainer.style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            } else {
+                newPreviewContainer.style.display = 'none';
+            }
+        });
+        
         // Botón cancelar - restaurar valores originales
         const btnCancelar = document.getElementById('btnCancelar');
         btnCancelar.addEventListener('click', function() {
             if (Object.keys(datosOriginales).length > 0) {
                 kilometrajeInput.value = datosOriginales.kilometraje;
-                disponibleSelect.value = String(datosOriginales.disponible);
-
-                // Si tienes estas entradas en HTML y quieres restablecerlas:
-                // if (precioInput) precioInput.value = datosOriginales.precio_por_dia;
-                // if (politicaSelect) politicaSelect.value = datosOriginales.politica_de_reembolso;
-                // if (fotoBase64Input) fotoBase64Input.value = datosOriginales.foto_base64;
+                estadoSelect.value = datosOriginales.estado === 'BAJA' ? 'DISPONIBLE' : datosOriginales.estado;
+                precioInput.value = datosOriginales.precio_por_dia;
+                politicaSelect.value = datosOriginales.politica_de_reembolso;
                 
-                // Restaura las vistas previas de imágenes si existen
-                // if (datosOriginales.foto_base64 && previewImage && previewContainer) {
-                //     previewImage.src = 'data:image/jpeg;base64,' + datosOriginales.foto_base64;
-                //     previewContainer.style.display = 'block';
-                // } else if (previewContainer) {
-                //     previewContainer.style.display = 'none';
-                // }
+                if (datosOriginales.foto_base64) {
+                    previewImage.src = 'data:image/jpeg;base64,' + datosOriginales.foto_base64;
+                    previewContainer.style.display = 'block';
+                } else {
+                    previewContainer.style.display = 'none';
+                }
                 
-                // if (newPreviewContainer) newPreviewContainer.style.display = 'none';
-                // if (fotoInput) fotoInput.value = '';
+                newPreviewContainer.style.display = 'none';
+                fotoInput.value = '';
             }
-            camposModificables.style.display = 'none'; // Oculta campos después de cancelar
-            patenteSelect.value = ""; // Reinicia el selector
+            camposModificables.style.display = 'none';
+            patenteSelect.value = "";
         });
         
         // Prevenir que Enter envíe el formulario

@@ -23,6 +23,20 @@ class Vehiculo(models.Model):
     capacidad = models.PositiveIntegerField(default=5, help_text='Número de pasajeros')
     precio_por_dia = models.DecimalField(max_digits=10, decimal_places=2)
     sucursal_actual = models.ForeignKey(Sucursal, on_delete=models.CASCADE, related_name='vehiculos_en_sucursal')
+    ESTADO_CHOICES = [
+            ('DISPONIBLE', 'Disponible'),
+            ('EN_MANTENIMIENTO', 'En mantenimiento'),
+            ('BAJA', 'Dado de baja'),
+        ]
+        
+        
+    estado = models.CharField(
+            max_length=20,
+            choices=ESTADO_CHOICES,
+            default='DISPONIBLE',  # Esto establece el valor por defecto
+            verbose_name="Estado actual"
+        )
+
     disponible = models.BooleanField(default=True)
     foto_base64 = models.TextField(blank=True, null=True)
     politica_de_reembolso = models.CharField(

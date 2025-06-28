@@ -17,7 +17,6 @@ class AdminVehiculosListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     def get_queryset(self):
         queryset = Vehiculo.objects.all().select_related('sucursal_actual')
         
-        # Agregar conteo de reservas activas
         queryset = queryset.annotate(
             reservas_activas_count=Count(
                 'reservas',

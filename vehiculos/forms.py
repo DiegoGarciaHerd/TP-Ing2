@@ -17,3 +17,20 @@ class VehiculoForm(forms.ModelForm):
         help_texts = {
             'politica_reembolso': 'Seleccione la política aplicable para este vehículo',
         }
+
+class VehiculoEmpleadoForm(forms.ModelForm):
+    class Meta:
+        model = Vehiculo
+        fields = ['precio_por_dia', 'foto_base64', 'politica_de_reembolso', 'kilometraje', 'estado']
+        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Limitar las opciones de estado solo a Disponible y En mantenimiento
+        self.fields['estado'].choices = [
+            ('DISPONIBLE', 'Disponible'),
+            ('EN_MANTENIMIENTO', 'En mantenimiento'),
+        ]
+        
+        # Configurar widgets para mejor experiencia de usuario
+        self.fields['precio_por_dia'].widget = forms.NumberInput(attrs={'step': '0.01'})
+        self.fields['kilometraje'].widget = forms.NumberInput(attrs={'min': '0'})
