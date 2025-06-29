@@ -43,9 +43,7 @@ urlpatterns = [
     path('carga-autos/', cargar_autos, name="cargar_autos"),
     path('modificar-autos/', modificar_autos, name="modificar_autos"),
     path('borrar-autos/', borrar_autos, name="borrar_autos"),
-    #path('ver-autos/', ver_autos, name="ver_autos"),
     path('obtener-datos-vehiculo/', obtener_datos_vehiculo, name="obtener_datos_vehiculo"),
-    #path('ver-autos/<int:vehiculo_id>/toggle-disponibilidad/', toggle_disponibilidad, name="toggle_disponibilidad"),
     
     # URLs de Empleados
     path('cargar-empleados/', cargar_empleados, name="cargar_empleados"),

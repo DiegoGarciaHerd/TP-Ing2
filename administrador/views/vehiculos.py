@@ -139,7 +139,6 @@ def obtener_datos_vehiculo(request):
                 'foto_base64': vehiculo.foto_base64,
                 'sucursal': vehiculo.sucursal_actual.nombre,
                 'kilometraje': vehiculo.kilometraje,
-                #'disponible': vehiculo.disponible,
                 'estado': vehiculo.estado
             }
             return JsonResponse(data)
@@ -147,44 +146,7 @@ def obtener_datos_vehiculo(request):
             return JsonResponse({'error': 'Vehículo no encontrado'}, status=404)
     
     return JsonResponse({'error': 'Método no permitido'}, status=405)
-"""
-@admin_required
-def ver_autos(request):
-    queryset = Vehiculo.objects.all().select_related('sucursal_actual').order_by('patente')
-    
-    # Aplicar filtros
-    sucursal = request.GET.get('sucursal')
-    estado = request.GET.get('estado')
-    
-    if sucursal:
-        queryset = queryset.filter(sucursal_actual_id=sucursal)
-    if estado:
-        queryset = queryset.filter(estado=estado)  # Filtrar directamente por estado
-    
-    context = {
-        'vehiculos': queryset,
-        'sucursales': Sucursal.objects.all(),
-        'estados': Vehiculo.ESTADO_CHOICES,  # Todas las opciones de estado
-        'sucursal_seleccionada': sucursal,
-        'estado_seleccionado': estado
-    }
-    return render(request, 'administrador/ver_autos.html', context)
 
-@admin_required
-def toggle_disponibilidad(request, vehiculo_id):
-    #Vista para dar de baja o reactivar un vehículo
-    if request.method == 'POST':
-        vehiculo = get_object_or_404(Vehiculo, id=vehiculo_id)
-        vehiculo.disponible = not vehiculo.disponible
-        vehiculo.save()
-        
-        mensaje = "Vehículo reactivado en el catálogo" if vehiculo.disponible else "Vehículo dado de baja del catálogo"
-        messages.success(request, mensaje)
-        
-        return redirect('ver_autos')
-    
-    return redirect('ver_autos') 
-"""
  
 @admin_required
 def gestionar_vehiculos(request):
