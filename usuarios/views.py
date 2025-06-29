@@ -67,6 +67,8 @@ def editar_perfil(request):
                 form_password.save()
                 messages.success(request, 'Tu contraseña ha sido actualizada correctamente.')
                 return redirect('editar_perfil')
+            # Si el formulario no es válido, también necesitamos form_perfil
+            form_perfil = EditarPerfilForm(instance=request.user)
         else:
             # Procesar edición de perfil
             form_perfil = EditarPerfilForm(request.POST, instance=request.user)
@@ -74,6 +76,8 @@ def editar_perfil(request):
                 form_perfil.save()
                 messages.success(request, 'Tu perfil ha sido actualizado correctamente.')
                 return redirect('editar_perfil')
+            # Si el formulario no es válido, también necesitamos form_password
+            form_password = CambiarPasswordForm(request.user)
     else:
         form_perfil = EditarPerfilForm(instance=request.user)
         form_password = CambiarPasswordForm(request.user)

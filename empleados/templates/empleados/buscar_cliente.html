@@ -4,7 +4,7 @@
 {% block extra_css %}
 <style>
     .search-container {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #edebe3 0%, #0e4532 100%);
         padding: 2rem;
         border-radius: 15px;
         margin-bottom: 2rem;
@@ -60,7 +60,7 @@
         padding: 2rem;
         margin-bottom: 2rem;
         box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-        border-left: 5px solid #007bff;
+        border-left: 5px solid #0e4532;
     }
 
     .client-header {
@@ -73,7 +73,7 @@
     .client-avatar {
         width: 80px;
         height: 80px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #66ea8b 0%, #764ba2 100%);
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -280,7 +280,7 @@
                 <div class="client-info">
                     <div class="client-header">
                         <div class="client-avatar">
-                            {{ cliente.first_name|first|upper }}{{ cliente.last_name|first|upper }}
+                            
                         </div>
                         <div class="client-details">
                             <h2>{{ cliente.get_full_name }}</h2>
@@ -313,164 +313,7 @@
                     </div>
                 </div>
 
-                <!-- Historial de reservas -->
-                <div class="reservations-section">
-                    <h3 class="section-title">
-                        <i class="bi bi-clock-history"></i> Historial de Reservas
-                    </h3>
-
-                    {% if reservas %}
-                        <!-- Reservas Pendientes -->
-                        {% if reservas_pendientes %}
-                            <h4 class="mt-4 mb-3 text-primary">
-                                <i class="bi bi-clock"></i> Reservas Pendientes ({{ reservas_pendientes.count }})
-                            </h4>
-                            {% for reserva in reservas_pendientes %}
-                                <div class="reservation-card">
-                                    <div class="reservation-header">
-                                        <span class="reservation-id">Reserva #{{ reserva.id }}</span>
-                                        <span class="reservation-status status-pendiente">{{ reserva.get_estado_display }}</span>
-                                    </div>
-                                    <div class="reservation-details">
-                                        <div class="detail-item">
-                                            <span class="detail-label">Vehículo</span>
-                                            <span class="detail-value">{{ reserva.vehiculo.marca }} {{ reserva.vehiculo.modelo }} ({{ reserva.vehiculo.patente }})</span>
-                                        </div>
-                                        <div class="detail-item">
-                                            <span class="detail-label">Fecha Recogida</span>
-                                            <span class="detail-value">{{ reserva.fecha_recogida|date:"d/m/Y" }}</span>
-                                        </div>
-                                        <div class="detail-item">
-                                            <span class="detail-label">Fecha Devolución</span>
-                                            <span class="detail-value">{{ reserva.fecha_devolucion|date:"d/m/Y" }}</span>
-                                        </div>
-                                        <div class="detail-item">
-                                            <span class="detail-label">Estado Pago</span>
-                                            <span class="detail-value">{{ reserva.get_estado_pago_display }}</span>
-                                        </div>
-                                    </div>
-                                    <div class="reservation-cost">
-                                        Costo Total: ${{ reserva.costo_total|floatformat:2 }}
-                                    </div>
-                                </div>
-                            {% endfor %}
-                        {% endif %}
-
-                        <!-- Reservas En Curso -->
-                        {% if reservas_en_curso %}
-                            <h4 class="mt-4 mb-3 text-success">
-                                <i class="bi bi-car-front"></i> Reservas En Curso ({{ reservas_en_curso.count }})
-                            </h4>
-                            {% for reserva in reservas_en_curso %}
-                                <div class="reservation-card">
-                                    <div class="reservation-header">
-                                        <span class="reservation-id">Reserva #{{ reserva.id }}</span>
-                                        <span class="reservation-status status-retirado">{{ reserva.get_estado_display }}</span>
-                                    </div>
-                                    <div class="reservation-details">
-                                        <div class="detail-item">
-                                            <span class="detail-label">Vehículo</span>
-                                            <span class="detail-value">{{ reserva.vehiculo.marca }} {{ reserva.vehiculo.modelo }} ({{ reserva.vehiculo.patente }})</span>
-                                        </div>
-                                        <div class="detail-item">
-                                            <span class="detail-label">Fecha Recogida</span>
-                                            <span class="detail-value">{{ reserva.fecha_recogida|date:"d/m/Y" }}</span>
-                                        </div>
-                                        <div class="detail-item">
-                                            <span class="detail-label">Fecha Devolución</span>
-                                            <span class="detail-value">{{ reserva.fecha_devolucion|date:"d/m/Y" }}</span>
-                                        </div>
-                                        <div class="detail-item">
-                                            <span class="detail-label">Conductor</span>
-                                            <span class="detail-value">{{ reserva.conductor_nombre }} {{ reserva.conductor_apellido }}</span>
-                                        </div>
-                                    </div>
-                                    <div class="reservation-cost">
-                                        Costo Total: ${{ reserva.costo_total|floatformat:2 }}
-                                    </div>
-                                </div>
-                            {% endfor %}
-                        {% endif %}
-
-                        <!-- Reservas Finalizadas -->
-                        {% if reservas_finalizadas %}
-                            <h4 class="mt-4 mb-3 text-info">
-                                <i class="bi bi-check-circle"></i> Reservas Finalizadas ({{ reservas_finalizadas.count }})
-                            </h4>
-                            {% for reserva in reservas_finalizadas %}
-                                <div class="reservation-card">
-                                    <div class="reservation-header">
-                                        <span class="reservation-id">Reserva #{{ reserva.id }}</span>
-                                        <span class="reservation-status status-finalizada">{{ reserva.get_estado_display }}</span>
-                                    </div>
-                                    <div class="reservation-details">
-                                        <div class="detail-item">
-                                            <span class="detail-label">Vehículo</span>
-                                            <span class="detail-value">{{ reserva.vehiculo.marca }} {{ reserva.vehiculo.modelo }} ({{ reserva.vehiculo.patente }})</span>
-                                        </div>
-                                        <div class="detail-item">
-                                            <span class="detail-label">Fecha Recogida</span>
-                                            <span class="detail-value">{{ reserva.fecha_recogida|date:"d/m/Y" }}</span>
-                                        </div>
-                                        <div class="detail-item">
-                                            <span class="detail-label">Fecha Devolución</span>
-                                            <span class="detail-value">{{ reserva.fecha_devolucion|date:"d/m/Y" }}</span>
-                                        </div>
-                                        <div class="detail-item">
-                                            <span class="detail-label">Fecha Creación</span>
-                                            <span class="detail-value">{{ reserva.fecha_creacion|date:"d/m/Y H:i" }}</span>
-                                        </div>
-                                    </div>
-                                    <div class="reservation-cost">
-                                        Costo Total: ${{ reserva.costo_total|floatformat:2 }}
-                                    </div>
-                                </div>
-                            {% endfor %}
-                        {% endif %}
-
-                        <!-- Reservas Canceladas -->
-                        {% if reservas_canceladas %}
-                            <h4 class="mt-4 mb-3 text-danger">
-                                <i class="bi bi-x-circle"></i> Reservas Canceladas ({{ reservas_canceladas.count }})
-                            </h4>
-                            {% for reserva in reservas_canceladas %}
-                                <div class="reservation-card">
-                                    <div class="reservation-header">
-                                        <span class="reservation-id">Reserva #{{ reserva.id }}</span>
-                                        <span class="reservation-status status-cancelada">{{ reserva.get_estado_display }}</span>
-                                    </div>
-                                    <div class="reservation-details">
-                                        <div class="detail-item">
-                                            <span class="detail-label">Vehículo</span>
-                                            <span class="detail-value">{{ reserva.vehiculo.marca }} {{ reserva.vehiculo.modelo }} ({{ reserva.vehiculo.patente }})</span>
-                                        </div>
-                                        <div class="detail-item">
-                                            <span class="detail-label">Fecha Recogida</span>
-                                            <span class="detail-value">{{ reserva.fecha_recogida|date:"d/m/Y" }}</span>
-                                        </div>
-                                        <div class="detail-item">
-                                            <span class="detail-label">Fecha Devolución</span>
-                                            <span class="detail-value">{{ reserva.fecha_devolucion|date:"d/m/Y" }}</span>
-                                        </div>
-                                        <div class="detail-item">
-                                            <span class="detail-label">Monto a Reembolsar</span>
-                                            <span class="detail-value">${{ reserva.monto_a_reembolsar|floatformat:2 }}</span>
-                                        </div>
-                                    </div>
-                                    <div class="reservation-cost">
-                                        Costo Original: ${{ reserva.costo_total|floatformat:2 }}
-                                    </div>
-                                </div>
-                            {% endfor %}
-                        {% endif %}
-
-                    {% else %}
-                        <div class="no-reservations">
-                            <i class="bi bi-inbox"></i>
-                            <p>Este cliente no tiene reservas registradas.</p>
-                        </div>
-                    {% endif %}
-                </div>
+               
             {% endif %}
         </div>
     </div>
