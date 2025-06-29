@@ -31,7 +31,7 @@ from .views.sucursal import (
 )
 
 from .views import reservas
-from .views.estadisticas_autos import estadisticas_autos
+from .views.estadisticas_autos import estadisticas_autos, estadisticas_tipos_autos
 
 urlpatterns = [
     path('', admin_menu, name='admin_menu'),  
@@ -62,6 +62,7 @@ urlpatterns = [
     path('detalle-ingresos-reservas/', reservas.detalle_ingresos_reservas, name='detalle_ingresos_reservas'),
     path('estadisticas-adicionales/', reservas.estadisticas_adicionales, name='estadisticas_adicionales'),
     path('estadisticas-autos/', estadisticas_autos, name='estadisticas_autos'),
+    path('estadisticas-tipos-autos/', estadisticas_tipos_autos, name='estadisticas_tipos_autos'),
     path('gestion-vehiculos/', gestionar_vehiculos, name='gestionar_vehiculos'),
     
 ]
