@@ -4,7 +4,7 @@ from .models import Usuario
 from django.core.exceptions import ValidationError
 from django.contrib.auth.forms import AuthenticationForm
 from .validators import validar_edad, validar_dni
-import re
+import re,random,string
 import datetime
 from dateutil.relativedelta import relativedelta
 
@@ -382,3 +382,103 @@ class TarjetaGuardadaForm(forms.Form):
                 raise forms.ValidationError("La tarjeta no tiene fondos suficientes para realizar el pago.")
         
         return cleaned_data
+
+
+class EmpleadoRegistroClienteForm(forms.ModelForm):
+    email = forms.EmailField(
+        max_length=254,
+        widget=forms.EmailInput(attrs={'class': 'form-control'}),
+        help_text='Requerido. Ingrese una dirección de email válida.'
+    )
+    first_name = forms.CharField(
+        max_length=30,
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        help_text='Requerido.',
+        label='Nombre'
+    )
+    last_name = forms.CharField(
+        max_length=30,
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        help_text='Requerido.',
+        label='Apellido'
+    )
+    
+    fecha_nacimiento = forms.DateField(
+        widget=forms.DateInput(attrs={
+            'class': 'form-control',
+            'type': 'date',
+            'max': datetime.date.today().isoformat()
+        }),
+        help_text='Debe ser mayor de 18 años para registrarse.',
+        label='Fecha de nacimiento'
+    )
+    
+    DNI = forms.CharField(
+        max_length=10,
+        validators=[validar_dni],
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        help_text='Ingrese su DNI sin puntos ni espacios.',
+        label='DNI'
+    )
+
+    class Meta:
+        model = Usuario
+        fields = ('email', 'first_name', 'last_name', 'fecha_nacimiento', 'DNI')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name, field in self.fields.items():
+            field.widget.attrs['class'] = 'form-control'
+
+    def clean_fecha_nacimiento(self):
+        fecha_nacimiento = self.cleaned_data['fecha_nacimiento']
+        hoy = datetime.date.today()
+        edad = relativedelta(hoy, fecha_nacimiento).years
+        
+        if edad < 18:
+            raise ValidationError('Debe ser mayor de 18 años para registrarse.')
+        
+        return fecha_nacimiento
+
+    def save(self, commit=True):
+        # Generar contraseña aleatoria
+        password = generate_random_password()
+        
+        user = super().save(commit=False)
+        user.email = self.cleaned_data['email']
+        fecha_nacimiento = self.cleaned_data['fecha_nacimiento']
+        hoy = datetime.date.today()
+        user.edad = relativedelta(hoy, fecha_nacimiento).years
+        user.DNI = self.cleaned_data['DNI']
+        
+        # Establecer la contraseña
+        user.set_password(password)
+        
+        if commit:
+            user.save()
+        
+        # Devolver tanto el usuario como la contraseña generada
+        return user, password
+    
+    
+
+
+
+def generate_random_password(length=12):
+    if length < 5:
+        length = 5 
+
+    password_characters = [
+        random.choice(string.ascii_letters), 
+        random.choice(string.digits)        
+    ]
+    
+
+    all_characters = string.ascii_letters + string.digits + string.punctuation
+    
+    remaining_length = length - len(password_characters)
+    password_characters.extend(random.choice(all_characters) for _ in range(remaining_length))
+    
+    random.shuffle(password_characters) 
+    
+    return ''.join(password_characters)
