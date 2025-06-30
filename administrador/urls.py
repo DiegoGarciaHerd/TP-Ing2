@@ -17,7 +17,7 @@ from .views.vehiculos import (
 )
 from .views.empleados import (
     cargar_empleados, 
-    modificar_empleados, 
+    modificar_empleado, 
     ListarEmpleadosView,
     borrar_empleado
 )
@@ -47,7 +47,7 @@ urlpatterns = [
     
     # URLs de Empleados
     path('cargar-empleados/', cargar_empleados, name="cargar_empleados"),
-    path('modificar-empleados/', modificar_empleados, name="modificar_empleados"),
+    path('modificar-empleado/', modificar_empleado, name="modificar_empleado"),
     path('listar-empleados/', ListarEmpleadosView.as_view(), name="listar_empleados"),
     path('borrar-empleado/', borrar_empleado, name="borrar_empleado"),
     

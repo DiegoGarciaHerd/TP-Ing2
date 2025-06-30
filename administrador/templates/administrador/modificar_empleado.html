@@ -1,0 +1,65 @@
+{% extends 'home/base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<link rel="stylesheet" href="{% static 'administrador/static/css/empleados.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <form method="get" class="mb-4">
+                <label for="dni" class="form-label">Seleccionar empleado</label>
+                <select name="dni" id="dni" class="form-select" onchange="this.form.submit()">
+                    <option value="">-- Elegir --</option>
+                    {% for e in empleados %}
+                        <option value="{{ e.dni }}" {% if empleado and e.dni == empleado.dni %}selected{% endif %}>
+                            {{ e.apellido }}, {{ e.nombre }} ({{ e.dni }})
+                        </option>
+                    {% endfor %}
+                </select>
+            </form>
+
+            {% if empleado and form %}
+            <div class="card shadow-lg border-0">
+                <div class="card-header text-white text-center" style="background-color: #0e4532;">
+                    <h4 class="mb-0">
+                        <i class="fas fa-user-edit me-2"></i>Editando: {{ empleado.nombre }} {{ empleado.apellido }}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        {% for field in form %}
+                            <div class="mb-3">
+                                <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                                {{ field }}
+                                {% if field.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ field.errors|join:", " }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-save me-2"></i>Guardar cambios
+                            </button>
+                            <a href="{% url 'admin_menu' %}" class="btn btn-secondary btn-lg mt-2">
+                                <i class="fas fa-arrow-left me-2"></i>Volver al Panel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if not empleado %}
+                <p class="mt-3 text-muted">Seleccione un empleado para modificar.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

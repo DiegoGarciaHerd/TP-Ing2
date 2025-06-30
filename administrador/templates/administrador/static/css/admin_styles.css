@@ -1,0 +1,16 @@
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 1.5rem;
+}
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1) !important;
+}
+.btn-success {
+    background-color: #0e4532;
+    border-color: #0e4532;
+}
+.btn-success:hover {
+    background-color: #146c43;
+    border-color: #146c43;
+}

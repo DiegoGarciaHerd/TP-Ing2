@@ -10,11 +10,11 @@ from django.contrib.auth import get_user_model
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.conf import settings
-from django.http import JsonResponse
-from ..forms import ModificarEmpleadoForm
 from django.views.generic import ListView
 from django.contrib.auth.mixins import UserPassesTestMixin
 from sucursales.models import Sucursal
+from administrador.forms import EmpleadoModificarForm
+
 
 Usuario = get_user_model() 
 
@@ -137,38 +137,6 @@ def cargar_empleados(request):
     return render(request, 'administrador/cargar_empleados.html', {'sucursales': sucursales})
 
 @admin_required
-def modificar_empleados(request):
-    if request.method == 'POST':
-        # Si hay un DNI en el POST, obtener el empleado y usarlo como instancia
-        dni = request.POST.get('dni')
-        empleado = get_object_or_404(Empleado, dni=dni) if dni else None
-        form = ModificarEmpleadoForm(request.POST, instance=empleado)
-        
-        if form.is_valid():
-            empleado = form.save(commit=False)
-            user = empleado.user
-            
-            # Actualizar también el usuario asociado
-            user.first_name = empleado.nombre
-            user.last_name = empleado.apellido
-            user.email = empleado.email
-            
-            try:
-                user.save()
-                empleado.save()
-                messages.success(request, f"Empleado {empleado.nombre} {empleado.apellido} modificado exitosamente")
-                return redirect('admin_menu')
-            except Exception as e:
-                messages.error(request, f"Error al modificar el empleado: {e}")
-    else:
-        # Si hay un DNI en el GET, pre-seleccionar ese empleado
-        dni = request.GET.get('dni')
-        empleado = get_object_or_404(Empleado, dni=dni) if dni else None
-        form = ModificarEmpleadoForm(instance=empleado)
-
-    return render(request, 'administrador/modificar_empleados.html', {'form': form})
-
-@admin_required
 def borrar_empleado(request):
     if request.method == 'POST':
         dni = request.POST.get('dni')
@@ -216,3 +184,34 @@ class ListarEmpleadosView(UserPassesTestMixin, ListView):
     def handle_no_permission(self):
         messages.error(self.request, "No tienes permisos para acceder a esta página.")
         return redirect('home:home')
+
+def modificar_empleado(request):
+    dni_seleccionado = request.GET.get("dni")
+    empleado = None
+    form = None
+
+    if dni_seleccionado:
+        try:
+            empleado = Empleado.objects.get(dni=dni_seleccionado, activo=True)
+        except Empleado.DoesNotExist:
+            messages.error(request, "Empleado no encontrado o inactivo.")
+            return redirect('modificar_empleado')  # redirige para limpiar la URL
+
+    if request.method == "POST" and empleado:
+        form = EmpleadoModificarForm(request.POST, instance=empleado)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Empleado modificado correctamente.")
+            return redirect(f"{request.path}?dni={empleado.dni}")
+        else:
+            messages.error(request, "Corrija los errores del formulario.")
+    elif empleado:
+        form = EmpleadoModificarForm(instance=empleado)
+
+    empleados = Empleado.objects.filter(activo=True).order_by("apellido", "nombre")
+
+    return render(request, "administrador/modificar_empleado.html", {
+        "empleados": empleados,
+        "empleado": empleado,
+        "form": form,
+    })

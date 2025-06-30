@@ -1,4 +1,11 @@
 {% extends 'home/base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<link rel="stylesheet" href="{% static 'administrador/static/css/empleados.css' %}">
+{% endblock %}
+
 {% block content %}
 <div class="container mt-4">
     <div class="card shadow-lg">
@@ -15,7 +22,7 @@
                     </div>
                 {% endfor %}
             {% endif %}
-
+                    
             <div class="mb-3">
                 <form method="get" class="d-flex justify-content-end">
                     <div class="form-check form-switch">
