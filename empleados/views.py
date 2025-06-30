@@ -11,7 +11,7 @@ from django.http import JsonResponse
 from decimal import Decimal 
 from usuarios.models import Usuario
 from vehiculos.forms import VehiculoEmpleadoForm
-
+from usuarios.forms import EmpleadoRegistroClienteForm
 
 @empleado_required 
 def menu_empleado(request):
@@ -270,3 +270,26 @@ def confirmar_devolucion_auto(request, reserva_id):
     
     messages.error(request, "Método no permitido para esta acción.")
     return redirect('empleados:listar_devoluciones_pendientes')
+
+
+
+@empleado_required # <--- ¡Aplica el decorador aquí!
+def registrar_cliente(request):
+    if request.method == 'POST':
+        form = EmpleadoRegistroClienteForm(request.POST)
+        if form.is_valid():
+            try:
+                nuevo_cliente, password_generada = form.save()
+                messages.success(request, f"Cliente {nuevo_cliente.email} registrado exitosamente. Contraseña generada: {password_generada}")
+                return redirect('empleados:registro_cliente_exitoso') 
+            except Exception as e:
+                messages.error(request, f"Error al registrar cliente: {e}")
+        else:
+            messages.error(request, "Error en el formulario. Por favor, corrija los errores.")
+    else:
+        form = EmpleadoRegistroClienteForm()
+    
+    context = {
+        'form': form
+    }
+    return render(request, 'empleados/registrar_cliente.html', context)
