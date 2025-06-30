@@ -75,7 +75,7 @@
                         <h5 class="text-muted mb-3">Controles de Administrador</h5>
                         <form method="POST" action="{% url 'toggle_disponibilidad' vehiculo.id %}" class="d-inline">
                             {% csrf_token %}
-                            <button type="submit" class="btn {% if vehiculo.estado == 'DISPONIBLE %}btn-danger{% else %}btn-success{% endif %}">
+                            <button type="submit" class="btn {% if vehiculo.estado == 'DISPONIBLE' %}btn-danger{% else %}btn-success{% endif %}">
                             <p><strong>Estado:</strong>
                                 {% if vehiculo.estado == 'DISPONIBLE' %}
                                     <span class="text-success">Disponible</span>
@@ -88,7 +88,7 @@
                         </form>
                     </div>
                 {% else %}
-                    {% if vehiculo.estado == 'DISPONIBLE %}
+                    {% if vehiculo.estado == 'DISPONIBLE' %}
                         <a href="{% url 'reservas:crear_reserva' vehiculo.id %}" class="btn text-white mt-3" style="background-color: #0e4532;">
                             Reservar Este Vehículo
                         </a>

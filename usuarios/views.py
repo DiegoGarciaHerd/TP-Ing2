@@ -14,6 +14,7 @@ from django.core.exceptions import ValidationError
 from django.contrib.auth.views import LoginView
 import secrets
 
+
 Usuario = get_user_model()
 
 def registro(request):
@@ -214,3 +215,5 @@ def recuperar_password(request):
             messages.error(request, 'No existe un usuario registrado con ese email.')
     
     return render(request, 'usuarios/recuperar_password.html')
+
+

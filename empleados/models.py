@@ -21,4 +21,10 @@ class Empleado(models.Model):
     def soft_delete(self):
         self.activo = False
         self.fecha_baja = timezone.now()
+        # Desactivar y quitar permisos al usuario asociado
+        if hasattr(self, 'user'):
+            self.user.is_active = False
+            self.user.is_staff = False
+            self.user.save()
+        
         self.save()
