@@ -122,7 +122,6 @@ class EditarPerfilForm(UserChangeForm):
     )
     
     fecha_nacimiento = forms.DateField(
-        required=True,
         widget=forms.DateInput(attrs={
             'class': 'form-control',
             'type': 'date',
