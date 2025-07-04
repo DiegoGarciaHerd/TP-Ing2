@@ -8,13 +8,6 @@
                     <h2 class="mb-0">Remover Vehículo del Catálogo</h2>
                 </div>
                 <div class="card-body">
-                    {% if messages %}
-                        {% for message in messages %}
-                            <div class="alert alert-{{ message.tags }}">
-                                {{ message }}
-                            </div>
-                        {% endfor %}
-                    {% endif %}
 
                     <form method="POST" id="borrarAutoForm">
                         {% csrf_token %}

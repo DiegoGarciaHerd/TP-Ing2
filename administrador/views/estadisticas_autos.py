@@ -2,9 +2,11 @@ from django.shortcuts import render
 from administrador.decorators import admin_required
 from reservas.models import Reserva
 from vehiculos.models import Vehiculo
-from django.db.models import Count, Avg, Sum, Q, F
 from datetime import datetime, timedelta
 from decimal import Decimal
+from django.shortcuts import render
+from django.http import JsonResponse
+from django.db.models import Count, Avg, Sum, Q, F
 import json
 
 @admin_required

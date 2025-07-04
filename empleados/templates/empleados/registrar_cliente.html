@@ -1,5 +1,6 @@
 {# empleados/registrar_cliente.html #}
 {% extends 'home/base.html' %} {# Asegúrate de que 'home/base.html' sea tu plantilla base #}
+{% load form_filters %}
 
 {% block content %}
 <div class="container mt-4">
@@ -10,20 +11,18 @@
                     <h2 class="mb-0">Registrar Nuevo Cliente</h2>
                 </div>
                 <div class="card-body">
-                    {% if messages %}
-                        {% for message in messages %}
-                            <div class="alert alert-{{ message.tags }}">
-                                {{ message }}
-                            </div>
-                        {% endfor %}
-                    {% endif %}
-
                     <form method="POST">
                         {% csrf_token %}
-                        {# Renderiza el formulario. Puedes usar form.as_p, form.as_ul, form.as_table, o renderizar cada campo manualmente. #}
-                        {# form.as_p es el más simple para empezar #}
-                        {{ form.as_p }} 
-                        
+                        {% for field in form %}
+                            <div class="form-group mb-3">
+                                {{ field.label_tag }}
+                                {{ field.errors }}
+                                {{ field|add_class:"form-control" }}
+                                {% if field.help_text %}
+                                    <small class="form-text {% if field.errors %}text-danger{% else %}text-muted{% endif %}">{{ field.help_text }}</small>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
                             <button type="submit" class="btn text-white" style="background-color: #0e4532;">
                                 Registrar Cliente

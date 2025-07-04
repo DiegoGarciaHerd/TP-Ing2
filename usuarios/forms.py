@@ -72,7 +72,7 @@ class RegistroForm(UserCreationForm):
         edad = relativedelta(hoy, fecha_nacimiento).years
         
         if edad < 18:
-            raise ValidationError('Debe ser mayor de 18 años para registrarse.')
+            raise ValidationError('')
         
         return fecha_nacimiento
 
@@ -159,7 +159,7 @@ class EditarPerfilForm(UserChangeForm):
             hoy = datetime.date.today()
             edad = relativedelta(hoy, fecha_nacimiento).years
             if edad < 18:
-                raise ValidationError('Debe ser mayor de 18 años.')
+                raise ValidationError()
         return fecha_nacimiento
 
     def save(self, commit=True):
@@ -389,18 +389,16 @@ class EmpleadoRegistroClienteForm(forms.ModelForm):
     email = forms.EmailField(
         max_length=254,
         widget=forms.EmailInput(attrs={'class': 'form-control'}),
-        help_text='Requerido. Ingrese una dirección de email válida.'
+        help_text='Ingrese una dirección de email válida.'
     )
     first_name = forms.CharField(
         max_length=30,
         widget=forms.TextInput(attrs={'class': 'form-control'}),
-        help_text='Requerido.',
         label='Nombre'
     )
     last_name = forms.CharField(
         max_length=30,
         widget=forms.TextInput(attrs={'class': 'form-control'}),
-        help_text='Requerido.',
         label='Apellido'
     )
     
@@ -437,7 +435,7 @@ class EmpleadoRegistroClienteForm(forms.ModelForm):
         edad = relativedelta(hoy, fecha_nacimiento).years
         
         if edad < 18:
-            raise ValidationError('Debe ser mayor de 18 años para registrarse.')
+            raise ValidationError('')
         
         return fecha_nacimiento
 

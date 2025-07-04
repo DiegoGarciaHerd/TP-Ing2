@@ -439,136 +439,140 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-// Funcionalidad para los checkboxes de tipos de vehículos
-document.addEventListener('DOMContentLoaded', function() {
-    const checkboxesTipos = document.querySelectorAll('input[name="tipos_vehiculo"]');
+    // Funcionalidad para los checkboxes de tipos de vehículos
+    document.addEventListener('DOMContentLoaded', function() {
+        const checkboxesTipos = document.querySelectorAll('input[name="tipos_vehiculo"]');
     
-    // Validar que al menos un tipo esté seleccionado al enviar el formulario
-    const form = document.querySelector('form');
-    form.addEventListener('submit', function(e) {
-        const tiposSeleccionados = document.querySelectorAll('input[name="tipos_vehiculo"]:checked');
-        if (tiposSeleccionados.length === 0) {
-            e.preventDefault();
-            alert('Por favor, selecciona al menos un tipo de vehículo.');
-            return false;
+        // Validar que al menos un tipo esté seleccionado al enviar el formulario
+        const form = document.querySelector('form');
+        form.addEventListener('submit', function(e) {
+            const tiposSeleccionados = document.querySelectorAll('input[name="tipos_vehiculo"]:checked');
+            if (tiposSeleccionados.length === 0) {
+                e.preventDefault();
+                alert('Por favor, selecciona al menos un tipo de vehículo.');
+                return false;
+            }
+        });
+    
+        // Asegurar que al menos un checkbox esté marcado por defecto
+        if (!Array.from(checkboxesTipos).some(cb => cb.checked)) {
+            checkboxesTipos[0].checked = true;
         }
-    });
     
-    // Asegurar que al menos un checkbox esté marcado por defecto
-    if (!Array.from(checkboxesTipos).some(cb => cb.checked)) {
-        checkboxesTipos[0].checked = true;
-    }
+        // Aplicar porcentajes a las barras de progreso
+        const progressBars = document.querySelectorAll('.progress-bar[data-porcentaje]');
+        progressBars.forEach(bar => {
+            const porcentaje = bar.getAttribute('data-porcentaje');
+            if (porcentaje && !isNaN(porcentaje)) {
+                bar.style.width = porcentaje + '%';
+            } else {
+                bar.style.width = '0%';
+            }
+        });
     
-    // Aplicar porcentajes a las barras de progreso
-    const progressBars = document.querySelectorAll('.progress-bar[data-porcentaje]');
-    progressBars.forEach(bar => {
-        const porcentaje = bar.getAttribute('data-porcentaje');
-        if (porcentaje && !isNaN(porcentaje)) {
-            bar.style.width = porcentaje + '%';
-        } else {
-            bar.style.width = '0%';
-        }
-    });
-});
-
-// Datos para los gráficos, falsos erroes, funcionan igual
-const datosTorta = {{ datos_grafico_torta|safe }};
-const datosRentabilidad = {{ datos_grafico_rentabilidad|safe }};
-
-// Colores para los gráficos
-const colores = [
-    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
-    '#FF9F40', '#FF6384', '#C9CBCF', '#4BC0C0', '#FF6384'
-];
-
-// Gráfico de Torta
-const ctxTorta = document.getElementById('graficoTorta').getContext('2d');
-new Chart(ctxTorta, {
-    type: 'pie',
-    data: {
-        labels: datosTorta.labels,
-        datasets: [{
-            data: datosTorta.data,
-            backgroundColor: colores.slice(0, datosTorta.labels.length),
-            borderWidth: 2,
-            borderColor: '#fff'
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                position: 'bottom',
-                labels: {
-                    padding: 20,
-                    usePointStyle: true
-                }
+        // Leer y parsear los datos JSON insertados en los scripts de tipo application/json
+        const datosTorta = JSON.parse(document.getElementById('datosTorta').textContent);
+        const datosRentabilidad = JSON.parse(document.getElementById('datosRentabilidad').textContent);
+        
+        console.log(datosTorta);
+        console.log(datosRentabilidad);
+    
+        // Colores para los gráficos
+        const colores = [
+            '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+            '#FF9F40', '#FF6384', '#C9CBCF', '#4BC0C0', '#FF6384'
+        ];
+    
+        // Gráfico de Torta
+        const ctxTorta = document.getElementById('graficoTorta').getContext('2d');
+        new Chart(ctxTorta, {
+            type: 'pie',
+            data: {
+                labels: datosTorta.labels,
+                datasets: [{
+                    data: datosTorta.data,
+                    backgroundColor: colores.slice(0, datosTorta.labels.length),
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
             },
-            tooltip: {
-                callbacks: {
-                    label: function(context) {
-                        const label = context.label || '';
-                        const value = context.parsed;
-                        const porcentaje = datosTorta.porcentajes[context.dataIndex];
-                        return `${label}: ${value} (${porcentaje}%)`;
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            usePointStyle: true
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.parsed;
+                                const porcentaje = datosTorta.porcentajes[context.dataIndex];
+                                return `${label}: ${value} (${porcentaje}%)`;
+                            }
+                        }
                     }
                 }
             }
-        }
-    }
-});
-
-// Gráfico de Rentabilidad
-const ctxRentabilidad = document.getElementById('graficoRentabilidad').getContext('2d');
-new Chart(ctxRentabilidad, {
-    type: 'bar',
-    data: {
-        labels: datosRentabilidad.labels,
-        datasets: [{
-            label: 'Ingresos Totales ($)',
-            data: datosRentabilidad.ingresos,
-            backgroundColor: 'rgba(54, 162, 235, 0.8)',
-            borderColor: 'rgba(54, 162, 235, 1)',
-            borderWidth: 1
-        }, {
-            label: 'Rentabilidad por Día ($)',
-            data: datosRentabilidad.rentabilidad_dia,
-            backgroundColor: 'rgba(255, 206, 86, 0.8)',
-            borderColor: 'rgba(255, 206, 86, 1)',
-            borderWidth: 1
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-            y: {
-                beginAtZero: true,
-                ticks: {
-                    callback: function(value) {
-                        return '$' + value.toLocaleString();
-                    }
-                }
-            }
-        },
-        plugins: {
-            legend: {
-                position: 'top'
+        });
+    
+        // Gráfico de Rentabilidad
+        const ctxRentabilidad = document.getElementById('graficoRentabilidad').getContext('2d');
+        new Chart(ctxRentabilidad, {
+            type: 'bar',
+            data: {
+                labels: datosRentabilidad.labels,
+                datasets: [{
+                    label: 'Ingresos Totales ($)',
+                    data: datosRentabilidad.ingresos,
+                    backgroundColor: 'rgba(54, 162, 235, 0.8)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }, {
+                    label: 'Rentabilidad por Día ($)',
+                    data: datosRentabilidad.rentabilidad_dia,
+                    backgroundColor: 'rgba(255, 206, 86, 0.8)',
+                    borderColor: 'rgba(255, 206, 86, 1)',
+                    borderWidth: 1
+                }]
             },
-            tooltip: {
-                callbacks: {
-                    label: function(context) {
-                        const label = context.dataset.label || '';
-                        const value = context.parsed.y;
-                        return `${label}: $${value.toLocaleString()}`;
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + value.toLocaleString();
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.dataset.label || '';
+                                const value = context.parsed.y;
+                                return `${label}: $${value.toLocaleString()}`;
+                            }
+                        }
                     }
                 }
             }
-        }
-    }
-});
+        });
+    });
 </script>
+    
 
 <!-- CSS Styles -->
 <style>
