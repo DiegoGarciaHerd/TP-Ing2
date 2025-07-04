@@ -12,6 +12,11 @@ from decimal import Decimal
 from usuarios.models import Usuario
 from vehiculos.forms import VehiculoEmpleadoForm
 from usuarios.forms import EmpleadoRegistroClienteForm
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.conf import settings
+from .forms import EmpleadoEditarPerfilForm, EmpleadoCambiarPasswordForm
+from .models import Empleado
 
 @empleado_required 
 def menu_empleado(request):
@@ -124,7 +129,7 @@ def modificar_autos(request):
     })
 
 
-@empleado_required # Aplicamos tu decorador de empleado
+@empleado_required 
 def listar_retiros_pendientes(request):
     hoy = timezone.localdate()
 
@@ -280,8 +285,10 @@ def registrar_cliente(request):
         if form.is_valid():
             try:
                 nuevo_cliente, password_generada = form.save()
-                messages.success(request, f"Cliente {nuevo_cliente.email} registrado exitosamente. Contraseña generada: {password_generada}")
-                return redirect('empleados:registro_cliente_exitoso') 
+                enviar_cliente_credentials_email(request, nuevo_cliente.email, password_generada, nuevo_cliente.get_full_name())
+                messages.success(request, f"¡Cliente {nuevo_cliente.email} registrado exitosamente! Se han enviado las credenciales por email.")
+                # Limpiar el formulario después del registro exitoso
+                form = EmpleadoRegistroClienteForm()
             except Exception as e:
                 messages.error(request, f"Error al registrar cliente: {e}")
         else:
@@ -293,3 +300,70 @@ def registrar_cliente(request):
         'form': form
     }
     return render(request, 'empleados/registrar_cliente.html', context)
+
+def enviar_cliente_credentials_email(request, user_email, password, client_name):
+    """Envía email con las credenciales al cliente recién registrado"""
+    context = {
+        'client_name': client_name,
+        'email': user_email,
+        'password': password,
+    }
+    email_html = render_to_string('empleados/email_cliente_credenciales.html', context)
+    email_text = f"Hola {client_name},\n\n" \
+                 f"Tu cuenta en AutoRental ha sido creada exitosamente.\n" \
+                 f"Tus credenciales para acceder al sistema son:\n" \
+                 f"Email: {user_email}\n" \
+                 f"Contraseña: {password}\n\n" \
+                 f"Por razones de seguridad, te recomendamos cambiar tu contraseña al iniciar sesión por primera vez."
+
+    email = EmailMultiAlternatives(
+        subject='Bienvenido a AutoRental - Tus Credenciales de Acceso',
+        body=email_text,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=[user_email]
+    )
+    email.attach_alternative(email_html, "text/html")
+    try:
+        email.send()
+        messages.info(request, f"Credenciales enviadas a {user_email}")
+    except Exception as e:
+        messages.error(request, f"Error al enviar email a {user_email}: {e}")
+
+@empleado_required
+def editar_perfil_empleado(request):
+    """Vista para que los empleados editen su perfil"""
+    try:
+        empleado = Empleado.objects.get(user=request.user)
+    except Empleado.DoesNotExist:
+        messages.error(request, "No se encontró tu perfil de empleado.")
+        return redirect('empleados:menu_empleado')
+    
+    if request.method == 'POST':
+        if 'cambiar_password' in request.POST:
+            # Procesar cambio de contraseña
+            form_password = EmpleadoCambiarPasswordForm(request.user, request.POST)
+            if form_password.is_valid():
+                form_password.save()
+                messages.success(request, 'Tu contraseña ha sido actualizada correctamente.')
+                return redirect('empleados:editar_perfil_empleado')
+            # Si el formulario no es válido, también necesitamos form_perfil
+            form_perfil = EmpleadoEditarPerfilForm(instance=empleado)
+        else:
+            # Procesar edición de perfil
+            form_perfil = EmpleadoEditarPerfilForm(request.POST, instance=empleado)
+            if form_perfil.is_valid():
+                form_perfil.save()
+                messages.success(request, 'Tu perfil ha sido actualizado correctamente.')
+                return redirect('empleados:editar_perfil_empleado')
+            # Si el formulario no es válido, también necesitamos form_password
+            form_password = EmpleadoCambiarPasswordForm(request.user)
+    else:
+        form_perfil = EmpleadoEditarPerfilForm(instance=empleado)
+        form_password = EmpleadoCambiarPasswordForm(request.user)
+
+    return render(request, 'empleados/editar_perfil_empleado.html', {
+        'form_perfil': form_perfil,
+        'form_password': form_password,
+        'empleado': empleado
+    })
+

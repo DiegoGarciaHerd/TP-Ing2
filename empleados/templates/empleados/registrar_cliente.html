@@ -1,32 +1,142 @@
-{# empleados/registrar_cliente.html #}
-{% extends 'home/base.html' %} {# Asegúrate de que 'home/base.html' sea tu plantilla base #}
+{% extends 'home/base.html' %}
 {% load form_filters %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<style>
+    .success-message {
+        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+        border: 1px solid #c3e6cb;
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        color: #155724;
+        text-align: center;
+    }
+    
+    .success-icon {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .form-card {
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .form-control {
+        border-radius: 8px;
+        border: 2px solid #e9ecef;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus {
+        border-color: #0e4532;
+        box-shadow: 0 0 0 0.2rem rgba(14, 69, 50, 0.25);
+    }
+    
+    .btn-register {
+        background-color: #0e4532;
+        border: none;
+        border-radius: 25px;
+        padding: 12px 30px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-register:hover {
+        background-color: #0a3325;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 0.5rem;
+    }
+    
+    .help-text {
+        font-size: 0.875rem;
+        color: #6c757d;
+        margin-top: 0.25rem;
+    }
+    
+    .error-text {
+        color: #dc3545;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow-lg">
-                <div class="card-header text-white" style="background-color: #0e4532;">
-                    <h2 class="mb-0">Registrar Nuevo Cliente</h2>
+        <div class="col-md-8 col-lg-6">
+            <!-- Mensajes de éxito/error -->
+            {% if messages %}
+                {% for message in messages %}
+                    {% if message.tags == 'success' %}
+                        <div class="success-message">
+                            <div class="success-icon">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <h5 class="mb-2">¡Registro Exitoso!</h5>
+                            <p class="mb-0">{{ message }}</p>
+                        </div>
+                    {% elif message.tags == 'error' %}
+                        <div class="alert alert-danger" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            {{ message }}
+                        </div>
+                    {% elif message.tags == 'info' %}
+                        <div class="alert alert-info" role="alert">
+                            <i class="fas fa-info-circle me-2"></i>
+                            {{ message }}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+
+            <div class="card form-card">
+                <div class="card-header text-white text-center py-3" style="background-color: #0e4532;">
+                    <h4 class="mb-0">
+                        <i class="fas fa-user-plus me-2"></i>Registrar Nuevo Cliente
+                    </h4>
                 </div>
-                <div class="card-body">
-                    <form method="POST">
+                <div class="card-body p-4">
+                    <form method="POST" novalidate>
                         {% csrf_token %}
                         {% for field in form %}
                             <div class="form-group mb-3">
-                                {{ field.label_tag }}
-                                {{ field.errors }}
+                                <label for="{{ field.id_for_label }}" class="form-label">
+                                    {{ field.label }}
+                                </label>
                                 {{ field|add_class:"form-control" }}
+                                {% if field.errors %}
+                                    <div class="error-text">
+                                        {% for error in field.errors %}
+                                            <i class="fas fa-exclamation-circle me-1"></i>{{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
                                 {% if field.help_text %}
-                                    <small class="form-text {% if field.errors %}text-danger{% else %}text-muted{% endif %}">{{ field.help_text }}</small>
+                                    <div class="help-text">
+                                        <i class="fas fa-info-circle me-1"></i>{{ field.help_text }}
+                                    </div>
                                 {% endif %}
                             </div>
                         {% endfor %}
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
-                            <button type="submit" class="btn text-white" style="background-color: #0e4532;">
-                                Registrar Cliente
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-register text-white">
+                                <i class="fas fa-user-plus me-2"></i>Registrar Cliente
                             </button>
+                            <a href="{% url 'empleados:menu_empleado' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Volver al Menú
+                            </a>
                         </div>
                     </form>
                 </div>

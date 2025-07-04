@@ -25,14 +25,13 @@
                                 <a href="{% url 'empleados:modificar_autos' %}" class="btn btn-outline-primary btn-lg">
                                     <i class="fas fa-edit me-2"></i>Modificar Vehículo
                                 </a>
-                                <a href="{% url 'empleados:buscar_cliente' %}" class="btn btn-outline-success btn-lg">
-                                    <i class="fas fa-user-search me-2"></i>Buscar Cliente
-                                </a>
                             </div>
                         </div>
                     </div>
                 </div>
-             <div class="col-lg-6 col-md-6">
+                
+                <!-- Gestión de Retiros -->
+                <div class="col-lg-6 col-md-6">
                     <div class="card h-100 shadow-lg border-0">
                         <div class="card-header text-white text-center" style="background-color: #0e4532;">
                             <h4 class="mb-0">
@@ -44,19 +43,53 @@
                                 <a href="{% url 'empleados:listar_retiros_pendientes' %}" class="btn btn-outline-warning btn-lg">
                                     <i class="fas fa-car-alt me-2"></i> Confirmar Retiros de Hoy
                                 </a>
-                                {# INICIO: NUEVO BOTÓN PARA DEVOLUCIONES #}
                                 <a href="{% url 'empleados:listar_devoluciones_pendientes' %}" class="btn btn-outline-info btn-lg">
                                     <i class="fas fa-undo-alt me-2"></i> Confirmar Devoluciones
                                 </a>
-                                {# FIN: NUEVO BOTÓN PARA DEVOLUCIONES #}
                             </div>
                         </div>
                     </div>
                 </div>
-
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'empleados:registrar_cliente' %}">Registrar Nuevo Cliente</a>
-                </li>
+                
+                <!-- Gestión de Clientes -->
+                <div class="col-lg-6 col-md-6">
+                    <div class="card h-100 shadow-lg border-0">
+                        <div class="card-header text-white text-center" style="background-color: #0e4532;">
+                            <h4 class="mb-0">
+                                <i class="fas fa-users me-2"></i>Gestión de Clientes
+                            </h4>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="d-grid gap-3">
+                                <a href="{% url 'empleados:registrar_cliente' %}" class="btn btn-outline-primary btn-lg">
+                                    <i class="fas fa-user-plus me-2"></i>Registrar Nuevo Cliente
+                                </a>
+                                <a href="{% url 'empleados:buscar_cliente' %}" class="btn btn-outline-success btn-lg">
+                                    <i class="fas fa-user-search me-2"></i>Buscar Cliente
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Mi Perfil -->
+                <div class="col-lg-6 col-md-6">
+                    <div class="card h-100 shadow-lg border-0">
+                        <div class="card-header text-white text-center" style="background-color: #0e4532;">
+                            <h4 class="mb-0">
+                                <i class="fas fa-user-cog me-2"></i>Mi Perfil
+                            </h4>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="d-grid gap-3">
+                                <a href="{% url 'empleados:editar_perfil_empleado' %}" class="btn btn-outline-primary btn-lg">
+                                    <i class="fas fa-user-edit me-2"></i>Editar Mi Perfil
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <div class="text-center mt-5">
                 <a href="{% url 'admin_logout' %}" class="btn btn-dark btn-lg shadow-sm">
