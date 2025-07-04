@@ -203,7 +203,7 @@
                             <div class="col-md-6">
                                 <div class="form-group mb-3">
                                     <label for="{{ form_perfil.direccion.id_for_label }}" class="form-label">
-                                        {{ form_perfil.direccion.label }}
+                                        <i class="fas fa-map-marker-alt me-2"></i>{{ form_perfil.direccion.label }}
                                     </label>
                                     {{ form_perfil.direccion }}
                                     {% if form_perfil.direccion.errors %}
@@ -219,7 +219,7 @@
                             <div class="col-md-6">
                                 <div class="form-group mb-3">
                                     <label for="{{ form_perfil.telefono.id_for_label }}" class="form-label">
-                                        {{ form_perfil.telefono.label }}
+                                        <i class="fas fa-phone me-2"></i>{{ form_perfil.telefono.label }}
                                     </label>
                                     {{ form_perfil.telefono }}
                                     {% if form_perfil.telefono.errors %}
