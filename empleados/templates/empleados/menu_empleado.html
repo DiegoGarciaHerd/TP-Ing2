@@ -12,7 +12,6 @@
             </div>
 
             <div class="row g-4">
-                <!-- Gestión de Vehículos -->
                 <div class="col-lg-6 col-md-6">
                     <div class="card h-100 shadow-lg border-0">
                         <div class="card-header text-white text-center" style="background-color: #0e4532;">
@@ -30,7 +29,6 @@
                     </div>
                 </div>
                 
-                <!-- Gestión de Retiros -->
                 <div class="col-lg-6 col-md-6">
                     <div class="card h-100 shadow-lg border-0">
                         <div class="card-header text-white text-center" style="background-color: #0e4532;">
@@ -51,7 +49,6 @@
                     </div>
                 </div>
                 
-                <!-- Gestión de Clientes -->
                 <div class="col-lg-6 col-md-6">
                     <div class="card h-100 shadow-lg border-0">
                         <div class="card-header text-white text-center" style="background-color: #0e4532;">
@@ -67,12 +64,14 @@
                                 <a href="{% url 'empleados:buscar_cliente' %}" class="btn btn-outline-success btn-lg">
                                     <i class="fas fa-user-search me-2"></i>Buscar Cliente
                                 </a>
+                                <a href="{% url 'empleados:seleccionar_vehiculo_para_reserva' %}" class="btn btn-outline-dark btn-lg">
+                                     <i class="fas fa-calendar-alt me-2"></i> Crear Reserva para Cliente
+                                </a>
                             </div>
                         </div>
                     </div>
                 </div>
                 
-                <!-- Mi Perfil -->
                 <div class="col-lg-6 col-md-6">
                     <div class="card h-100 shadow-lg border-0">
                         <div class="card-header text-white text-center" style="background-color: #0e4532;">

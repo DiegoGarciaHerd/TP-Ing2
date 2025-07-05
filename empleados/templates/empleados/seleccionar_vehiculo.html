@@ -1,0 +1,49 @@
+{% extends 'home/base.html' %} {# Adjust your base template path if different #}
+{% load static %}
+{% load humanize %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Realizar Reserva para Cliente: Seleccionar Vehículo</h1>
+    
+    {% if messages %}
+        <ul class="messages list-unstyled">
+            {% for message in messages %}
+                <li class="alert alert-{{ message.tags }}">{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        {% for vehiculo in vehiculos %}
+            <div class="col">
+                <div class="card h-100 shadow-sm">
+                    {% if vehiculo.foto_base64 %}
+                        <img src="data:image/jpeg;base64,{{ vehiculo.foto_base64 }}" class="card-img-top" alt="{{ vehiculo.marca }} {{ vehiculo.modelo }}" style="height: 200px; object-fit: cover;">
+                    {% else %}
+                        <img src="{% static 'images/default_car.png' %}" class="card-img-top" alt="Vehículo sin imagen" style="height: 200px; object-fit: cover;">
+                    {% endif %}
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">{{ vehiculo.marca }} {{ vehiculo.modelo }}</h5>
+                        <p class="card-text mb-1"><strong>Patente:</strong> {{ vehiculo.patente }}</p>
+                        <p class="card-text mb-1"><strong>Estado:</strong> {{ vehiculo.get_estado_display }}</p>
+                        <p class="card-text mb-1"><strong>Precio por día:</strong> ${{ vehiculo.precio_por_dia|floatformat:2 }}</p>
+                        <p class="card-text mb-auto"><strong>Kilometraje:</strong> {{ vehiculo.kilometraje|intcomma }} km</p>
+                    </div>
+                    <div class="card-footer bg-white border-top-0 pt-0">
+                        <a href="{% url 'empleados:crear_reserva_empleado' vehiculo.id %}" class="btn btn-primary w-100">
+                            Reservar este Vehículo
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12">
+                <div class="alert alert-info" role="alert">
+                    No hay vehículos disponibles para reserva en este momento.
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

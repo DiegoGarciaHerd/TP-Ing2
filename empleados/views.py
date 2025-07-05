@@ -17,6 +17,9 @@ from django.template.loader import render_to_string
 from django.conf import settings
 from .forms import EmpleadoEditarPerfilForm, EmpleadoCambiarPasswordForm
 from .models import Empleado
+from reservas.forms import ReservaForm
+import datetime
+
 
 @empleado_required 
 def menu_empleado(request):
@@ -73,9 +76,6 @@ def buscar_cliente(request):
         'error_message': error_message
     })
 
-@empleado_required
-def reserva_empleado(request):
-    return render(request, 'empleados/reserva_empleado.html')
 
 
 @empleado_required
@@ -366,4 +366,107 @@ def editar_perfil_empleado(request):
         'form_password': form_password,
         'empleado': empleado
     })
+
+
+@empleado_required
+def empleados_seleccionar_vehiculo(request):
+    """
+    Permite al empleado seleccionar un vehículo para iniciar una nueva reserva.
+    """
+    # Puedes filtrar por disponibilidad, categoría, etc.
+    vehiculos_disponibles = Vehiculo.objects.filter(estado='DISPONIBLE').order_by('marca', 'modelo')
+    
+    context = {
+        'vehiculos': vehiculos_disponibles
+    }
+    return render(request, 'empleados/seleccionar_vehiculo.html', context) # Create this new template
+
+
+@empleado_required
+def empleados_crear_reserva(request, vehiculo_id):
+    vehiculo = get_object_or_404(Vehiculo, pk=vehiculo_id)
+
+    if vehiculo.estado != 'DISPONIBLE':
+        messages.error(request, 'Este vehículo no está disponible para reserva en este momento.')
+        return redirect('sucursales:vehiculo_detail', pk=vehiculo.id)
+
+    if request.method == 'POST':
+        form = ReservaForm(request.POST, vehiculo=vehiculo, is_employee_context=True)
+        if form.is_valid():
+            cliente_seleccionado = form.cleaned_data['cliente_seleccionado']
+            
+            fecha_recogida = form.cleaned_data['fecha_recogida']
+            fecha_devolucion = form.cleaned_data['fecha_devolucion']
+            conductor_nombre = form.cleaned_data['conductor_nombre']
+            conductor_apellido = form.cleaned_data['conductor_apellido']
+            conductor_dni = form.cleaned_data['conductor_dni']
+            
+            # Verificar disponibilidad del vehículo (¡muy importante!)
+            # Excluir la reserva actual SOLO si estuvieras editando una (no es el caso aquí)
+            reservas_existentes = Reserva.objects.filter(
+                vehiculo=vehiculo,
+                fecha_recogida__lt=fecha_devolucion,
+                fecha_devolucion__gt=fecha_recogida,
+                estado__in=['PENDIENTE', 'CONFIRMADA', 'RETIRADO']
+            )
+            # No es necesario el exclude(pk=form.instance.pk) porque estamos creando una nueva
+
+            if reservas_existentes.exists():
+                messages.error(request, 'El vehículo ya está reservado para el período seleccionado. Por favor, elige otras fechas.')
+                return render(request, 'empleados/crear_reserva_para_cliente.html', {'form': form, 'vehiculo': vehiculo})
+
+            # Calcula costos (como ya lo tenías)
+            dias = (fecha_devolucion - fecha_recogida).days
+            if dias <= 0:
+                dias = 1
+            costo_base = Decimal(str(vehiculo.precio_por_dia)) * Decimal(str(dias))
+            
+            extras_total = Decimal('0.00')
+            if form.cleaned_data.get('silla_para_ninos'): extras_total += Decimal('1000.00') * Decimal(str(dias))
+            if form.cleaned_data.get('telepass'): extras_total += Decimal('2000.00') * Decimal(str(dias))
+            if form.cleaned_data.get('seguro_por_danos'): extras_total += costo_base * Decimal('0.30')
+            if form.cleaned_data.get('conductor_adicional'): extras_total += costo_base * Decimal('0.20')
+            
+            costo_total = costo_base + extras_total
+
+            # --- CAMBIOS CLAVE AQUÍ ---
+            # Guardamos la reserva temporal en la sesión (como un cliente)
+            request.session['reserva_temporal'] = {
+                'vehiculo_id': vehiculo.id,
+                'fecha_recogida': fecha_recogida.isoformat(),
+                'fecha_devolucion': fecha_devolucion.isoformat(),
+                'costo_base': float(costo_base),
+                'monto_adicional': float(extras_total),
+                'costo_total': float(costo_total),
+                'conductor_nombre': conductor_nombre,
+                'conductor_apellido': conductor_apellido,
+                'conductor_dni': conductor_dni,
+                'silla_para_ninos': form.cleaned_data.get('silla_para_ninos', False),
+                'telepass': form.cleaned_data.get('telepass', False),
+                'seguro_por_danos': form.cleaned_data.get('seguro_por_danos', False),
+                'conductor_adicional': form.cleaned_data.get('conductor_adicional', False),
+                'conductor_adicional_nombre': form.cleaned_data.get('conductor_adicional_nombre', ''),
+                'conductor_adicional_apellido': form.cleaned_data.get('conductor_adicional_apellido', ''),
+                'conductor_adicional_dni': form.cleaned_data.get('conductor_adicional_dni', ''),
+                
+                'cliente_id': cliente_seleccionado.id, # ¡NUEVO! Guardamos el ID del cliente seleccionado
+            }
+            
+            messages.info(request, 'Reserva iniciada. Por favor, procede con el pago.')
+            # Redirigimos a la vista de pago
+            return redirect('reservas:procesar_pago', vehiculo_id=vehiculo.id)
+
+        else:
+            # Si el formulario no es válido, mostrar los errores
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{form.fields[field].label}: {error}")
+    else:
+        form = ReservaForm(vehiculo=vehiculo, is_employee_context=True)
+
+    context = {
+        'form': form,
+        'vehiculo': vehiculo,
+    }
+    return render(request, 'empleados/crear_reserva_para_cliente.html', context)
 

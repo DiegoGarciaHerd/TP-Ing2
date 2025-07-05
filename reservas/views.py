@@ -10,12 +10,13 @@ from django.conf import settings
 from decimal import Decimal
 import datetime
 import re
-
+from empleados.decorators import empleado_required
 from .models import Reserva
 from sucursales.models import Sucursal 
 from vehiculos.models import Vehiculo
 from .forms import ReservaForm, PagoForm, ExtrasReservaForm
 from .utils import procesar_pago_tarjeta
+from usuarios.models import Usuario
 
 
 
@@ -157,7 +158,14 @@ def mis_reservas(request):
 
 @login_required
 def detalle_reserva(request, reserva_id):
-    reserva = get_object_or_404(Reserva, pk=reserva_id, cliente=request.user)
+    # Intentamos obtener la reserva para el usuario logueado (si es cliente)
+    # o si el usuario logueado es un empleado, permitimos que vea cualquier reserva
+    
+    if request.user.rol == 'EMPLEADO':
+        reserva = get_object_or_404(Reserva, pk=reserva_id)
+    else: # 
+        reserva = get_object_or_404(Reserva, pk=reserva_id, cliente=request.user)
+
     context = {
         'reserva': reserva,
         'today': datetime.date.today()
@@ -386,7 +394,8 @@ def confirmar_reserva(request, vehiculo_id):
     if not pago_procesado:
         messages.error(request, 'Debe completar el pago antes de confirmar la reserva.')
         return redirect('reservas:procesar_pago', vehiculo_id=vehiculo.id)
-    
+    cliente_id_para_reserva = reserva_temporal.get('cliente_id', request.user.id) 
+    cliente_de_la_reserva = get_object_or_404(Usuario, id=cliente_id_para_reserva)
     # Verificar disponibilidad una vez más antes de guardar
     fecha_recogida = datetime.datetime.fromisoformat(reserva_temporal['fecha_recogida']).date()
     fecha_devolucion = datetime.datetime.fromisoformat(reserva_temporal['fecha_devolucion']).date()
@@ -407,7 +416,7 @@ def confirmar_reserva(request, vehiculo_id):
     
     # Crear y guardar la reserva con información de pago y extras
     reserva = Reserva(
-        cliente=request.user,
+        cliente=cliente_de_la_reserva,
         vehiculo=vehiculo,
         fecha_recogida=fecha_recogida,
         fecha_devolucion=fecha_devolucion,

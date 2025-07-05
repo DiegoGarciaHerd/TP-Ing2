@@ -3,8 +3,11 @@ from .models import Reserva
 import datetime
 import re
 from django.db import models
+from usuarios.models import Usuario
 
 class ReservaForm(forms.ModelForm):
+    # Ya no declaramos 'cliente_seleccionado' directamente aquí.
+    # Lo agregaremos dinámicamente en __init__
 
     fecha_recogida = forms.DateField(
         widget=forms.DateInput(attrs={'type': 'date', 'min': datetime.date.today().isoformat()}),
@@ -60,6 +63,8 @@ class ReservaForm(forms.ModelForm):
 
     class Meta:
         model = Reserva
+        # IMPORTANTE: No incluyas 'cliente_seleccionado' aquí en 'fields'.
+        # Lo manejaremos dinámicamente.
         fields = [
             'fecha_recogida', 'fecha_devolucion',
             'conductor_nombre', 'conductor_apellido', 'conductor_dni',
@@ -89,53 +94,106 @@ class ReservaForm(forms.ModelForm):
         cleaned_data = super().clean()
         fecha_recogida = cleaned_data.get('fecha_recogida')
         fecha_devolucion = cleaned_data.get('fecha_devolucion')
-        dni = cleaned_data.get('conductor_dni')
+        conductor_dni = cleaned_data.get('conductor_dni')
         conductor_adicional = cleaned_data.get('conductor_adicional')
         conductor_adicional_dni = cleaned_data.get('conductor_adicional_dni')
         conductor_adicional_nombre = cleaned_data.get('conductor_adicional_nombre')
         conductor_adicional_apellido = cleaned_data.get('conductor_adicional_apellido')
 
+        # Date Validations
         if fecha_recogida and fecha_devolucion:
             if fecha_devolucion < fecha_recogida:
                 self.add_error('fecha_devolucion', "La fecha de devolución no puede ser anterior a la fecha de recogida.")
-            if fecha_recogida < datetime.date.today():
-                self.add_error('fecha_recogida', "La fecha de recogida no puede ser anterior a la fecha actual.")
 
-        # Validar que el DNI no esté en otra reserva activa
-        if dni and fecha_recogida and fecha_devolucion:
-            reservas_existentes = Reserva.objects.filter(
-                conductor_dni=dni,
+        # Conductor DNI uniqueness check (for active reservations)
+        if conductor_dni and fecha_recogida and fecha_devolucion:
+            # Check if this DNI is already a main driver in an overlapping active reservation
+            overlapping_main_driver_reservations = Reserva.objects.filter(
+                conductor_dni=conductor_dni,
                 fecha_recogida__lt=fecha_devolucion,
                 fecha_devolucion__gt=fecha_recogida,
-                estado__in=['PENDIENTE', 'CONFIRMADA']
+                estado__in=['PENDIENTE', 'CONFIRMADA', 'RETIRADO']
             )
-            if reservas_existentes.exists():
-                self.add_error('conductor_dni', "Este DNI ya está asignado a otra reserva activa en las fechas seleccionadas.")
+            if self.instance and self.instance.pk: # Exclude current reservation if updating
+                overlapping_main_driver_reservations = overlapping_main_driver_reservations.exclude(pk=self.instance.pk)
 
-        # Validar conductor adicional solo si se ha seleccionado la opción
+            if overlapping_main_driver_reservations.exists():
+                self.add_error('conductor_dni', "Este DNI ya está asignado a otra reserva activa como conductor principal en las fechas seleccionadas.")
+            
+            # Check if this DNI is already an additional driver in an overlapping active reservation
+            overlapping_additional_driver_reservations = Reserva.objects.filter(
+                conductor_adicional_dni=conductor_dni,
+                fecha_recogida__lt=fecha_devolucion,
+                fecha_devolucion__gt=fecha_recogida,
+                estado__in=['PENDIENTE', 'CONFIRMADA', 'RETIRADO']
+            )
+            if self.instance and self.instance.pk: # Exclude current reservation if updating
+                overlapping_additional_driver_reservations = overlapping_additional_driver_reservations.exclude(pk=self.instance.pk)
+
+            if overlapping_additional_driver_reservations.exists():
+                self.add_error('conductor_dni', "Este DNI ya está asignado a otra reserva activa como conductor adicional en las fechas seleccionadas.")
+
+
+        # Conductor Adicional Validations
         if conductor_adicional:
             if not conductor_adicional_dni or not conductor_adicional_nombre or not conductor_adicional_apellido:
-                self.add_error('conductor_adicional_dni', "Debe completar todos los datos del conductor adicional.")
+                self.add_error('conductor_adicional', "Debe completar todos los datos del conductor adicional si marca esta opción.")
 
-            if conductor_adicional_dni == dni:
+            if conductor_adicional_dni == conductor_dni:
                 self.add_error('conductor_adicional_dni', "El DNI del conductor adicional no puede ser igual al del conductor principal.")
 
             if conductor_adicional_dni and fecha_recogida and fecha_devolucion:
-                reservas_existentes = Reserva.objects.filter(
+                # Check if the additional driver is already a main or additional driver in another active reservation
+                overlapping_reservations = Reserva.objects.filter(
                     (models.Q(conductor_dni=conductor_adicional_dni) | models.Q(conductor_adicional_dni=conductor_adicional_dni)),
                     fecha_recogida__lt=fecha_devolucion,
                     fecha_devolucion__gt=fecha_recogida,
-                    estado__in=['PENDIENTE', 'CONFIRMADA']
+                    estado__in=['PENDIENTE', 'CONFIRMADA', 'RETIRADO']
                 )
-                if reservas_existentes.exists():
-                    self.add_error('conductor_adicional_dni', "El conductor adicional ya tiene una reserva activa en las fechas seleccionadas.")
+                if self.instance and self.instance.pk: # Exclude current reservation if updating
+                    overlapping_reservations = overlapping_reservations.exclude(pk=self.instance.pk)
+
+                if overlapping_reservations.exists():
+                    self.add_error('conductor_adicional_dni', "El conductor adicional ya tiene una reserva activa (como principal o adicional) en las fechas seleccionadas.")
         else:
-            # Si no se seleccionó conductor adicional, limpiar los campos relacionados
+            # If conductor_adicional is not checked, clear the fields to avoid validation errors for empty fields
             cleaned_data['conductor_adicional_dni'] = ''
             cleaned_data['conductor_adicional_nombre'] = ''
             cleaned_data['conductor_adicional_apellido'] = ''
 
         return cleaned_data
+
+    def __init__(self, *args, **kwargs):
+        # Pop 'is_employee_context' if passed, default to False
+        # This argument will tell the form if it's being used by an employee
+        self.is_employee_context = kwargs.pop('is_employee_context', False)
+        self.vehiculo = kwargs.pop('vehiculo', None)
+        super().__init__(*args, **kwargs)
+        
+        # Adjust date min values dynamically for current date
+        today_iso = datetime.date.today().isoformat()
+        self.fields['fecha_recogida'].widget.attrs['min'] = today_iso
+        self.fields['fecha_devolucion'].widget.attrs['min'] = today_iso
+
+        # --- Lógica Condicional para 'cliente_seleccionado' ---
+        if self.is_employee_context:
+            # If an employee is creating the reservation, add the field and make it required
+            self.fields['cliente_seleccionado'] = forms.ModelChoiceField(
+                queryset=Usuario.objects.filter(rol='CLIENTE').order_by('last_name', 'first_name'),
+                label="Cliente para la Reserva",
+                empty_label="--- Seleccionar Cliente ---",
+                required=True, # Obligatorio para empleados
+                widget=forms.Select(attrs={'class': 'form-control'})
+            )
+            # Make sure it's the first field in the form
+            # You might need to adjust the order if other fields are added dynamically
+            field_order = ['cliente_seleccionado'] + list(self.fields.keys())
+            self.order_fields(field_order)
+        else:
+            # If a client is creating the reservation, remove the field
+            if 'cliente_seleccionado' in self.fields: # Check if it somehow was added
+                del self.fields['cliente_seleccionado']
+            # Also ensure it's not expected in the Meta.fields (already removed above)
 
 class CrearReservaForm(forms.ModelForm):
     fecha_recogida = forms.DateField(
