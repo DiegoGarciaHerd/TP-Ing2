@@ -14,6 +14,7 @@ from django.views.generic import ListView
 from django.contrib.auth.mixins import UserPassesTestMixin
 from sucursales.models import Sucursal
 from administrador.forms import EmpleadoModificarForm
+import re
 
 
 Usuario = get_user_model() 
@@ -72,11 +73,18 @@ def cargar_empleados(request):
         apellido = request.POST.get('apellido')
         dni = request.POST.get('dni')
         email = request.POST.get('email')
-        telefono = request.POST.get('telefono')
+        telefono = (request.POST.get('telefono') or '').strip()
         direccion = request.POST.get('direccion')
         sucursal_id = request.POST.get('sucursal')
         activo=True
         password = generate_random_password()
+
+        if not re.fullmatch(r'\d{7,15}', telefono):
+            messages.error(request, "El teléfono debe tener entre 7 y 15 dígitos, y solamente números")
+            return render(request, 'administrador/cargar_empleados.html', {
+                'request_post': request.POST,
+                'sucursales': sucursales
+            })
 
         if Empleado.objects.filter(dni=dni).exists():
             messages.error(request, "Ya existe un empleado con ese DNI.")

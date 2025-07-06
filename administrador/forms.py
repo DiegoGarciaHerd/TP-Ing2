@@ -1,4 +1,5 @@
-
+from django.core.exceptions import ValidationError
+import re
 from django import forms
 from empleados.models import Empleado
 
@@ -14,3 +15,14 @@ class EmpleadoModificarForm(forms.ModelForm):
             'telefono': forms.TextInput(attrs={'class': 'form-control'}),
             'sucursal': forms.Select(attrs={'class': 'form-select'}),
         }
+
+    def clean_telefono(self):
+        telefono = self.cleaned_data.get('telefono', '').strip()
+
+        if not telefono.isdigit():
+            raise ValidationError("El teléfono debe contener solo números.")
+        
+        if not (7 <= len(telefono) <= 15):
+            raise ValidationError("El teléfono debe tener entre 7 y 15 dígitos.")
+        
+        return telefono
