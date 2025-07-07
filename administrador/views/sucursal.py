@@ -9,6 +9,7 @@ from sucursales.models import Sucursal
 from django.http import JsonResponse
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.utils import timezone # Importa timezone
+import re
 
 @admin_required
 def cargar_sucursal(request):
@@ -16,7 +17,13 @@ def cargar_sucursal(request):
         try:
             nombre = request.POST.get('nombre')
             direccion = request.POST.get('direccion')
-            telefono = request.POST.get('telefono')
+            telefono = (request.POST.get('telefono') or '').strip()
+            
+            if not re.fullmatch(r'\d{7,15}', telefono):
+                messages.error(request, "El teléfono debe tener entre 7 y 15 dígitos, y solamente números")
+                return render(request, 'administrador/cargar_sucursal.html', {
+                    'request_post': request.POST
+                })
 
             if Sucursal.objects.filter(nombre=nombre).exists():
                 messages.error(request, "Ya existe una sucursal con ese nombre.")
@@ -43,7 +50,7 @@ def modificar_sucursal(request):
     if request.method == 'POST':
         nombre_sucursal_seleccionada = request.POST.get('nombre_sucursal_selector')
         nueva_direccion = request.POST.get('direccion')
-        nuevo_telefono = request.POST.get('telefono')
+        nuevo_telefono = (request.POST.get('telefono') or '').strip()
 
         if not nombre_sucursal_seleccionada:
             messages.error(request, "Por favor, seleccione una sucursal para modificar.")
@@ -59,6 +66,12 @@ def modificar_sucursal(request):
             if nueva_direccion:
                 sucursal.direccion = nueva_direccion
             if nuevo_telefono:
+                if not re.fullmatch(r'\d{7,15}', nuevo_telefono):
+                    messages.error(request, "El teléfono debe tener entre 7 y 15 dígitos, y solamente números")
+                    return render(request, 'administrador/modificar_sucursal.html', {
+                        'request_post': request.POST, 'sucursales': sucursales
+                    })
+
                 sucursal.telefono = nuevo_telefono
             
             sucursal.save() # Guardar los cambios en la base de datos
