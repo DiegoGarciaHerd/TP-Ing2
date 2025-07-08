@@ -76,7 +76,6 @@ def cargar_empleados(request):
         telefono = (request.POST.get('telefono') or '').strip()
         direccion = request.POST.get('direccion')
         sucursal_id = request.POST.get('sucursal')
-        activo=True
         password = generate_random_password()
 
         if not re.fullmatch(r'\d{7,15}', telefono):
@@ -111,6 +110,7 @@ def cargar_empleados(request):
                 last_name=apellido,
                 # --- ¡AQUÍ ESTÁ EL CAMBIO! ---
                 is_staff=True, # <--- Establece is_staff en True para empleados
+                rol = "EMPLEADO" # <--- Asigna el rol de empleado
                 # -----------------------------
             )
             
