@@ -19,7 +19,9 @@ from .forms import EmpleadoEditarPerfilForm, EmpleadoCambiarPasswordForm
 from .models import Empleado
 from reservas.forms import ReservaForm
 import datetime
+import logging
 
+logger = logging.getLogger(__name__)
 
 @empleado_required 
 def menu_empleado(request):
@@ -181,40 +183,37 @@ def confirmar_retiro_auto(request, reserva_id):
         
     return render(request, 'empleados/listar_retiros_pendientes.html') 
 
-
 @empleado_required
 def obtener_datos_vehiculo_ajax(request):
     patente = request.GET.get('patente')
     if not patente:
-        return JsonResponse({'error': 'Patente no proporcionada'}, status=400)  # Bad Request
+        return JsonResponse({'error': 'Patente no proporcionada'}, status=400) # Bad Request
 
     try:
         vehiculo = Vehiculo.objects.get(patente=patente)
         
         # Verificar que el vehículo no esté dado de baja
         if vehiculo.estado == 'BAJA':
-            return JsonResponse({'error': 'No se puede modificar un vehículo dado de baja'}, status=403)  # Forbidden
+            return JsonResponse({'error': 'No se puede modificar un vehículo dado de baja'}, status=403) # Forbidden
         
         # Prepara los datos para enviar de vuelta
         data = {
             'marca': vehiculo.marca,
             'modelo': vehiculo.modelo,
             'kilometraje': vehiculo.kilometraje,
-            'precio_por_dia': str(vehiculo.precio_por_dia),  # Convierte Decimal a string
-            'estado': vehiculo.estado,  # Cambiamos 'disponible' por 'estado'
-            'politica_de_reembolso': vehiculo.politica_de_reembolso,  # Ya es string en el modelo
-            'foto_base64': vehiculo.foto_base64 or ''  # Asegura que no sea None
+            'estado': vehiculo.estado,
+            # --- ¡Estas líneas son las que debes eliminar o comentar! ---
+            # 'precio_por_dia': str(vehiculo.precio_por_dia),
+            # 'politica_de_reembolso': vehiculo.politica_de_reembolso,
+            # 'foto_base64': vehiculo.foto_base64 or ''
+            # -----------------------------------------------------------
         }
         return JsonResponse(data)
     except Vehiculo.DoesNotExist:
-        return JsonResponse({'error': 'Vehículo no encontrado'}, status=404)  # Not Found
+        return JsonResponse({'error': 'Vehículo no encontrado'}, status=404) # Not Found
     except Exception as e:
-        # Registra el error para depuración en el servidor
-        import logging
-        logger = logging.getLogger(__name__)
         logger.error(f"Error al obtener datos del vehículo {patente}: {e}")
-        return JsonResponse({'error': 'Error interno del servidor'}, status=500)  # Internal Server Error
-
+        return JsonResponse({'error': 'Error interno del servidor'}, status=500) # Internal Server Error
 
 @empleado_required
 def listar_devoluciones_pendientes(request):

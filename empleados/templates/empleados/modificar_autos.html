@@ -12,20 +12,18 @@
                     <form method="POST" enctype="multipart/form-data" id="modificarAutoForm">
                         {% csrf_token %}
                         
-                        <!-- Selector de Patente -->
                         <div class="mb-3">
                             <label for="patente" class="form-label">Seleccionar Vehículo por Patente:</label>
                             <select class="form-select" id="patente" name="patente" required>
                                 <option value="" disabled selected>Seleccione un vehículo</option>
                                 {% for vehiculo in vehiculos %}
-                                    {% if vehiculo.estado != 'BAJA' %}  {# Excluye vehículos dados de baja #}
+                                    {% if vehiculo.estado != 'BAJA' %} {# Excluye vehículos dados de baja #}
                                         <option value="{{ vehiculo.patente }}">{{ vehiculo.patente }} - {{ vehiculo.marca }} {{ vehiculo.modelo }} ({{ vehiculo.get_estado_display }})</option>
                                     {% endif %}
                                 {% endfor %}
                             </select>
                         </div>
 
-                        <!-- Campos modificables - inicialmente ocultos -->
                         <div id="camposModificables" style="display: none;">
                             <hr>
                             <h5 class="mb-3">Datos Modificables</h5>
@@ -41,44 +39,6 @@
                                         <option value="DISPONIBLE">Disponible</option>
                                         <option value="EN_MANTENIMIENTO">En mantenimiento</option>
                                     </select>
-                                </div>
-                            </div>
-
-                            <!-- Campos adicionales que ya tenías -->
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label for="precio" class="form-label">Precio por día:</label>
-                                    <input type="number" step="0.01" min="0" class="form-control" id="precio" name="precio">
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label for="politica_reembolso" class="form-label">Política de reembolso:</label>
-                                    <select class="form-control" id="politica_reembolso" name="politica_reembolso">
-                                        <option value="0">0%</option>
-                                        <option value="20">20%</option>
-                                        <option value="100">100%</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="foto" class="form-label">Nueva foto del vehículo:</label>
-                                <input type="file" class="form-control" id="foto" name="foto" accept="image/*">
-                                <small class="form-text text-muted">Subir nueva imagen (opcional)</small>
-                            </div>
-
-                            <!-- Vista previa de la imagen actual -->
-                            <div id="previewContainer" style="display: none; margin-bottom: 20px;">
-                                <label class="form-label">Imagen actual:</label>
-                                <div>
-                                    <img id="previewImage" src="" class="img-thumbnail" style="max-height: 200px;">
-                                </div>
-                            </div>
-
-                            <!-- Vista previa de la nueva imagen -->
-                            <div id="newPreviewContainer" style="display: none; margin-bottom: 20px;">
-                                <label class="form-label">Nueva imagen:</label>
-                                <div>
-                                    <img id="newPreviewImage" src="#" class="img-thumbnail" style="max-height: 200px;">
                                 </div>
                             </div>
 
@@ -104,15 +64,8 @@
         const camposModificables = document.getElementById('camposModificables');
         const kilometrajeInput = document.getElementById('kilometraje');
         const estadoSelect = document.getElementById('estado');
-        const precioInput = document.getElementById('precio');
-        const politicaSelect = document.getElementById('politica_reembolso');
-        const fotoInput = document.getElementById('foto');
-        const previewImage = document.getElementById('previewImage');
-        const previewContainer = document.getElementById('previewContainer');
-        const newPreviewImage = document.getElementById('newPreviewImage');
-        const newPreviewContainer = document.getElementById('newPreviewContainer');
 
-        let datosOriginales = {};
+        let datosOriginales = {}; // Aquí guardaremos solo los datos que usamos
 
         // Manejar cambio de patente
         patenteSelect.addEventListener('change', function() {
@@ -121,65 +74,33 @@
                 fetch(`{% url 'empleados:obtener_datos_vehiculo_ajax' %}?patente=${patente}`)
                     .then(response => {
                         if (!response.ok) {
-                            throw new Error(`Error HTTP! estado: ${response.status}`);
+                            return response.json().then(errorData => {
+                                throw new Error(errorData.error || `Error HTTP! estado: ${response.status}`);
+                            });
                         }
                         return response.json();
                     })
                     .then(data => {
-                        if (data.error) {
-                            alert('Error: ' + data.error);
-                            camposModificables.style.display = 'none';
-                            return;
-                        }
-                        
-                        // Guardar datos originales
+                        // Guardar solo los datos originales que sí estamos modificando y mostrando
                         datosOriginales = {
                             kilometraje: data.kilometraje,
                             estado: data.estado,
-                            precio_por_dia: data.precio_por_dia,
-                            politica_de_reembolso: data.politica_de_reembolso,
-                            foto_base64: data.foto_base64
                         };
                         
                         // Llenar campos con datos actuales
                         kilometrajeInput.value = data.kilometraje;
-                        estadoSelect.value = data.estado === 'BAJA' ? 'DISPONIBLE' : data.estado;
-                        precioInput.value = data.precio_por_dia;
-                        politicaSelect.value = data.politica_de_reembolso;
-
-                        // Manejar imagen actual
-                        if (data.foto_base64) {
-                            previewImage.src = 'data:image/jpeg;base64,' + data.foto_base64;
-                            previewContainer.style.display = 'block';
-                        } else {
-                            previewContainer.style.display = 'none';
-                        }
+                        estadoSelect.value = data.estado; 
                         
                         // Mostrar campos modificables
                         camposModificables.style.display = 'block';
                     })
                     .catch(error => {
                         console.error('Error en fetch:', error);
-                        alert('Error al cargar los datos del vehículo. Por favor, intente de nuevo.');
-                        camposModificables.style.display = 'none';
+                        alert('Error al cargar los datos del vehículo: ' + error.message);
+                        camposModificables.style.display = 'none'; // Ocultar si hay error
                     });
             } else {
-                camposModificables.style.display = 'none';
-            }
-        });
-        
-        // Vista previa de nueva imagen
-        fotoInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    newPreviewImage.src = e.target.result;
-                    newPreviewContainer.style.display = 'block';
-                }
-                reader.readAsDataURL(file);
-            } else {
-                newPreviewContainer.style.display = 'none';
+                camposModificables.style.display = 'none'; // Ocultar si no hay patente seleccionada
             }
         });
         
@@ -188,22 +109,10 @@
         btnCancelar.addEventListener('click', function() {
             if (Object.keys(datosOriginales).length > 0) {
                 kilometrajeInput.value = datosOriginales.kilometraje;
-                estadoSelect.value = datosOriginales.estado === 'BAJA' ? 'DISPONIBLE' : datosOriginales.estado;
-                precioInput.value = datosOriginales.precio_por_dia;
-                politicaSelect.value = datosOriginales.politica_de_reembolso;
-                
-                if (datosOriginales.foto_base64) {
-                    previewImage.src = 'data:image/jpeg;base64,' + datosOriginales.foto_base64;
-                    previewContainer.style.display = 'block';
-                } else {
-                    previewContainer.style.display = 'none';
-                }
-                
-                newPreviewContainer.style.display = 'none';
-                fotoInput.value = '';
+                estadoSelect.value = datosOriginales.estado;
             }
             camposModificables.style.display = 'none';
-            patenteSelect.value = "";
+            patenteSelect.value = ""; // Desseleccionar el vehículo en el dropdown
         });
         
         // Prevenir que Enter envíe el formulario
