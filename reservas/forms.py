@@ -99,28 +99,40 @@ class ReservaForm(forms.ModelForm):
         conductor_adicional_dni = cleaned_data.get('conductor_adicional_dni')
         conductor_adicional_nombre = cleaned_data.get('conductor_adicional_nombre')
         conductor_adicional_apellido = cleaned_data.get('conductor_adicional_apellido')
+        
+        # Validación adicional para contexto de empleados
+        if self.is_employee_context:
+            cliente_seleccionado = cleaned_data.get('cliente_seleccionado')
+            if cliente_seleccionado:
+                # Verificar que el cliente seleccionado no sea un empleado
+                if cliente_seleccionado.rol != 'CLIENTE':
+                    self.add_error('cliente_seleccionado', "Solo se pueden crear reservas para clientes, no para empleados o administradores.")
+                
+                # Verificar que el usuario no tenga perfil de empleado
+                if hasattr(cliente_seleccionado, 'empleado_profile'):
+                    self.add_error('cliente_seleccionado', "No se pueden crear reservas para usuarios que tienen perfil de empleado.")
 
-        # Date Validations
+        
         if fecha_recogida and fecha_devolucion:
             if fecha_devolucion < fecha_recogida:
                 self.add_error('fecha_devolucion', "La fecha de devolución no puede ser anterior a la fecha de recogida.")
 
-        # Conductor DNI uniqueness check (for active reservations)
+        #
         if conductor_dni and fecha_recogida and fecha_devolucion:
-            # Check if this DNI is already a main driver in an overlapping active reservation
+            
             overlapping_main_driver_reservations = Reserva.objects.filter(
                 conductor_dni=conductor_dni,
                 fecha_recogida__lt=fecha_devolucion,
                 fecha_devolucion__gt=fecha_recogida,
                 estado__in=['PENDIENTE', 'CONFIRMADA', 'RETIRADO']
             )
-            if self.instance and self.instance.pk: # Exclude current reservation if updating
+            if self.instance and self.instance.pk: 
                 overlapping_main_driver_reservations = overlapping_main_driver_reservations.exclude(pk=self.instance.pk)
 
             if overlapping_main_driver_reservations.exists():
                 self.add_error('conductor_dni', "Este DNI ya está asignado a otra reserva activa como conductor principal en las fechas seleccionadas.")
             
-            # Check if this DNI is already an additional driver in an overlapping active reservation
+           
             overlapping_additional_driver_reservations = Reserva.objects.filter(
                 conductor_adicional_dni=conductor_dni,
                 fecha_recogida__lt=fecha_devolucion,
@@ -134,7 +146,7 @@ class ReservaForm(forms.ModelForm):
                 self.add_error('conductor_dni', "Este DNI ya está asignado a otra reserva activa como conductor adicional en las fechas seleccionadas.")
 
 
-        # Conductor Adicional Validations
+       
         if conductor_adicional:
             if not conductor_adicional_dni or not conductor_adicional_nombre or not conductor_adicional_apellido:
                 self.add_error('conductor_adicional', "Debe completar todos los datos del conductor adicional si marca esta opción.")
@@ -143,7 +155,7 @@ class ReservaForm(forms.ModelForm):
                 self.add_error('conductor_adicional_dni', "El DNI del conductor adicional no puede ser igual al del conductor principal.")
 
             if conductor_adicional_dni and fecha_recogida and fecha_devolucion:
-                # Check if the additional driver is already a main or additional driver in another active reservation
+                
                 overlapping_reservations = Reserva.objects.filter(
                     (models.Q(conductor_dni=conductor_adicional_dni) | models.Q(conductor_adicional_dni=conductor_adicional_dni)),
                     fecha_recogida__lt=fecha_devolucion,
@@ -156,7 +168,7 @@ class ReservaForm(forms.ModelForm):
                 if overlapping_reservations.exists():
                     self.add_error('conductor_adicional_dni', "El conductor adicional ya tiene una reserva activa (como principal o adicional) en las fechas seleccionadas.")
         else:
-            # If conductor_adicional is not checked, clear the fields to avoid validation errors for empty fields
+          
             cleaned_data['conductor_adicional_dni'] = ''
             cleaned_data['conductor_adicional_nombre'] = ''
             cleaned_data['conductor_adicional_apellido'] = ''
@@ -164,13 +176,12 @@ class ReservaForm(forms.ModelForm):
         return cleaned_data
 
     def __init__(self, *args, **kwargs):
-        # Pop 'is_employee_context' if passed, default to False
-        # This argument will tell the form if it's being used by an employee
+       
         self.is_employee_context = kwargs.pop('is_employee_context', False)
         self.vehiculo = kwargs.pop('vehiculo', None)
         super().__init__(*args, **kwargs)
         
-        # Adjust date min values dynamically for current date
+       
         today_iso = datetime.date.today().isoformat()
         self.fields['fecha_recogida'].widget.attrs['min'] = today_iso
         self.fields['fecha_devolucion'].widget.attrs['min'] = today_iso
@@ -178,8 +189,32 @@ class ReservaForm(forms.ModelForm):
         # --- Lógica Condicional para 'cliente_seleccionado' ---
         if self.is_employee_context:
             # If an employee is creating the reservation, add the field and make it required
+            # Filtrar SOLO clientes, excluyendo explícitamente empleados y administradores
+            
+            # DEBUG: Verificar qué usuarios existen y sus roles
+            print("=== DEBUG USUARIOS EN SISTEMA ===")
+            todos_usuarios = Usuario.objects.all()
+            for usuario in todos_usuarios:
+                print(f"Usuario: {usuario.get_full_name()} | Email: {usuario.email} | Rol: {usuario.rol} | Activo: {usuario.is_active}")
+            
+            # DEBUG: Verificar el queryset filtrado
+            # Excluir usuarios que tengan perfil de empleado, incluso si su rol es 'CLIENTE'
+            queryset_filtrado = Usuario.objects.filter(
+                rol='CLIENTE',
+                is_active=True
+            ).exclude(
+                rol__in=['EMPLEADO', 'ADMIN']
+            ).exclude(
+                empleado_profile__isnull=False  # Excluir usuarios que tengan perfil de empleado
+            ).order_by('last_name', 'first_name')
+            
+            print(f"\n=== DEBUG QUERYSET FILTRADO ===")
+            print(f"Total usuarios en queryset filtrado: {queryset_filtrado.count()}")
+            for usuario in queryset_filtrado:
+                print(f"Usuario en queryset: {usuario.get_full_name()} | Email: {usuario.email} | Rol: {usuario.rol}")
+            
             self.fields['cliente_seleccionado'] = forms.ModelChoiceField(
-                queryset=Usuario.objects.filter(rol='CLIENTE').order_by('last_name', 'first_name'),
+                queryset=queryset_filtrado,
                 label="Cliente para la Reserva",
                 empty_label="--- Seleccionar Cliente ---",
                 required=True, # Obligatorio para empleados

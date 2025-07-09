@@ -15,6 +15,5 @@ urlpatterns = [
     path('confirmar-devolucion/<int:reserva_id>/', views.confirmar_devolucion_auto, name='confirmar_devolucion_auto'),
     path('registrar-cliente/', views.registrar_cliente, name='registrar_cliente'),
     path('editar-perfil/', views.editar_perfil_empleado, name='editar_perfil_empleado'),
-    path('reservar/<int:vehiculo_id>/', views.empleados_crear_reserva, name='crear_reserva_empleado'),
-    
+    path('reservar/<int:vehiculo_id>/', views.empleados_crear_reserva, name='crear_reserva_empleado'),   
 ]

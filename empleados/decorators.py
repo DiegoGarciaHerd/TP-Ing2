@@ -14,7 +14,7 @@ def empleado_required(view_func):
         if not request.user.is_authenticated:
             print("FALLO: Usuario no autenticado.")
             messages.error(request, "Debes iniciar sesión para acceder a esta sección.")
-            return redirect(reverse('usuarios:login')) # Asegúrate que 'usuarios:login' es correcto
+            return redirect('/usuarios/login/')
 
         print(f"Usuario: {request.user.username}")
         print(f"Usuario es staff: {request.user.is_staff}")
