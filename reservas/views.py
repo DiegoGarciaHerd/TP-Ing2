@@ -46,9 +46,9 @@ class VehiculoListView(ListView):
 
 @login_required 
 def crear_reserva(request, vehiculo_id):
-    if request.user.is_superuser: 
-        messages.error(request, 'Los administradores no pueden realizar reservas de vehículos.')
-        return redirect('admin_menu') 
+    if request.user.is_staff: 
+        messages.error(request, 'Los empleados y administradores no pueden realizar reservas de vehículos.')
+        return redirect('home:home') 
 
     vehiculo = get_object_or_404(Vehiculo, pk=vehiculo_id)
 
@@ -220,6 +220,10 @@ def cancelar_reserva(request, reserva_id):
 
 @login_required
 def ticket_reserva(request, vehiculo_id):
+    if request.user.is_staff: 
+        messages.error(request, 'Los empleados y administradores no pueden realizar reservas de vehículos.')
+        return redirect('home:home') 
+        
     vehiculo = get_object_or_404(Vehiculo, pk=vehiculo_id)
     reserva_temporal = request.session.get('reserva_temporal')
     

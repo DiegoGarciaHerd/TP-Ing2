@@ -99,17 +99,19 @@
                 </div>
                 {% endif %}
 
-                {% if reserva.estado == 'PENDIENTE' or reserva.estado == 'CONFIRMADA' %}
-                    {% if reserva.fecha_recogida >= today %}
-                        <div class="mt-3">
-                            <a href="{% url 'reservas:cancelar_reserva' reserva.id %}" class="btn btn-warning">Cancelar Reserva</a>
-                        </div>
+                {% if not request.user.is_staff %}
+                    {% if reserva.estado == 'PENDIENTE' or reserva.estado == 'CONFIRMADA' %}
+                        {% if reserva.fecha_recogida >= today %}
+                            <div class="mt-3">
+                                <a href="{% url 'reservas:cancelar_reserva' reserva.id %}" class="btn btn-warning">Cancelar Reserva</a>
+                            </div>
+                        {% endif %}
                     {% endif %}
-                {% endif %}
 
-                <div class="mt-3">
-                    <a href="{% url 'reservas:mis_reservas' %}" class="btn btn-secondary">Volver a Mis Reservas</a>
-                </div>
+                    <div class="mt-3">
+                        <a href="{% url 'reservas:mis_reservas' %}" class="btn btn-secondary">Volver a Mis Reservas</a>
+                    </div>
+                {% endif %}
             </div>
         </div>
     </div>
