@@ -117,17 +117,28 @@ class ReservaForm(forms.ModelForm):
             if fecha_devolucion < fecha_recogida:
                 self.add_error('fecha_devolucion', "La fecha de devolución no puede ser anterior a la fecha de recogida.")
 
+
         #
         if conductor_dni and fecha_recogida and fecha_devolucion:
             
+            cliente_seleccionado = cleaned_data.get('cliente_seleccionado')  # ya lo habías definido antes
+
             overlapping_main_driver_reservations = Reserva.objects.filter(
                 conductor_dni=conductor_dni,
                 fecha_recogida__lt=fecha_devolucion,
                 fecha_devolucion__gt=fecha_recogida,
                 estado__in=['PENDIENTE', 'CONFIRMADA', 'RETIRADO']
-            )
-            if self.instance and self.instance.pk: 
+            ).exclude(cliente=cliente_seleccionado)
+
+            if cliente_seleccionado:
+                overlapping_main_driver_reservations = overlapping_main_driver_reservations.exclude(cliente=cliente_seleccionado)
+
+            if self.instance and self.instance.pk:
                 overlapping_main_driver_reservations = overlapping_main_driver_reservations.exclude(pk=self.instance.pk)
+
+            if overlapping_main_driver_reservations.exists():
+                self.add_error('conductor_dni', "Este DNI ya está asignado a otra reserva activa como conductor principal en las fechas seleccionadas.")
+
 
             if overlapping_main_driver_reservations.exists():
                 self.add_error('conductor_dni', "Este DNI ya está asignado a otra reserva activa como conductor principal en las fechas seleccionadas.")

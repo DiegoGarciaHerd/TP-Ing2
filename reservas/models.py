@@ -59,7 +59,7 @@ class Reserva(models.Model):
         # Campos del conductor
     conductor_nombre = models.CharField(max_length=100, null=True, blank=True)
     conductor_apellido = models.CharField(max_length=100, null=True, blank=True)
-    conductor_dni = models.CharField(max_length=20, null=True, blank=True, unique=True)
+    conductor_dni = models.CharField(max_length=20, null=True, blank=True)
     
     # Campos para extras
     silla_para_ninos = models.BooleanField(default=False)
