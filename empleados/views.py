@@ -268,15 +268,14 @@ def confirmar_devolucion_auto(request, reserva_id):
             #Agregar penalizacion si la fecha de devolucion es mayor a la actual
             if reserva.fecha_devolucion < timezone.localdate():
                 vehiculo_reserva = Vehiculo.objects.get(id=reserva.vehiculo.id)
-
                 dias_retraso = (timezone.localdate() - reserva.fecha_devolucion).days
                 penalizacion = Decimal(vehiculo_reserva.precio_por_dia) * Decimal(dias_retraso)
                 messages.warning(request, f"Devolución del vehículo {vehiculo.marca} {vehiculo.modelo} ({vehiculo.patente}) para la reserva {reserva.id}"
-                                 "confirmada con {dias_retraso} días de retraso. Se aplicará una penalización de {penalizacion} al cliente."
-                                 "Kilometraje actualizado a {nuevo_kilometraje} km.")
+                                 f" confirmada con {dias_retraso} días de retraso. Se aplicará una penalización de {penalizacion} al cliente."
+                                 f" Kilometraje actualizado a {nuevo_kilometraje} km.")
             else:
                 messages.success(request, f"Devolución del vehículo {vehiculo.marca} {vehiculo.modelo} ({vehiculo.patente}) para la reserva {reserva.id}"
-                                 "confirmada exitosamente. Kilometraje actualizado a {nuevo_kilometraje} km.")
+                                 f"confirmada exitosamente. Kilometraje actualizado a {nuevo_kilometraje} km.")
             return redirect('empleados:listar_devoluciones_pendientes')
 
         except Exception as e:
