@@ -42,10 +42,19 @@ def buscar_cliente(request):
         else:
             try:
                 # Buscar por DNI si es numérico, sino por email
+                # Excluir usuarios que tengan perfil de empleado, incluso si su rol es 'CLIENTE'
                 if dni_o_email.isdigit():
-                    cliente = Usuario.objects.get(DNI=dni_o_email, rol='CLIENTE')
+                    cliente = Usuario.objects.get(
+                        DNI=dni_o_email, 
+                        rol='CLIENTE',
+                        empleado_profile__isnull=True  # Excluir usuarios que tengan perfil de empleado
+                    )
                 else:
-                    cliente = Usuario.objects.get(email__iexact=dni_o_email, rol='CLIENTE')
+                    cliente = Usuario.objects.get(
+                        email__iexact=dni_o_email, 
+                        rol='CLIENTE',
+                        empleado_profile__isnull=True  # Excluir usuarios que tengan perfil de empleado
+                    )
                 
                 reservas = Reserva.objects.filter(cliente=cliente).order_by('-fecha_creacion')
                 reservas_pendientes = reservas.filter(estado__in=['PENDIENTE', 'CONFIRMADA'])
@@ -69,6 +78,7 @@ def buscar_cliente(request):
                 
             except Usuario.DoesNotExist:
                 messages.error(request, f"No se encontró ningún cliente con el dato ingresado: {dni_o_email}")
+                
             except Exception as e:
                 messages.error(request, f"Error al buscar el cliente: {str(e)}")
     
