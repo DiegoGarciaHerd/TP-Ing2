@@ -210,15 +210,25 @@ class ReservaForm(forms.ModelForm):
             for usuario in queryset_filtrado:
                 print(f"Usuario en queryset: {usuario.get_full_name()} | Email: {usuario.email} | Rol: {usuario.rol}")
             
+            class ClienteLabel:
+                def __init__(self, usuario):
+                    self.usuario = usuario
+                def __str__(self):
+                    return f"{self.usuario.get_full_name()} (DNI: {self.usuario.DNI})"
+                def __getattr__(self, attr):
+                    return getattr(self.usuario, attr)
+
             self.fields['cliente_seleccionado'] = forms.ModelChoiceField(
                 queryset=queryset_filtrado,
                 label="Cliente para la Reserva",
                 empty_label="--- Seleccionar Cliente ---",
                 required=True, # Obligatorio para empleados
-                widget=forms.Select(attrs={'class': 'form-control'})
+                widget=forms.Select(attrs={'class': 'form-control'}),
+                to_field_name=None,
             )
+            # Personalizar las etiquetas del selector
+            self.fields['cliente_seleccionado'].label_from_instance = lambda obj: f"{obj.get_full_name()} (DNI: {obj.DNI})"
             # Make sure it's the first field in the form
-            # You might need to adjust the order if other fields are added dynamically
             field_order = ['cliente_seleccionado'] + list(self.fields.keys())
             self.order_fields(field_order)
         else:
