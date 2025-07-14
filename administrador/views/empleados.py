@@ -92,7 +92,7 @@ def cargar_empleados(request):
                 'sucursales': sucursales
             })
         
-        if Usuario.objects.filter(email=email).exists() or Empleado.objects.filter(email=email).exists():
+        if Usuario.objects.filter(email__iexact=email).exists() or Empleado.objects.filter(email__iexact=email).exists():
             messages.error(request, "Ya existe un usuario o empleado con ese email.")
             return render(request, 'administrador/cargar_empleados.html', {
                 'request_post': request.POST,
@@ -110,7 +110,7 @@ def cargar_empleados(request):
                 last_name=apellido,
                 # --- ¡AQUÍ ESTÁ EL CAMBIO! ---
                 is_staff=True, # <--- Establece is_staff en True para empleados
-                rol = "EMPLEADO" # <--- Asigna el rol de empleado
+                rol="EMPLEADO" # <--- Asigna el rol de empleado
                 # -----------------------------
             )
             
@@ -208,9 +208,31 @@ def modificar_empleado(request):
     if request.method == "POST" and empleado:
         form = EmpleadoModificarForm(request.POST, instance=empleado)
         if form.is_valid():
-            form.save()
-            messages.success(request, "Empleado modificado correctamente.")
-            return redirect(f"{request.path}?dni={empleado.dni}")
+            # Guardar el empleado
+            empleado_actualizado = form.save()
+            
+            # Si el email cambió, actualizar también el email y el rol del usuario asociado
+            if empleado_actualizado.email != empleado.email:
+                try:
+                    usuario = empleado_actualizado.user
+                    usuario.email = empleado_actualizado.email
+                    usuario.rol = "EMPLEADO"  # Asegura el rol correcto
+                    usuario.save()
+                    messages.success(request, "Empleado modificado correctamente. El email y el rol del usuario también han sido actualizados.")
+                except Exception as e:
+                    messages.warning(request, f"Empleado modificado, pero hubo un problema al actualizar el email o rol del usuario: {str(e)}")
+            else:
+                # Asegura el rol aunque no cambie el email
+                try:
+                    usuario = empleado_actualizado.user
+                    if usuario.rol != "EMPLEADO":
+                        usuario.rol = "EMPLEADO"
+                        usuario.save()
+                except Exception:
+                    pass
+                messages.success(request, "Empleado modificado correctamente.")
+            
+            return redirect(f"{request.path}?dni={empleado_actualizado.dni}")
         else:
             messages.error(request, "Corrija los errores del formulario.")
     elif empleado:
