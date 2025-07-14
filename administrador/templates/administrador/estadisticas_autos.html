@@ -39,17 +39,7 @@
                             <input type="date" class="form-control" id="fecha_fin" name="fecha_fin" 
                                    value="{{ filtros.fecha_fin }}">
                         </div>
-                        <div class="col-md-2">
-                            <label for="estado" class="form-label">Estado</label>
-                            <select class="form-select" id="estado" name="estado">
-                                <option value="TODOS">Todos los estados</option>
-                                {% for codigo, nombre in estados_disponibles %}
-                                <option value="{{ codigo }}" {% if filtros.estado == codigo %}selected{% endif %}>
-                                    {{ nombre }}
-                                </option>
-                                {% endfor %}
-                            </select>
-                        </div>
+
                         <div class="col-md-2">
                             <label for="tipo_vehiculo" class="form-label">Tipo de Vehículo</label>
                             <select class="form-select" id="tipo_vehiculo" name="tipo_vehiculo">
