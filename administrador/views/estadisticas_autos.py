@@ -304,6 +304,8 @@ def estadisticas_tipos_autos(request):
         'rentabilidad_dia': [float(tipo['rentabilidad_por_dia']) for tipo in rentabilidad_por_tipo]
     }
     
+
+    
     context = {
         'distribucion_por_tipo': distribucion_por_tipo,
         'rentabilidad_por_tipo': rentabilidad_por_tipo,

@@ -424,6 +424,10 @@
     </div>
 </div>
 
+<!-- Datos para los gráficos -->
+<script type="application/json" id="datosTorta">{{ datos_grafico_torta|safe }}</script>
+<script type="application/json" id="datosRentabilidad">{{ datos_grafico_rentabilidad|safe }}</script>
+
 <!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -462,10 +466,9 @@
         // Leer y parsear los datos JSON insertados en los scripts de tipo application/json
         const datosTorta = JSON.parse(document.getElementById('datosTorta').textContent);
         const datosRentabilidad = JSON.parse(document.getElementById('datosRentabilidad').textContent);
-        
-        console.log(datosTorta);
-        console.log(datosRentabilidad);
     
+
+        
         // Colores para los gráficos
         const colores = [
             '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
